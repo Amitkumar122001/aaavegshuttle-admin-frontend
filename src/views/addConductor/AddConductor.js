@@ -1,17 +1,16 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { TextField, Button, FormControl, InputLabel, Select, MenuItem, Input } from '@mui/material';
+import { TextField, Button, FormControl, InputLabel, Select, MenuItem } from '@mui/material';
 import toast, { Toaster } from 'react-hot-toast';
 import LoaderCircular from 'ui-component/LoaderCircular';
 export const AddConductor = () => {
   const [conductorForm, setConductorForm] = useState({
     conName: '',
     conMobile: '',
-    conAddress: '',
     vendorId: '',
     conPhoto: '',
-    conPancard: '',
     covidVaccination: '',
+    conAadharNO: '',
     conAadharFront: '',
     conAadharBack: '',
     conAlternatemobile: '',
@@ -22,7 +21,6 @@ export const AddConductor = () => {
     currAddressProof: '',
     prmtAddress: '',
     prmtAddressProof: '',
-    conPanNO: '',
     conBGV: '',
     IMEI_No: '',
     conFingerPrint: '',
@@ -37,10 +35,24 @@ export const AddConductor = () => {
   }, []);
   const [conNameErr, setConNameErr] = useState(false);
   const [conMobileErr, setConMobileErr] = useState(false);
-  const [conAddressErr, setConAddressErr] = useState(false);
+  const [conAltMobileErr, setConAltMobileErr] = useState(false);
+  const [conIMEIErr, setConIMEIErr] = useState(false);
   const [conProfileErr, setConProfileErr] = useState(false);
-  const [conAdharErr, setConAdharErr] = useState(false);
-  const [conPancardErr, setConPancardErr] = useState(false);
+  const [conAdharNoErr, setConAdharNoErr] = useState(false);
+  const [conAdharFrontErr, setConAdharFrontErr] = useState(false);
+  const [conPccStartErr, setConPccStartErr] = useState(false);
+  const [conPccEndErr, setConPccEndErr] = useState(false);
+  const [conAdharBackErr, setConAdharBackErr] = useState(false);
+  const [currAddressErr, setCurrAddressErr] = useState(false);
+  const [currAddressProofErr, setCurrAddressProofErr] = useState(false);
+  const [prmtAddressErr, setPrmtAddressErr] = useState(false);
+  const [prmtAddressProofErr, setPrmtAddressProofErr] = useState(false);
+  const [covidVErr, setCovidVErr] = useState(false);
+  const [pccVerifyErr, setPccVerifyErr] = useState(false);
+  const [BGVErr, setBGVErr] = useState(false);
+  const [fingerPrintErr, setFingerPrintErr] = useState(false);
+  const [resumeErr, setResumeErr] = useState(false);
+
   const [isLoading, setisLoading] = useState(false);
   const handleDocumentPhoto = async (event) => {
     const name = event.target.name;
@@ -63,49 +75,79 @@ export const AddConductor = () => {
     let config = {
       method: 'post',
       maxBodyLength: Infinity,
-      url: `http://13.200.168.251:3000/app/v1/aws/upload/conductorimages`,
+      url: `http://13.200.168.251:3000/app/v1/aws/upload/driverimages`,
       headers: {
         'Content-Type': 'multipart/form-data'
       },
       data: reader
     };
     let imageName = await imageUploadApi(config);
-    let totalUrl = `http://13.200.168.251:3000/app/v1/aws/getImage/conductorimages/` + imageName;
+    let totalUrl = `http://13.200.168.251:3000/app/v1/aws/getImage/driverimages/` + imageName;
     return totalUrl;
   };
-  const clearAll = () => {
-    setConductorForm({
-      conName: '',
-      conMobile: '',
-      conAddress: '',
-      vendorId: '',
-      conProfile: '',
-
-      conPancard: ''
-    });
-    setConNameErr(false);
-    setConMobileErr(false);
-    setConAddressErr(false);
-    setConProfileErr(false);
-    setConAdharErr(false);
-    setConPancardErr(false);
-  };
+  // const clearAll = () => {
+  //   setConductorForm({
+  //     conName: '',
+  //     conMobile: '',
+  //     conAddress: '',
+  //     vendorId: '',
+  //     conProfile: '',
+  //     conPancard: ''
+  //   });
+  //   setConNameErr(false);
+  //   setConMobileErr(false);
+  //   setConAddressErr(false);
+  //   setConProfileErr(false);
+  //   setConAdharFrontErr(false);
+  //   setConPancardErr(false);
+  // };
   const handleConductor = () => {
     if (
       conductorForm.conName != '' &&
-      conductorForm.conMobile?.length == 10 &&
-      conductorForm.conAddress != '' &&
-      conductorForm.conAadhar != '' &&
-      conductorForm.conPancard != ''
+      conductorForm.conMobile != '' &&
+      conductorForm.vendorId != '' &&
+      conductorForm.conPhoto != '' &&
+      conductorForm.covidVaccination != '' &&
+      conductorForm.conAadharNO != '' &&
+      conductorForm.conAadharFront != '' &&
+      conductorForm.conAadharBack != '' &&
+      conductorForm.conAlternatemobile != '' &&
+      conductorForm.police_verification != '' &&
+      conductorForm.pccEnd != '' &&
+      conductorForm.pccStart != '' &&
+      conductorForm.currAddress != '' &&
+      conductorForm.currAddressProof != '' &&
+      conductorForm.prmtAddress != '' &&
+      conductorForm.prmtAddressProof != '' &&
+      conductorForm.conBGV != '' &&
+      conductorForm.IMEI_No != '' &&
+      conductorForm.conFingerPrint != '' &&
+      conductorForm.conResume != ''
     ) {
+      if(conductorForm.conMobile==conductorForm.conAlternatemobile){
+        window.alert("modile number and Alternate mobile number same");
+        return;
+      }
       const document = {
-        pancard: conductorForm.conPancard
+        profile: conductorForm.conPhoto,
+        covidVaccination: conductorForm.covidVaccination,
+        aadharfront: conductorForm.conAadharFront,
+        aadharBack: conductorForm.conAadharBack,
+        pcc: conductorForm.police_verification,
+        curr_address: conductorForm.currAddressProof,
+        permanent_address: conductorForm.prmtAddressProof,
+        bgv: conductorForm.conBGV,
+        fingerprint: conductorForm.conFingerPrint,
+        resume: conductorForm.conResume
       };
-
       const body = {
         conductorName: conductorForm.conName,
-
-        conductorMobile: conductorForm.conMobile,
+        currentAddress: conductorForm.currAddress,
+        permanentAddress: conductorForm.prmtAddress,
+        primaryContact: conductorForm.conMobile,
+        emergencyContact: conductorForm.conAlternatemobile,
+        adhaarNumber: conductorForm.conAadharNO,
+        imeiNumber: conductorForm.IMEI_No,
         conductorDocument: document,
         vendorId: conductorForm.vendorId
       };
@@ -114,8 +156,13 @@ export const AddConductor = () => {
         .post('http://192.168.1.230:3000/app/v1/conductor/insertConductor', body)
         .then((res) => {
           // console.log(res.data)
-          toast.success(`${res.data.result}`);
-          clearAll();
+          if (!res.data.isConductorCreated) {
+            toast.success(`${res.data.result}`);
+          } else {
+            toast.success(`${res.data.result}`);
+          }
+
+          // clearAll();
         })
         .catch((err) => {
           console.log('Api error ', err);
@@ -124,9 +171,23 @@ export const AddConductor = () => {
     } else {
       conductorForm.conName == '' ? setConNameErr(true) : setConNameErr(false);
       conductorForm.conMobile == '' ? setConMobileErr(true) : setConMobileErr(false);
-
-      conductorForm.conProfile == '' ? setConProfileErr(true) : setConProfileErr(false);
-      conductorForm.conPancard == '' ? setConPancardErr(true) : setConPancardErr(false);
+      conductorForm.conAlternatemobile == '' ? setConAltMobileErr(true) : setConAltMobileErr(false);
+      conductorForm.conPhoto == '' ? setConProfileErr(true) : setConProfileErr(false);
+      conductorForm.IMEI_No == '' ? setConIMEIErr(true) : setConIMEIErr(false);
+      conductorForm.conAadharFront == '' ? setConAdharFrontErr(true) : setConAdharFrontErr(false);
+      conductorForm.conAadharBack == '' ? setConAdharBackErr(true) : setConAdharBackErr(false);
+      conductorForm.currAddress == '' ? setCurrAddressErr(true) : setCurrAddressErr(false);
+      conductorForm.pccEnd == '' ? setConPccEndErr(true) : setConPccEndErr(false);
+      conductorForm.pccStart == '' ? setConPccStartErr(true) : setConPccStartErr(false);
+      conductorForm.prmtAddress == '' ? setPrmtAddressErr(true) : setPrmtAddressErr(false);
+      conductorForm.conAadharNO == '' ? setConAdharNoErr(true) : setConAdharNoErr(false);
+      conductorForm.covidVaccination == '' ? setCovidVErr(true) : setCovidVErr(false);
+      conductorForm.police_verification == '' ? setPccVerifyErr(true) : setPccVerifyErr(false);
+      conductorForm.currAddressProof == '' ? setCurrAddressProofErr(true) : setCurrAddressProofErr(false);
+      conductorForm.prmtAddressProof == '' ? setPrmtAddressProofErr(true) : setPrmtAddressProofErr(false);
+      conductorForm.conResume == '' ? setResumeErr(true) : setResumeErr(false);
+      conductorForm.conBGV == '' ? setBGVErr(true) : setBGVErr(false);
+      conductorForm.conFingerPrint == '' ? setFingerPrintErr(true) : setFingerPrintErr(false);
     }
   };
 
@@ -166,7 +227,7 @@ export const AddConductor = () => {
             </FormControl>
           </div>
         </div>
-        {conductorForm.vendorId && (
+        {conductorForm.vendorId!='' && (
           <>
             <div>
               <div className="grid grid-cols-2 max-lg:grid-cols-1 gap-6">
@@ -194,7 +255,7 @@ export const AddConductor = () => {
                       onChange={(e) => setConductorForm({ ...conductorForm, IMEI_No: e.target.value })}
                     />
                   </FormControl>
-                  <p className="text-red-500 text-xs ml-2">IMEI_No error</p>
+                  {conIMEIErr && <p className="text-red-500 text-xs ml-2">IMEI_No error</p>}
                 </div>
                 <div>
                   <FormControl fullWidth>
@@ -222,21 +283,9 @@ export const AddConductor = () => {
                       onChange={(e) => setConductorForm({ ...conductorForm, conAlternatemobile: e.target.value })}
                     />
                   </FormControl>
-                  <p className="text-red-500 text-xs ml-2">alternatemobile error</p>
+                  {conAltMobileErr && <p className="text-red-500 text-xs ml-2">alternatemobile error</p>}
                 </div>
-                <div>
-                  <FormControl fullWidth>
-                    <TextField
-                      id="outlined-basic"
-                      label="Address"
-                      type="text"
-                      variant="outlined"
-                      value={conductorForm.conAddress}
-                      onChange={(e) => setConductorForm({ ...conductorForm, conAddress: e.target.value })}
-                    />
-                  </FormControl>
-                  {conAddressErr && <p className="text-red-500 text-xs ml-2">Address error</p>}
-                </div>
+
                 <div>
                   {conductorForm.conPhoto == '' ? (
                     <p className="w-full flex justify-between border rounded-xl p-3  border-gray-400">
@@ -253,7 +302,7 @@ export const AddConductor = () => {
                       </Button>
                     </div>
                   )}
-                  <p className="text-red-500 text-xs ml-2">upload photo</p>
+                  {conProfileErr && <p className="text-red-500 text-xs ml-2">upload photo</p>}
                 </div>
               </div>
             </div>
@@ -278,7 +327,7 @@ export const AddConductor = () => {
                           onChange={(e) => setConductorForm({ ...conductorForm, currAddress: e.target.value })}
                         />
                       </FormControl>
-                      <p className="text-red-500 text-xs ml-2">currAddress error</p>
+                      {currAddressProofErr && <p className="text-red-500 text-xs ml-2">currAddress error</p>}
                     </div>
                     <div className="w-full ">
                       {conductorForm.currAddressProof == '' ? (
@@ -307,7 +356,7 @@ export const AddConductor = () => {
                           </Button>
                         </div>
                       )}
-                      <p className="text-red-500 text-xs ml-2">upload Curr Address </p>
+                      {currAddressErr && <p className="text-red-500 text-xs ml-2">upload Curr Address </p>}
                     </div>
                   </div>
                   <div className="flex gap-6 max-md:flex-col items-center w-full">
@@ -319,10 +368,10 @@ export const AddConductor = () => {
                           label="Parmanent Address"
                           variant="outlined"
                           value={conductorForm.prmtAddress}
-                          onChange={(e) => setVendorForm({ ...conductorForm, prmtAddress: e.target.value })}
+                          onChange={(e) => setConductorForm({ ...conductorForm, prmtAddress: e.target.value })}
                         />
                       </FormControl>
-                      <p className="text-red-500 ml-2">prmtAddress error</p>
+                      {prmtAddressProofErr && <p className="text-red-500 ml-2">prmtAddress error</p>}
                     </div>
                     <div className="w-full ">
                       {conductorForm.prmtAddressProof == '' ? (
@@ -351,7 +400,7 @@ export const AddConductor = () => {
                           </Button>
                         </div>
                       )}
-                      <p className="text-red-500 text-xs ml-2">upload parmanent Address </p>
+                      {prmtAddressErr && <p className="text-red-500 text-xs ml-2">upload parmanent Address </p>}
                     </div>
                   </div>
                 </div>
@@ -374,11 +423,11 @@ export const AddConductor = () => {
                           id="outlined-basic"
                           label="Aadhar Number"
                           variant="outlined"
-                          value={conductorForm.drAadharNO}
-                          onChange={(e) => setConductorForm({ ...conductorForm, drAadharNO: e.target.value })}
+                          value={conductorForm.conAadharNO}
+                          onChange={(e) => setConductorForm({ ...conductorForm, conAadharNO: e.target.value })}
                         />
                       </FormControl>
-                      <p className="text-red-500  ml-2">Adhar number error</p>
+                      {conAdharNoErr && <p className="text-red-500  ml-2">Adhar number error</p>}
                     </div>
                     <div>
                       {conductorForm.conAadharFront == '' ? (
@@ -389,7 +438,7 @@ export const AddConductor = () => {
                           <input
                             type="file"
                             id="aadharFront"
-                            name="drAadharFront"
+                            name="conAadharFront"
                             onChange={(e) => handleDocumentPhoto(e)}
                             className="text-xs w-28 "
                           />
@@ -407,7 +456,7 @@ export const AddConductor = () => {
                           </Button>
                         </div>
                       )}
-                      <p className="text-red-500 text-xs ml-2">upload AadharFront card </p>
+                      {conAdharFrontErr && <p className="text-red-500 text-xs ml-2">upload AadharFront card </p>}
                     </div>
                     <div>
                       {conductorForm.conAadharBack == '' ? (
@@ -436,7 +485,7 @@ export const AddConductor = () => {
                           </Button>
                         </div>
                       )}
-                      <p className="text-red-500 text-xs ml-2">upload aadharBack card </p>
+                      {conAdharBackErr && <p className="text-red-500 text-xs ml-2">upload aadharBack card </p>}
                     </div>
                   </div>
                 </div>
@@ -472,79 +521,41 @@ export const AddConductor = () => {
                           </Button>
                         </div>
                       )}
-                      <p className="text-red-500 text-xs ml-2">upload police Verification </p>
+                      {pccVerifyErr && <p className="text-red-500 text-xs ml-2">upload police Verification </p>}
                     </div>
                     <div>
-                      <p className='flex flex-col border border-gray-400 rounded-xl px-2'>
-                        <label className="text-md">pcc start</label>
-                        <Input
+                      <p className="w-full border border-gray-400 rounded-xl px-2 py-1">
+                        <label htmlFor="pccStart" className="text-md w-full block">
+                          pcc start
+                        </label>
+                        <input
                           type="date"
-                          className=''
-                          id="component-simple"
+                          className="outline-none border-none w-full"
+                          id="pccStart"
                           value={conductorForm.pccStart}
                           onChange={(e) => setConductorForm({ ...conductorForm, pccStart: e.target.value })}
                         />
                       </p>
-
-                      <p className="text-red-500  ml-2">Pcc start error</p>
+                      {conPccStartErr && <p className="text-red-500  ml-2">Pcc start error</p>}
                     </div>
                     <div>
-                    <p className='flex flex-col border border-gray-400 rounded-xl px-2'>
-                        <label className="text-md">pcc end</label>
-                        <Input
+                      <p className="w-full border border-gray-400 rounded-xl px-2 py-1">
+                        <label htmlFor="pccStart" className="text-md w-full block">
+                          pcc end
+                        </label>
+                        <input
                           type="date"
-                          className=''
-                          id="component-simple"
+                          className="outline-none border-none w-full"
+                          id="pccEnd"
                           value={conductorForm.pccEnd}
                           onChange={(e) => setConductorForm({ ...conductorForm, pccEnd: e.target.value })}
                         />
                       </p>
-                      <p className="text-red-500  ml-2">PCC end error</p>
+                      {conPccEndErr && <p className="text-red-500  ml-2">PCC end error</p>}
                     </div>
                   </div>
                 </div>
                 <div className="grid grid-cols-2 max-md:grid-cols-1 max-lg:gap-7 gap-5">
-                  <div className="w-full">
-                    <FormControl fullWidth>
-                      <TextField
-                        type="number"
-                        id="outlined-basic"
-                        label="Pan Card Number"
-                        variant="outlined"
-                        value={conductorForm.conPanNO}
-                        onChange={(e) => setConductorForm({ ...conductorForm, conPanNO: e.target.value })}
-                      />
-                    </FormControl>
-                    <p className="text-red-500 ml-2">pan number error</p>
-                  </div>
-                  <div>
-                    {conductorForm.conPancard == '' ? (
-                      <>
-                        <p className="w-full flex justify-between border rounded-xl p-3  border-gray-400">
-                          <label htmlFor="pancard" className="w-full block text-gray-500 ">
-                            Upload pancard{' '}
-                          </label>{' '}
-                          <input
-                            type="file"
-                            id="pancard"
-                            name="drPancard"
-                            onChange={(e) => handleDocumentPhoto(e)}
-                            className="text-xs w-24"
-                          />
-                        </p>
-                      </>
-                    ) : (
-                      <div className="flex justify-between">
-                        {' '}
-                        <img src={conductorForm.drPancard} alt="pancard" className="w-20 h-20 rounded-xl" />
-                        <Button onClick={() => setConductorForm({ ...conductorForm, drPancard: '' })} variant="outlined" color="error">
-                          remove
-                        </Button>
-                      </div>
-                    )}
-                    <p className="text-red-500 text-xs ml-2">upload pan card </p>
-                  </div>
-
                   <div>
                     {conductorForm.covidVaccination == '' ? (
                       <>
@@ -566,7 +577,7 @@ export const AddConductor = () => {
                         </Button>
                       </div>
                     )}
-                    <p className="text-red-500 text-xs ml-2">upload covidVaccination </p>
+                    {covidVErr && <p className="text-red-500 text-xs ml-2">upload covidVaccination </p>}
                   </div>
                   <div>
                     {conductorForm.conFingerPrint == '' ? (
@@ -585,7 +596,7 @@ export const AddConductor = () => {
                         </Button>
                       </div>
                     )}
-                    <p className="text-red-500 text-xs ml-2">upload conFingerPrint </p>
+                    {fingerPrintErr && <p className="text-red-500 text-xs ml-2">upload conFingerPrint </p>}
                   </div>
                   <div>
                     {conductorForm.conBGV == '' ? (
@@ -604,7 +615,7 @@ export const AddConductor = () => {
                         </Button>
                       </div>
                     )}
-                    <p className="text-red-500 text-xs ml-2">upload conBGV </p>
+                    {BGVErr && <p className="text-red-500 text-xs ml-2">upload BGV </p>}
                   </div>
                   <div>
                     {conductorForm.conResume == '' ? (
@@ -623,7 +634,7 @@ export const AddConductor = () => {
                         </Button>
                       </div>
                     )}
-                    <p className="text-red-500 text-xs ml-2">upload dr Resume</p>
+                    {resumeErr && <p className="text-red-500 text-xs ml-2">upload Resume</p>}
                   </div>
                 </div>
               </div>

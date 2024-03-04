@@ -13,9 +13,6 @@ export const AddDriver = () => {
     drAadharNO: '',
     drAadharFront: '',
     drAadharBack: '',
-    drPancard: '',
-    drPanNO: '',
-    drLicense: '',
     drPhoto: '',
     drAlternatemobile: '',
     currAddress: '',
@@ -28,8 +25,8 @@ export const AddDriver = () => {
     covidVaccination: '',
     drFingerPrint: '',
     drResume: '',
-    drLicenseStart: '',
-    drLicenseEnd: ''
+    drLicenseNo: '',
+    dlImg: ''
   });
   const [vendorData, setVendorData] = useState([]);
   useEffect(() => {
@@ -40,12 +37,26 @@ export const AddDriver = () => {
   }, []);
   const [drNameErr, setDrNameErr] = useState(false);
   const [drmobileErr, setDrMobileErr] = useState(false);
-  const [drAddressErr, setDrAddressErr] = useState(false);
+  const [drAltMobileErr, setDrAltMobileErr] = useState(false);
+  const [drIMEIErr, setDrIMEIErr] = useState(false);
   const [drProfileErr, setDrProfileErr] = useState(false);
-  const [drAdharErr, setDrAdharErr] = useState(false);
-  const [drPancardErr, setDrPancardErr] = useState(false);
+  const [drAdharNoErr, setDrAdharNoErr] = useState(false);
+  const [drAdharFrontErr, setDrAdharFrontErr] = useState(false);
+
+  const [drAdharBackErr, setDrAdharBackErr] = useState(false);
+  const [currAddressErr, setCurrAddressErr] = useState(false);
+  const [currAddressProofErr, setCurrAddressProofErr] = useState(false);
+  const [prmtAddressErr, setPrmtAddressErr] = useState(false);
+  const [prmtAddressProofErr, setPrmtAddressProofErr] = useState(false);
+  const [covidVErr, setCovidVErr] = useState(false);
+  const [pccVerifyErr, setPccVerifyErr] = useState(false);
+  const [BGVErr, setBGVErr] = useState(false);
+  const [fingerPrintErr, setFingerPrintErr] = useState(false);
+  const [resumeErr, setResumeErr] = useState(false);
   const [isLoading, setisLoading] = useState(false);
-  const [drLicenseErr, setDrLicenseErr] = useState(true);
+  const [drLicenseNoErr, setDrLicenseNoErr] = useState(false);
+  const [drLicenseImgErr, setDrLicenseImgErr] = useState(false);
+
   const handleDocumentPhoto = async (event) => {
     const name = event.target.name;
     setisLoading(true);
@@ -80,16 +91,58 @@ export const AddDriver = () => {
     return totalUrl;
   };
   const handleDriver = () => {
-    if (driverForm.drName != '' && driverForm.drmobile?.length == 10 && driverForm.drPancard != '' && driverForm.drLicense != '') {
+    if (
+      driverForm.drName != '' &&
+      driverForm.drmobile != '' &&
+      driverForm.vendorId != '' &&
+      driverForm.drAadharNO != '' &&
+      driverForm.drAadharFront != '' &&
+      driverForm.drAadharBack != '' &&
+      driverForm.drPhoto != '' &&
+      driverForm.drAlternatemobile != '' &&
+      driverForm.currAddress != '' &&
+      driverForm.currAddressProof != '' &&
+      driverForm.prmtAddress != '' &&
+      driverForm.prmtAddressProof != '' &&
+      driverForm.drBGV != '' &&
+      driverForm.police_verification != '' &&
+      driverForm.IMEI_No != '' &&
+      driverForm.covidVaccination != '' &&
+      driverForm.drFingerPrint != '' &&
+      driverForm.drResume != '' &&
+      driverForm.drLicenseNo != '' &&
+      driverForm.dlImg != ''
+    ) {
+      if(driverForm.drmobile==driverForm.drAlternatemobile){
+        window.alert("modile number and Alternate mobile number same");
+        return;
+      }
       const document = {
-        pancard: driverForm.drPancard
+        profile: driverForm.drPhoto,
+        covidVaccination: driverForm.covidVaccination,
+        aadharfront: driverForm.drAadharFront,
+        aadharBack: driverForm.drAadharBack,
+        dl: driverForm.dlImg,
+        pcc: driverForm.police_verification,
+        curr_address: driverForm.currAddressProof,
+        permanent_address: driverForm.prmtAddressProof,
+        bgv: driverForm.drBGV,
+        fingerprint: driverForm.drFingerPrint,
+        resume: driverForm.drResume
       };
 
       const body = {
         driverName: driverForm.drName,
-        driverPhonenumber: driverForm.drmobile,
+        currentAddress: driverForm.currAddress,
+        permanentAddress: driverForm.prmtAddress,
+        primaryContact: driverForm.drmobile,
+        emergencyContact: driverForm.drAlternatemobile,
+        adhaarNumber: driverForm.drAadharNO,
+        dlNumber: driverForm.drLicenseNo,
+        imeiNumber: driverForm.IMEI_No,
         driverDocument: document,
-        vendorId: driverForm.vendorId
+        vendorId: driverForm.vendorId,
+        rating: 5
       };
       console.log(body);
       axios
@@ -104,15 +157,33 @@ export const AddDriver = () => {
         });
       setDrNameErr(false);
       setDrMobileErr(false);
-
-      setDrPancardErr(false);
-      setDrLicenseErr(false);
     } else {
       driverForm.drName == '' ? setDrNameErr(true) : setDrNameErr(false);
       driverForm.drmobile == '' ? setDrMobileErr(true) : setDrMobileErr(false);
+      driverForm.IMEI_No == '' ? setDrIMEIErr(true) : setDrIMEIErr(false);
+      driverForm.drLicenseNo == '' ? setDrLicenseNoErr(true) : setDrLicenseNoErr(false);
+      driverForm.dlImg == '' ? setDrLicenseImgErr(true) : setDrLicenseImgErr(false);
 
-      driverForm.drPancard == '' ? setDrPancardErr(true) : setDrPancardErr(false);
-      driverForm.drLicense == '' ? setDrLicenseErr(true) : setDrLicenseErr(false);
+      driverForm.drAlternatemobile == '' ? setDrAltMobileErr(true) : setDrAltMobileErr(false);
+      driverForm.drPhoto == '' ? setDrProfileErr(true) : setDrProfileErr(false);
+      driverForm.IMEI_No == '' ? setDrIMEIErr(true) : setDrIMEIErr(false);
+
+      driverForm.drAadharNO == '' ? setDrAdharNoErr(true) : setDrAdharNoErr(false);
+      driverForm.drAadharFront == '' ? setDrAdharFrontErr(true) : setDrAdharFrontErr(false);
+      driverForm.drAadharBack == '' ? setDrAdharBackErr(true) : setDrAdharBackErr(false);
+
+      driverForm.currAddress == '' ? setCurrAddressErr(true) : setCurrAddressErr(false);
+      driverForm.currAddressProof == '' ? setCurrAddressProofErr(true) : setCurrAddressProofErr(false);
+      driverForm.prmtAddressProof == '' ? setPrmtAddressProofErr(true) : setPrmtAddressProofErr(false);
+
+      driverForm.prmtAddress == '' ? setPrmtAddressErr(true) : setPrmtAddressErr(false);
+
+      driverForm.covidVaccination == '' ? setCovidVErr(true) : setCovidVErr(false);
+      driverForm.police_verification == '' ? setPccVerifyErr(true) : setPccVerifyErr(false);
+
+      driverForm.drResume == '' ? setResumeErr(true) : setResumeErr(false);
+      driverForm.drBGV == '' ? setBGVErr(true) : setBGVErr(false);
+      driverForm.drFingerPrint == '' ? setFingerPrintErr(true) : setFingerPrintErr(false);
     }
   };
   return (
@@ -142,7 +213,6 @@ export const AddDriver = () => {
                 value={driverForm.vendorId}
                 onChange={(e) => setDriverForm({ ...driverForm, vendorId: e.target.value })}
               >
-                <MenuItem value="value">value</MenuItem>
                 {vendorData.map((item, i) => (
                   <MenuItem key={i} value={item.vendorId}>
                     {item.vendorName}
@@ -152,7 +222,7 @@ export const AddDriver = () => {
             </FormControl>
           </div>
         </div>
-        {driverForm.vendorId && (
+        {driverForm.vendorId != '' && (
           <div className="flex flex-col gap-8">
             <div className="grid grid-cols-2 max-lg:grid-cols-1 gap-8">
               <div>
@@ -179,7 +249,7 @@ export const AddDriver = () => {
                     onChange={(e) => setDriverForm({ ...driverForm, IMEI_No: e.target.value })}
                   />
                 </FormControl>
-                <p className="text-red-500 text-xs ml-2">IMEI_No error</p>
+                {drIMEIErr && <p className="text-red-500 text-xs ml-2">IMEI_No error</p>}
               </div>
               <div>
                 <FormControl fullWidth>
@@ -207,26 +277,26 @@ export const AddDriver = () => {
                     onChange={(e) => setDriverForm({ ...driverForm, drAlternatemobile: e.target.value })}
                   />
                 </FormControl>
-                <p className="text-red-500 text-xs ml-2">alternatemobile error</p>
+                {drAltMobileErr && <p className="text-red-500 text-xs ml-2">alternatemobile error</p>}
               </div>
 
               <div>
                 {driverForm.drPhoto == '' ? (
                   <p className="w-full flex justify-between border rounded-xl p-3  border-gray-400">
                     <label htmlFor="photo" className="w-full block text-gray-500">
-                      Upload current Address{' '}
+                      Upload Photo{' '}
                     </label>{' '}
-                    <input type="file" id="photo" name="drPhoto" onChange={(e) => handleDocumentPhoto(e)} className="text-xs w-24" />
+                    <input type="file" id="photo" name="drPhoto" onChange={(e) => handleDocumentPhoto(e)} className="text-xs w-28" />
                   </p>
                 ) : (
                   <div className="flex justify-between">
                     <img src={driverForm.drPhoto} alt="photo" className="w-20 h-20 rounded-xl" />
-                    <Button onClick={() => setDriverForm({ ...drPhoto, photo: '' })} variant="outlined" color="error">
+                    <Button onClick={() => setDriverForm({ ...drPhoto, drPhoto: '' })} variant="outlined" color="error">
                       remove
                     </Button>
                   </div>
                 )}
-                <p className="text-red-500 text-xs ml-2">upload photo</p>
+                {drProfileErr && <p className="text-red-500 text-xs ml-2">upload photo</p>}
               </div>
             </div>
 
@@ -251,10 +321,10 @@ export const AddDriver = () => {
                           onChange={(e) => setDriverForm({ ...driverForm, currAddress: e.target.value })}
                         />
                       </FormControl>
-                      <p className="text-red-500 text-xs ml-2">currAddress error</p>
+                      {currAddressErr && <p className="text-red-500 text-xs ml-2">currAddress error</p>}
                     </div>
                     <div className="w-full ">
-                      {driverForm.currAddress == '' ? (
+                      {driverForm.currAddressProof == '' ? (
                         <p className="w-full flex justify-between border rounded-xl p-3  border-gray-400">
                           <label htmlFor="currAddress" className="w-full block max-lg:text-[12px] max-md:text-[10px]">
                             Upload current Address{' '}
@@ -264,19 +334,19 @@ export const AddDriver = () => {
                             id="currAddress"
                             name="currAddressProof"
                             onChange={(e) => handleDocumentPhoto(e)}
-                            className="text-xs w-24"
+                            className="text-xs w-28"
                           />
                         </p>
                       ) : (
                         <div className="flex justify-between">
                           {' '}
                           <img src={driverForm.currAddressProof} alt="currAddress" className="w-20 h-20 rounded-xl" />
-                          <Button onClick={() => setVendorForm({ ...vendorForm, currAddressProof: '' })} variant="outlined" color="error">
+                          <Button onClick={() => setDriverForm({ ...driverForm, currAddressProof: '' })} variant="outlined" color="error">
                             remove
                           </Button>
                         </div>
                       )}
-                      <p className="text-red-500 text-xs ml-2">upload Curr Address </p>
+                      {currAddressProofErr && <p className="text-red-500 text-xs ml-2">upload Curr Address </p>}
                     </div>
                   </div>
                   <div className="flex gap-10 max-md:flex-col  items-center w-full">
@@ -288,10 +358,10 @@ export const AddDriver = () => {
                           label="Parmanent Address"
                           variant="outlined"
                           value={driverForm.prmtAddress}
-                          onChange={(e) => setVendorForm({ ...driverForm, prmtAddress: e.target.value })}
+                          onChange={(e) => setDriverForm({ ...driverForm, prmtAddress: e.target.value })}
                         />
                       </FormControl>
-                      <p className="text-red-500  ml-2">currAddress error</p>
+                      {prmtAddressErr && <p className="text-red-500  ml-2">currAddress error</p>}
                     </div>
                     <div className="w-full ">
                       {driverForm.prmtAddressProof == '' ? (
@@ -304,7 +374,7 @@ export const AddDriver = () => {
                             id="prmtAddress"
                             name="prmtAddressProof"
                             onChange={(e) => handleDocumentPhoto(e)}
-                            className="text-xs w-24"
+                            className="text-xs w-28"
                           />
                         </p>
                       ) : (
@@ -316,7 +386,7 @@ export const AddDriver = () => {
                           </Button>
                         </div>
                       )}
-                      <p className="text-red-500 text-xs ml-2">parmanent Address error</p>
+                      {prmtAddressProofErr && <p className="text-red-500 text-xs ml-2">parmanent Address error</p>}
                     </div>
                   </div>
                 </div>
@@ -343,7 +413,7 @@ export const AddDriver = () => {
                           onChange={(e) => setDriverForm({ ...driverForm, drAadharNO: e.target.value })}
                         />
                       </FormControl>
-                      <p className="text-red-500  ml-2">Adhar number error</p>
+                      {drAdharNoErr && <p className="text-red-500  ml-2">Adhar number error</p>}
                     </div>
                     <div>
                       {driverForm.drAadharFront == '' ? (
@@ -368,7 +438,7 @@ export const AddDriver = () => {
                           </Button>
                         </div>
                       )}
-                      <p className="text-red-500 text-xs ml-2">upload AadharFront card </p>
+                      {drAdharFrontErr && <p className="text-red-500 text-xs ml-2">upload AadharFront card </p>}
                     </div>
                     <div>
                       {driverForm.drAadharBack == '' ? (
@@ -393,140 +463,63 @@ export const AddDriver = () => {
                           </Button>
                         </div>
                       )}
-                      <p className="text-red-500 text-xs ml-2">upload aadharBack card </p>
+                      {drAdharBackErr && <p className="text-red-500 text-xs ml-2">upload aadharBack card </p>}
                     </div>
                   </div>
                 </div>
-                {/* Driving License */}
-                <div>
-                  <div className="grid grid-cols-3 max-lg:grid-cols-2 max-md:grid-cols-1 gap-6 max-md:gap-3">
-                    <div>
-                      {driverForm.drLicense == '' ? (
-                        <>
-                          <InputLabel>Driving License</InputLabel>
-                          <FormControl fullWidth>
-                            <TextField type="file" variant="outlined" name="drLicense" onChange={(e) => handleDocumentPhoto(e)} />
-                          </FormControl>
-                        </>
-                      ) : (
-                        <div className="flex justify-between">
-                          <img src={driverForm.drLicense} alt="drLicence" className="w-20 h-20 rounded-xl" />
-                          <Button onClick={() => setDriverForm({ ...driverForm, drLicense: '' })} variant="outlined" color="error">
-                            remove
-                          </Button>
-                        </div>
-                      )}
-                      {drLicenseErr && <p className="text-red-500 text-xs ml-2">upload License error</p>}
-                    </div>
-                    <div>
-                      <InputLabel>License validity From</InputLabel>
-                      <FormControl fullWidth>
-                        <TextField
-                          type="date"
-                          id="outlined-basic"
-                          label=""
-                          variant="outlined"
-                          value={driverForm.drLicenseStart}
-                          onChange={(e) => setDriverForm({ ...driverForm, drLicenseStart: e.target.value })}
-                        />
-                      </FormControl>
-                      <p className="text-red-500  ml-2">drLicenseStart error</p>
-                    </div>
-                    <div>
-                      {' '}
-                      <InputLabel>License validity Till</InputLabel>
-                      <FormControl fullWidth>
-                        <TextField
-                          type="date"
-                          id="outlined-basic"
-                          label=""
-                          variant="outlined"
-                          value={driverForm.drLicenseEnd}
-                          onChange={(e) => setDriverForm({ ...driverForm, drLicenseEnd: e.target.value })}
-                        />
-                      </FormControl>
-                      <p className="text-red-500  ml-2">drLicenseEnd error</p>
-                    </div>
-                  </div>
-                </div>
-                <div className="grid grid-cols-2 max-md:grid-cols-1 max-lg:gap-7 gap-10">
-                  <div className="w-full">
+
+                <div className="grid grid-cols-2 max-md:grid-cols-1 gap-7 ">
+                  <div>
                     <FormControl fullWidth>
                       <TextField
-                        type="number"
                         id="outlined-basic"
-                        label="Pan Number"
+                        label="Driving LicenseNo"
+                        type="text"
                         variant="outlined"
-                        value={driverForm.drPanNO}
-                        onChange={(e) => setDriverForm({ ...driverForm, drPanNO: e.target.value })}
+                        value={driverForm.drLicenseNo}
+                        onChange={(e) => setDriverForm({ ...driverForm, drLicenseNo: e.target.value })}
                       />
                     </FormControl>
-                    <p className="text-red-500 ml-2">pan number error</p>
+                    {drLicenseNoErr && <p className="text-red-500 text-xs ml-2">IMEI_No error</p>}
                   </div>
                   <div>
-                    {driverForm.drPancard == '' ? (
+                    {driverForm.dlImg == '' ? (
                       <>
                         <p className="w-full flex justify-between border rounded-xl p-3  border-gray-400">
-                          <label htmlFor="pancard" className="w-full block max-lg:text-[12px] max-md:text-[10px]">
-                            Upload pancard{' '}
+                          <label htmlFor="DL" className="w-full block max-lg:text-[12px] max-md:text-[10px]">
+                            Upload DL{' '}
                           </label>{' '}
-                          <input
-                            type="file"
-                            id="pancard"
-                            name="drPancard"
-                            onChange={(e) => handleDocumentPhoto(e)}
-                            className="text-xs w-24"
-                          />
+                          <input type="file" id="Dl" name="dlImg" onChange={(e) => handleDocumentPhoto(e)} className="text-xs w-28" />
                         </p>
                       </>
                     ) : (
                       <div className="flex justify-between">
-                        {' '}
-                        <img src={driverForm.drPancard} alt="pancard" className="w-20 h-20 rounded-xl" />
-                        <Button onClick={() => setDriverForm({ ...driverForm, drPancard: '' })} variant="outlined" color="error">
+                        <img src={driverForm.dlImg} alt="dlImg" className="w-20 h-20 rounded-xl" />
+                        <Button onClick={() => setDriverForm({ ...driverForm, dlImg: '' })} variant="outlined" color="error">
                           remove
                         </Button>
                       </div>
                     )}
-                    <p className="text-red-500 text-xs ml-2">upload pan card </p>
+                    {drLicenseImgErr && <p className="text-red-500 text-xs ml-2">upload dlImg </p>}
                   </div>
-                  <div>
-                    {driverForm.drLicense == '' ? (
-                      <>
-                        <InputLabel>Driving License</InputLabel>
-                        <FormControl fullWidth>
-                          <TextField type="file" variant="outlined" name="drLicense" onChange={(e) => handleDocumentPhoto(e)} />
-                        </FormControl>
-                      </>
-                    ) : (
-                      <div className="flex justify-between">
-                        <img src={driverForm.drLicense} alt="drLicence" className="w-20 h-20 rounded-xl" />
-                        <Button onClick={() => setDriverForm({ ...driverForm, drLicense: '' })} variant="outlined" color="error">
-                          remove
-                        </Button>
-                      </div>
-                    )}
-                    {drLicenseErr && <p className="text-red-500 text-xs ml-2">upload License error</p>}
-                  </div>
-
                   <div>
                     {driverForm.police_verification == '' ? (
                       <>
-                        {' '}
-                        <InputLabel>Police Verification</InputLabel>
+                        <InputLabel>police_verification</InputLabel>
                         <FormControl fullWidth>
                           <TextField type="file" variant="outlined" name="police_verification" onChange={(e) => handleDocumentPhoto(e)} />
                         </FormControl>
                       </>
                     ) : (
                       <div className="flex justify-between">
+                        {' '}
                         <img src={driverForm.police_verification} alt="police_verification" className="w-20 h-20 rounded-xl" />
                         <Button onClick={() => setDriverForm({ ...driverForm, police_verification: '' })} variant="outlined" color="error">
                           remove
                         </Button>
                       </div>
                     )}
-                    <p className="text-red-500 text-xs ml-2">upload police_verification </p>
+                    {pccVerifyErr && <p className="text-red-500 text-xs ml-2">upload police Verification </p>}
                   </div>
                   <div>
                     {driverForm.covidVaccination == '' ? (
@@ -545,7 +538,7 @@ export const AddDriver = () => {
                         </Button>
                       </div>
                     )}
-                    <p className="text-red-500 text-xs ml-2">upload covidVaccination </p>
+                    {covidVErr && <p className="text-red-500 text-xs ml-2">upload covidVaccination </p>}
                   </div>
                   <div>
                     {driverForm.drFingerPrint == '' ? (
@@ -564,7 +557,7 @@ export const AddDriver = () => {
                         </Button>
                       </div>
                     )}
-                    <p className="text-red-500 text-xs ml-2">upload drFingerPrint </p>
+                    {fingerPrintErr && <p className="text-red-500 text-xs ml-2">upload drFingerPrint </p>}
                   </div>
                   <div>
                     {driverForm.drBGV == '' ? (
@@ -583,7 +576,7 @@ export const AddDriver = () => {
                         </Button>
                       </div>
                     )}
-                    <p className="text-red-500 text-xs ml-2">upload drBGV </p>
+                    {BGVErr && <p className="text-red-500 text-xs ml-2">upload drBGV </p>}
                   </div>
                   <div>
                     {driverForm.drResume == '' ? (
@@ -602,7 +595,7 @@ export const AddDriver = () => {
                         </Button>
                       </div>
                     )}
-                    <p className="text-red-500 text-xs ml-2">upload dr Resume</p>
+                    {resumeErr && <p className="text-red-500 text-xs ml-2">upload dr Resume</p>}
                   </div>
                 </div>
               </div>
