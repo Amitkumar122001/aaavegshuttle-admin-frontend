@@ -11,7 +11,6 @@ import {
   Box,
   TextField,
   FormControl,
-  InputLabel,
   Button
 } from '@mui/material';
 import { IconX } from '@tabler/icons-react';
@@ -20,7 +19,6 @@ import toast, { Toaster } from 'react-hot-toast';
 import LoaderCircular from 'ui-component/LoaderCircular';
 import axios from 'axios';
 const columns = [
-  { id: 'driver_id', label: 'Driver Id', align: 'center', minWidth: 100 },
   { id: 'driver_name', label: 'Driver Name', align: 'center', minWidth: 150 },
   {
     id: 'driver_address',
@@ -36,13 +34,7 @@ const columns = [
     align: 'center',
     format: (value) => value.toLocaleString('en-US')
   },
-  {
-    id: 'driver_document',
-    label: 'Document',
-    minWidth: 25,
-    align: 'center',
-    format: (value) => value.toLocaleString('en-US')
-  },
+  { id: 'dlnumber', label: 'DL No', align: 'center', minWidth: 100 },
   {
     id: 'vendor_name',
     label: 'Vendor Name',
@@ -87,12 +79,27 @@ export const AllDriver = () => {
     }
   }, [value, driverData]);
   // update error
-
   const [pancardErr, setPancardErr] = useState(false);
-  const [adharErr, setAdharErr] = useState(false);
-  const [driverAddressErr, setDriverAddressErr] = useState(false);
+  const [dlNoErr, setDlNoErr] = useState(false);
   const [driverNameErr, setDriverNameErr] = useState(false);
   const [driverMobileErr, setDriverMobileErr] = useState(false);
+  const [primaryNoErr, setPrimaryNoErr] = useState(false);
+  const [secondNoErr, setSecondNoErr] = useState(false);
+  const [currAddressErr, setCurrAddressErr] = useState(false);
+  const [prmtAddressErr, setPrmtAddressErr] = useState(false);
+  const [imeiNoErr, setIMEINoErr] = useState(false);
+  const [currAddressProofErr, setCurrAddressProofErr] = useState(false);
+  const [prmtAddressProofErr, setPrmtAddressProofErr] = useState(false);
+  const [aadharNoErr, setAdharNoErr] = useState(false);
+  const [aadharFrontErr, setAdharFrontErr] = useState(false);
+  const [aadharBackErr, setAdharBackErr] = useState(false);
+  const [photoErr, setPhotoErr] = useState(false);
+  const [pccErr, setPccErr] = useState(false);
+  const [covidVErr, setCovidVErr] = useState(false);
+  const [BGVErr, setBGVErr] = useState(false);
+  const [fingerPrintErr, setFingerPrintErr] = useState(false);
+  const [resumeErr, setResumeErr] = useState(false);
+
   const handleSearchField = (inputField) => {
     switch (inputField) {
       case 'driver_name': {
@@ -119,8 +126,17 @@ export const AllDriver = () => {
       updateObj.driver_document?.pancard != ''
     ) {
       const document = {
-        aadhar: updateObj.driver_document?.aadhar,
-        pancard: updateObj.driver_document?.pancard
+        dl: '',
+        bgv: '',
+        pcc: '',
+        resume: '',
+        profile: '',
+        aadharBack: '',
+        aadharfront: '',
+        fingerprint: '',
+        curr_address: '',
+        covidVaccination: '',
+        permanent_address: ''
       };
       if (updateObj?.driver_document?.voterId !== undefined) {
         document.voterId = updateObj.driver_document?.voterId;
@@ -141,7 +157,7 @@ export const AllDriver = () => {
       axios
         .patch('http://192.168.1.230:3000/app/v1/driver/updateDriver', body)
         .then((res) => {
-          //console.log(res);
+          console.log(res.body);
           toast.success('update successfully');
           setRefreshPage(true);
           clearAllField();
@@ -152,18 +168,32 @@ export const AllDriver = () => {
         });
     } else {
       updateObj.driver_name == '' ? setDriverNameErr(true) : setDriverNameErr(false);
-      updateObj.driver_mobile == '' ? setDriverMobileErr(true) : setDriverMobileErr(false);
-      updateObj.driver_address == '' ? setDriverAddressErr(true) : setDriverAddressErr(false);
-      updateObj.driver_document?.aadhar == '' ? setAdharErr(true) : setAdharErr(false);
-      updateObj.driver_document?.pancard == '' ? setPancardErr(true) : setPancardErr(false);
+      updateObj.primary_contact == '' ? setPrimaryNoErr(true) : setPrimaryNoErr(false);
+      updateObj.emergency_contact == '' ? setSecondNoErr(true) : setSecondNoErr(false);
+      updateObj.current_address == '' ? setCurrAddressErr(true) : setCurrAddressErr(false);
+      updateObj.permanent_address == '' ? setPrmtAddressErr(true) : setPrmtAddressErr(false);
+      updateObj.driver_document.bgv == '' ? setBGVErr(true) : setBGVErr(false);
+      updateObj.driver_document.pcc == '' ? setPccErr(true) : setPccErr(false);
+      updateObj.driver_document.resume == '' ? setResumeErr(true) : setResumeErr(false);
+      updateObj.driver_document.profile == '' ? setPhotoErr(true) : setPhotoErr(false);
+      updateObj.driver_document.aadharfront == '' ? setAdharFrontErr(true) : setAdharFrontErr(false);
+      updateObj.driver_document.aadharBack == '' ? setAdharBackErr(true) : setAdharBackErr(false);
+      updateObj.driver_document.fingerprint == '' ? setFingerPrintErr(true) : setFingerPrintErr(false);
+      updateObj.driver_document.curr_address == '' ? setCurrAddressProofErr(true) : setCurrAddressProofErr(false);
+      updateObj.driver_document.covidVaccination == '' ? setCovidVErr(true) : setCovidVErr(false);
+      updateObj.driver_document.permanent_address == '' ? setPrmtAddressProofErr(true) : setPrmtAddressProofErr(false);
+
+      updateObj.adhaar_number == '' ? setAdharNoErr(true) : setAdharNoErr(false);
+      updateObj.dl_number == '' ? setDlNoErr(true) : setDlNoErr(false);
+      updateObj.imei_number == '' ? setIMEINoErr(true) : setIMEINoErr(false);
     }
   };
+  // console.log(updateObj);
   const clearAllField = () => {
     setDriverNameErr(false);
     setDriverMobileErr(false);
-    setDriverAddressErr(false);
+
     setPancardErr(false);
-    setAdharErr(false);
   };
   // modal open
   const handleOpen = (item) => {
@@ -215,7 +245,6 @@ export const AllDriver = () => {
   };
   const imageUploadApi = async (value) => {
     let result = await axios.request(value);
-    // console.log(result)
     // console.log(result.data.name);
     let imageName = result.data.name;
     return imageName;
@@ -237,7 +266,6 @@ export const AllDriver = () => {
     let imageName = await imageUploadApi(config);
     let totalUrl = `http://13.200.168.251:3000/app/v1/aws/getImage/driverimages/` + imageName;
     // console.log(totalUrl);
-
     return totalUrl;
   };
   return (
@@ -284,24 +312,12 @@ export const AllDriver = () => {
                   </TableHead>
                   <TableBody>
                     {displayItems()?.map((item, i) => {
-                      const document = [];
-                      for (const ele in item.driver_document) {
-                        document.push(ele);
-                      }
                       return (
                         <TableRow key={i} hover>
-                          <TableCell align="center">{item.driver_id}</TableCell>
                           <TableCell align="center">{item.driver_name}</TableCell>
-                          <TableCell align="center">{item.driver_address}</TableCell>
-                          <TableCell align="center">{item.driver_phonenumber}</TableCell>
-                          <TableCell align="center">
-                            {document.map((text, i) => (
-                              <span key={i} className="capitalize">
-                                {text}
-                                {', '}
-                              </span>
-                            ))}
-                          </TableCell>
+                          <TableCell align="center">{item.current_address}</TableCell>
+                          <TableCell align="center">{item.primary_contact}</TableCell>
+                          <TableCell align="center">{item.dl_number}</TableCell>
                           <TableCell align="center">{item.vendor_name}</TableCell>
                           <TableCell align="center">
                             <button className="p-2 text-lg text-blue-600" onClick={() => handleOpen(item)}>
@@ -343,8 +359,14 @@ export const AllDriver = () => {
           </div>
         </div>
       </div>
-      <Modal open={updateOpen} onClose={handleClose} aria-labelledby="modal-modal-title" aria-describedby="modal-modal-description">
-        <Box sx={style} className=" w-full max-lg:h-screen max-lg:w-screen p-4 overflow-y-scroll">
+      <Modal
+        open={updateOpen}
+        onClose={handleClose}
+        aria-labelledby="modal-modal-title"
+        aria-describedby="modal-modal-description"
+        className="overflow-y-scroll mb-4"
+      >
+        <Box sx={style} className=" w-full h-screen  p-4 ">
           <div>
             <Toaster />
           </div>
@@ -362,7 +384,7 @@ export const AllDriver = () => {
             </div>
             <>
               <div>
-                <div className="grid grid-cols-3 max-lg:grid-cols-2 max-lg:gap-5 max-md:grid-cols-1 max-sm:gap-3 gap-10">
+                <div className="grid grid-cols-4 max-lg:grid-cols-2 max-lg:gap-5 max-md:grid-cols-1 max-sm:gap-3 gap-10">
                   {/* driver ID*/}
                   <div className="w-full">
                     <FormControl fullWidth>
@@ -405,48 +427,113 @@ export const AllDriver = () => {
                         variant="outlined"
                         inputProps={{ maxLength: 10, minLength: 10 }}
                         type="tel"
-                        value={updateObj.driver_phonenumber}
-                        onChange={(e) => setUpdateObj({ ...updateObj, driver_phonenumber: e.target.value })}
+                        value={updateObj.primary_contact}
+                        onChange={(e) => setUpdateObj({ ...updateObj, primary_contact: e.target.value })}
                       />
                       {driverMobileErr && <p className="text-red-500 ml-2 text-xs">mobile number error</p>}
                     </FormControl>
                   </div>
-
-                  {/* driver address*/}
+                  {/* emergency_contact */}
+                  <div className="w-full">
+                    <FormControl fullWidth>
+                      <TextField
+                        id="outlined-basi"
+                        label="Emergency Contact"
+                        variant="outlined"
+                        type="tel"
+                        inputProps={{ maxLength: 10, minLength: 10 }}
+                        value={updateObj.emergency_contact}
+                        onChange={(e) => setUpdateObj({ ...updateObj, emergency_contact: e.target.value })}
+                      />
+                      {secondNoErr && <p className="text-red-500 ml-2 text-xs">emergency number error</p>}
+                    </FormControl>
+                  </div>
+                  {/* current_address */}
                   <div className="w-full">
                     <FormControl fullWidth>
                       <TextField
                         fullWidth
                         id="outlined-basi"
-                        label="driverAddress"
+                        label="current_address"
                         variant="outlined"
                         type="text"
-                        value={updateObj.driver_address}
-                        onChange={(e) => setUpdateObj({ ...updateObj, driver_address: e.target.value })}
+                        value={updateObj.current_address}
+                        onChange={(e) => setUpdateObj({ ...updateObj, current_address: e.target.value })}
                       />
                     </FormControl>
-                    {driverAddressErr && <p className="text-red-500 ml-2 text-xs">Address Error</p>}
+                    {currAddressErr && <p className="text-red-500 ml-2 text-xs">current_address Error</p>}
+                  </div>
+
+                  {/* permanent_address */}
+                  <div className="w-full">
+                    <FormControl fullWidth>
+                      <TextField
+                        fullWidth
+                        id="outlined-basi"
+                        label="permanent_address"
+                        variant="outlined"
+                        type="text"
+                        value={updateObj.permanent_address}
+                        onChange={(e) => setUpdateObj({ ...updateObj, permanent_address: e.target.value })}
+                      />
+                    </FormControl>
+                    {prmtAddressErr && <p className="text-red-500 ml-2 text-xs">permanent_address Error</p>}
+                  </div>
+
+                  {/* adhaar_number */}
+                  <div className="w-full">
+                    <FormControl fullWidth>
+                      <TextField
+                        fullWidth
+                        id="outlined-basi"
+                        label="adhaar_number"
+                        variant="outlined"
+                        type="number"
+                        value={updateObj.adhaar_number}
+                        onChange={(e) => setUpdateObj({ ...updateObj, adhaar_number: e.target.value })}
+                      />
+                    </FormControl>
+                    {aadharNoErr && <p className="text-red-500 ml-2 text-xs">adhaar_number Error</p>}
+                  </div>
+                  {/* imei_number */}
+                  <div className="w-full">
+                    <FormControl fullWidth>
+                      <TextField
+                        fullWidth
+                        id="outlined-basi"
+                        label="imei_number"
+                        variant="outlined"
+                        type="number"
+                        value={updateObj.imei_number}
+                        onChange={(e) => setUpdateObj({ ...updateObj, imei_number: e.target.value })}
+                      />
+                    </FormControl>
+                    {imeiNoErr && <p className="text-red-500 ml-2 text-xs">imei_number Error</p>}
                   </div>
                 </div>{' '}
                 <div className=" grid grid-cols-3 gap-6 mt-4 max-lg:grid-cols-2 max-lg:gap-4  max-md:grid-cols-1">
                   <div>
-                    {updateObj?.driver_document?.aadhar === undefined ? (
+                    <p className="text-md font-semibold">Aadhar Front</p>
+                    {updateObj?.driver_document?.aadharfront === undefined ? (
                       <>
-                        <InputLabel id="aadhar">Aadhar Card</InputLabel>
                         <FormControl fullWidth>
-                          <TextField type="file" variant="outlined" name="aadhar" onChange={(e) => handleDocumentPhoto(e)} />
+                          <TextField type="file" variant="outlined" name="aadharfront" onChange={(e) => handleDocumentPhoto(e)} />
                         </FormControl>
-                        {adharErr && <p className="text-red-500 ml-2 text-xs">upload Aadhar</p>}
+                        {aadharFrontErr && <p className="text-red-500 ml-2 text-xs">upload Aadhar Front</p>}
                       </>
                     ) : (
                       <div>
-                        <p className="text-md">Aadhar Card</p>
                         <div className="flex justify-between">
                           {' '}
-                          <img src={updateObj?.driver_document?.aadhar} alt="aadhar" className="w-20 h-20 rounded-xl" />
+                          <a href={updateObj.driver_document?.aadharBack} target="_blank" rel="noreferrer">
+                            <img src={updateObj?.driver_document?.aadharfront} alt="aadharfront" className="w-20 h-20 rounded-xl" />
+                          </a>
                           <Button
                             onClick={() =>
-                              setUpdateObj({ ...updateObj, driver_document: { ...updateObj.driver_document, aadhar: undefined } })
+                              setUpdateObj({
+                                ...updateObj,
+                                driver_document: { ...updateObj.driver_document, aadharfront: undefined }
+                              })
                             }
                             variant="outlined"
                             color="error"
@@ -458,24 +545,27 @@ export const AllDriver = () => {
                     )}
                   </div>
                   <div>
-                    {updateObj?.driver_document?.pancard === undefined ? (
+                    <p className="text-md font-semibold">Aadhar Back</p>
+                    {updateObj?.driver_document?.aadharBack === undefined ? (
                       <>
-                        {/* onChange={(e) => handleDocumentPhoto(e)} */}
-                        <InputLabel id="pancard">Pan Card</InputLabel>
                         <FormControl fullWidth>
-                          <TextField type="file" variant="outlined" name="pancard" onChange={(e) => handleDocumentPhoto(e)} />
+                          <TextField type="file" variant="outlined" name="aadharBack" onChange={(e) => handleDocumentPhoto(e)} />
                         </FormControl>
-                        {pancardErr && <p className="text-red-500 ml-2 text-xs">Pan Card Error</p>}
+                        {aadharBackErr && <p className="text-red-500 ml-2 text-xs">upload aadharBack</p>}
                       </>
                     ) : (
                       <div>
-                        <p>Pan Card</p>
                         <div className="flex justify-between">
                           {' '}
-                          <img src={updateObj?.driver_document?.pancard} alt="pancard" className="w-20 h-20 rounded-xl" />
+                          <a href={updateObj.driver_document?.aadharBack} target="_blank" rel="noreferrer">
+                            <img src={updateObj?.driver_document?.aadharBack} alt="aadharBack" className="w-20 h-20 rounded-xl" />
+                          </a>
                           <Button
                             onClick={() =>
-                              setUpdateObj({ ...updateObj, driver_document: { ...updateObj.driver_document, pancard: undefined } })
+                              setUpdateObj({
+                                ...updateObj,
+                                driver_document: { ...updateObj.driver_document, aadharBack: undefined }
+                              })
                             }
                             variant="outlined"
                             color="error"
@@ -488,23 +578,248 @@ export const AllDriver = () => {
                   </div>
 
                   <div>
-                    {updateObj?.driver_document?.voterId === undefined ? (
+                    {' '}
+                    <p className="text-md font-semibold">Resume</p>
+                    {updateObj?.driver_document?.resume === undefined ? (
                       <>
-                        {/*  */}
-                        <InputLabel>Voter Id</InputLabel>
                         <FormControl fullWidth>
-                          <TextField type="file" variant="outlined" name="voterId" onChange={(e) => handleDocumentPhoto(e)} />
+                          <TextField type="file" variant="outlined" name="resume" onChange={(e) => handleDocumentPhoto(e)} />
                         </FormControl>
+                        {resumeErr && <p className="text-red-500 ml-2 text-xs">resume Error</p>}
                       </>
                     ) : (
                       <div>
-                        <p>VoterId</p>
                         <div className="flex justify-between">
-                          {' '}
-                          <img src={updateObj?.driver_document?.voterId} alt="voterId" className="w-20 h-20 rounded-xl" />
+                          <a href={updateObj?.driver_document?.resume} target="_blank" rel="noreferrer">
+                            <img src={updateObj?.driver_document?.resume} alt="resume" className="w-20 h-20 rounded-xl" />
+                          </a>
                           <Button
                             onClick={() =>
-                              setUpdateObj({ ...updateObj, driver_document: { ...updateObj.driver_document, voterId: undefined } })
+                              setUpdateObj({ ...updateObj, driver_document: { ...updateObj.driver_document, resume: undefined } })
+                            }
+                            variant="outlined"
+                            color="error"
+                          >
+                            remove
+                          </Button>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                  <div>
+                    <p className="text-md font-semibold">Fingerprint</p>
+                    {updateObj?.driver_document?.fingerprint === undefined ? (
+                      <>
+                        <FormControl fullWidth>
+                          <TextField type="file" variant="outlined" name="fingerprint" onChange={(e) => handleDocumentPhoto(e)} />
+                        </FormControl>
+                        {fingerPrintErr && <p className="text-red-500 ml-2 text-xs">fingerprint Error</p>}
+                      </>
+                    ) : (
+                      <div>
+                        <div className="flex justify-between">
+                          <a href={updateObj?.driver_document?.fingerprint} target="_blank" rel="noreferrer">
+                            <img src={updateObj?.driver_document?.fingerprint} alt="fingerprint" className="w-20 h-20 rounded-xl" />
+                          </a>
+                          <Button
+                            onClick={() =>
+                              setUpdateObj({
+                                ...updateObj,
+                                driver_document: { ...updateObj.driver_document, fingerprint: undefined }
+                              })
+                            }
+                            variant="outlined"
+                            color="error"
+                          >
+                            remove
+                          </Button>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                  <div>
+                    <p className="text-md font-semibold">Profile</p>
+                    {updateObj?.driver_document?.profile === undefined ? (
+                      <>
+                        <FormControl fullWidth>
+                          <TextField type="file" variant="outlined" name="profile" onChange={(e) => handleDocumentPhoto(e)} />
+                        </FormControl>
+                        {photoErr && <p className="text-red-500 ml-2 text-xs">profile Error</p>}
+                      </>
+                    ) : (
+                      <div>
+                        <div className="flex justify-between">
+                          <a href={updateObj?.driver_document?.profile} target="_blank" rel="noreferrer">
+                            <img src={updateObj?.driver_document?.profile} alt="profile" className="w-20 h-20 rounded-xl" />
+                          </a>
+                          <Button
+                            onClick={() =>
+                              setUpdateObj({ ...updateObj, driver_document: { ...updateObj.driver_document, profile: undefined } })
+                            }
+                            variant="outlined"
+                            color="error"
+                          >
+                            remove
+                          </Button>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                  <div>
+                    {' '}
+                    <p className="txet-md font-semibold">Covid Vaccination</p>
+                    {updateObj?.driver_document?.covidVaccination === undefined ? (
+                      <>
+                        <FormControl fullWidth>
+                          <TextField type="file" variant="outlined" name="covidVaccination" onChange={(e) => handleDocumentPhoto(e)} />
+                        </FormControl>
+                        {covidVErr && <p className="text-red-500 ml-2 text-xs">covidVaccination Error</p>}
+                      </>
+                    ) : (
+                      <div>
+                        <div className="flex justify-between">
+                          <a href={updateObj?.driver_document?.covidVaccination} target="_blank" rel="noreferrer">
+                            <img
+                              src={updateObj?.driver_document?.covidVaccination}
+                              alt="covidVaccination"
+                              className="w-20 h-20 rounded-xl"
+                            />
+                          </a>
+                          <Button
+                            onClick={() =>
+                              setUpdateObj({
+                                ...updateObj,
+                                driver_document: { ...updateObj.driver_document, covidVaccination: undefined }
+                              })
+                            }
+                            variant="outlined"
+                            color="error"
+                          >
+                            remove
+                          </Button>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                  <div>
+                    {' '}
+                    <p className="text-md font-semibold">Current Address</p>
+                    {updateObj?.driver_document?.curr_address === undefined ? (
+                      <>
+                        <FormControl fullWidth>
+                          <TextField type="file" variant="outlined" name="curr_address" onChange={(e) => handleDocumentPhoto(e)} />
+                        </FormControl>
+                        {currAddressProofErr && <p className="text-red-500 ml-2 text-xs">curr_address Error</p>}
+                      </>
+                    ) : (
+                      <div>
+                        <div className="flex justify-between">
+                          <a href={updateObj?.driver_document?.curr_address} target="_blank" rel="noreferrer">
+                            <img src={updateObj?.driver_document?.curr_address} alt="cur_address" className="w-20 h-20 rounded-xl" />
+                          </a>
+                          <Button
+                            onClick={() =>
+                              setUpdateObj({
+                                ...updateObj,
+                                driver_document: { ...updateObj.driver_document, curr_address: undefined }
+                              })
+                            }
+                            variant="outlined"
+                            color="error"
+                          >
+                            remove
+                          </Button>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                  <div>
+                    {' '}
+                    <p className="text-md font-semibold">Permanent Address</p>
+                    {updateObj?.driver_document?.permanent_address === undefined ? (
+                      <>
+                        <FormControl fullWidth>
+                          <TextField type="file" variant="outlined" name="permanent_address" onChange={(e) => handleDocumentPhoto(e)} />
+                        </FormControl>
+                        {prmtAddressProofErr && <p className="text-red-500 ml-2 text-xs">permanent_address Error</p>}
+                      </>
+                    ) : (
+                      <div>
+                        <div className="flex justify-between">
+                          <a href={updateObj?.driver_document?.permanent_address} target="_blank" rel="noreferrer">
+                            <img
+                              src={updateObj?.driver_document?.permanent_address}
+                              alt="permanent_address"
+                              className="w-20 h-20 rounded-xl"
+                            />
+                          </a>
+                          <Button
+                            onClick={() =>
+                              setUpdateObj({
+                                ...updateObj,
+                                driver_document: { ...updateObj.driver_document, permanent_address: undefined }
+                              })
+                            }
+                            variant="outlined"
+                            color="error"
+                          >
+                            remove
+                          </Button>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                  <div>
+                    {' '}
+                    <p className="text-md font-semibold">PCC</p>
+                    {updateObj?.driver_document?.pcc === undefined ? (
+                      <>
+                        <FormControl fullWidth>
+                          <TextField type="file" variant="outlined" name="pcc" onChange={(e) => handleDocumentPhoto(e)} />
+                        </FormControl>
+                        {pccErr && <p className="text-red-500 ml-2 text-xs">PCC Error</p>}
+                      </>
+                    ) : (
+                      <div>
+                        <div className="flex justify-between">
+                          {' '}
+                          <a href={updateObj?.driver_document?.pcc} target="_blank" rel="noreferrer">
+                            {' '}
+                            <img src={updateObj?.driver_document?.pcc} alt="pcc" className="w-20 h-20 rounded-xl" />
+                          </a>{' '}
+                          <Button
+                            onClick={() =>
+                              setUpdateObj({ ...updateObj, driver_document: { ...updateObj.driver_document, pcc: undefined } })
+                            }
+                            variant="outlined"
+                            color="error"
+                          >
+                            remove
+                          </Button>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                  <div>
+                    {' '}
+                    <p className="text-md font-semibold">BGV</p>
+                    {updateObj?.driver_document?.bgv === undefined ? (
+                      <>
+                        <FormControl fullWidth>
+                          <TextField type="file" variant="outlined" name="bgv" onChange={(e) => handleDocumentPhoto(e)} />
+                        </FormControl>
+                        {BGVErr && <p className="ml-2 text-md">bgv error</p>}
+                      </>
+                    ) : (
+                      <div>
+                        <div className="flex justify-between">
+                          {' '}
+                          <a href={updateObj?.driver_document?.bgv} target="_blank" rel="noreferrer">
+                            <img src={updateObj?.driver_document?.bgv} alt="voterId" className="w-20 h-20 rounded-xl" />
+                          </a>{' '}
+                          <Button
+                            onClick={() =>
+                              setUpdateObj({ ...updateObj, driver_document: { ...updateObj.driver_document, bgv: undefined } })
                             }
                             variant="outlined"
                             color="error"

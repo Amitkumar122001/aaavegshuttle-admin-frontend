@@ -11,16 +11,14 @@ import {
   TextField,
   FormControl,
   Box,
-  Modal,
-  InputLabel
+  Modal
 } from '@mui/material';
 import toast, { Toaster } from 'react-hot-toast';
-import { IconX } from '@tabler/icons-react';
 import FilterListIcon from '@mui/icons-material/FilterList';
+import { IconX } from '@tabler/icons-react';
 import LoaderCircular from 'ui-component/LoaderCircular';
 import axios from 'axios';
 const columns = [
-  { id: 'conductor_id', label: 'Id', align: 'center', minWidth: 25 },
   { id: 'conductor_name', label: 'Name', align: 'center', minWidth: 150 },
   {
     id: 'conductor_phonenumber',
@@ -33,13 +31,6 @@ const columns = [
     id: 'conductor_address',
     label: 'Address',
     minWidth: 150,
-    align: 'center',
-    format: (value) => value.toLocaleString('en-US')
-  },
-  {
-    id: 'conductor_document',
-    label: 'Document',
-    minWidth: 25,
     align: 'center',
     format: (value) => value.toLocaleString('en-US')
   },
@@ -84,11 +75,23 @@ export const AllConductor = () => {
     }
   }, [value, conductorData]);
 
-  const [pancardErr, setPancardErr] = useState(false);
-  const [adharErr, setAdharErr] = useState(false);
-  const [conductorAddressErr, setConductorAddressErr] = useState(false);
   const [conductorNameErr, setConductorNameErr] = useState(false);
-  const [conductorMobileErr, setConductorMobileErr] = useState(false);
+  const [primaryNoErr, setPrimaryNoErr] = useState(false);
+  const [secondNoErr, setSecondNoErr] = useState(false);
+  const [currAddressErr, setCurrAddressErr] = useState(false);
+  const [prmtAddressErr, setPrmtAddressErr] = useState(false);
+  const [imeiNoErr, setIMEINoErr] = useState(false);
+  const [currAddressProofErr, setCurrAddressProofErr] = useState(false);
+  const [prmtAddressProofErr, setPrmtAddressProofErr] = useState(false);
+  const [aadharNoErr, setAdharNoErr] = useState(false);
+  const [aadharFrontErr, setAdharFrontErr] = useState(false);
+  const [aadharBackErr, setAdharBackErr] = useState(false);
+  const [photoErr, setPhotoErr] = useState(false);
+  const [pccErr, setPccErr] = useState(false);
+  const [covidVErr, setCovidVErr] = useState(false);
+  const [BGVErr, setBGVErr] = useState(false);
+  const [fingerPrintErr, setFingerPrintErr] = useState(false);
+  const [resumeErr, setResumeErr] = useState(false);
 
   // handle document upload
   const handleDocumentPhoto = async (event) => {
@@ -96,50 +99,73 @@ export const AllConductor = () => {
     // console.log(event, field);
     setisLoading(true);
     const link = await UploadDocumenttos3Bucket(event);
-    setUpdateObj({ ...updateObj, vendorDocument: { ...updateObj.vendorDocument, [name]: link } });
+    setUpdateObj({ ...updateObj, conductor_document: { ...updateObj.conductor_document, [name]: link } });
     setisLoading(false);
   };
   const imageUploadApi = async (value) => {
     let result = await axios.request(value);
-    console.log(result.data.name);
+    // console.log(result.data.name);
     let imageName = result.data.name;
     return imageName;
   };
 
   const UploadDocumenttos3Bucket = async (e) => {
-    console.log(e.target.files[0]);
     const reader = new FormData();
     reader.append('file', e.target.files[0]);
     let config = {
       method: 'post',
       maxBodyLength: Infinity,
-      url: `http://13.200.168.251:3000/app/v1/aws/upload/conductorimages`,
+      url: `http://13.200.168.251:3000/app/v1/aws/upload/driverimages`,
       headers: {
         'Content-Type': 'multipart/form-data'
       },
       data: reader
     };
     let imageName = await imageUploadApi(config);
-    let totalUrl = `http://13.200.168.251:3000/app/v1/aws/getImage/conductorimages/` + imageName;
-
+    let totalUrl = `http://13.200.168.251:3000/app/v1/aws/getImage/driverimages/` + imageName;
     return totalUrl;
   };
 
   const updateConductor = () => {
     if (
       updateObj.conductor_name != '' &&
-      updateObj.conductor_mobile?.length == 10 &&
       updateObj.conductor_address != '' &&
-      updateObj.conductor_document?.aadhar != '' &&
-      updateObj.conductor_document?.pancard != ''
+      updateObj.conductor_id != '' &&
+      updateObj.current_address != '' &&
+      updateObj.permanent_address != '' &&
+      updateObj.primary_contact != '' &&
+      updateObj.emergency_contact != '' &&
+      updateObj.adhaar_number != '' &&
+      updateObj.imei_number != '' &&
+      updateObj.vendor_name != '' &&
+      updateObj.vendor_id != '' &&
+      updateObj.conductor_document?.bgv != '' &&
+      updateObj.conductor_document?.pcc != '' &&
+      updateObj.conductor_document?.resume != '' &&
+      updateObj.conductor_document?.profile != '' &&
+      updateObj.conductor_document?.aadharBack != '' &&
+      updateObj.conductor_document?.aadharfront != '' &&
+      updateObj.conductor_document?.fingerprint != '' &&
+      updateObj.conductor_document?.curr_address != '' &&
+      updateObj.conductor_document?.covidVaccination != '' &&
+      updateObj.conductor_document?.permanent_address != ''
     ) {
-      const document = {
-        aadhar: updateObj.conductor_document?.aadhar,
-        pancard: updateObj.conductor_document?.pancard
-      };
-      if (updateObj?.conductor_document?.voterId !== undefined) {
-        document.voterId = updateObj.conductor_document?.voterId;
+      if (updateObj.primary_contact == updateObj.emergency_contact) {
+        window.alert("primary and emergency contact is same");
+        return;
       }
+      const document = {
+        profile: updateObj.conductor_document?.profile,
+        covidVaccination: updateObj.conductor_document?.covidVaccination,
+        aadharfront: updateObj.conductor_document?.aadharfront,
+        aadharBack: updateObj.conductor_document?.aadharBack,
+        pcc: updateObj.conductor_document?.pcc,
+        curr_address: updateObj.conductor_document?.curr_address,
+        permanent_address: updateObj.conductor_document?.permanent_address,
+        bgv: updateObj.conductor_document?.bgv,
+        fingerprint: updateObj.conductor_document?.fingerprint,
+        resume: updateObj.conductor_document?.resume
+      };
 
       const body = {
         conductorId: updateObj.conductor_id,
@@ -148,14 +174,20 @@ export const AllConductor = () => {
         conductorAddress: updateObj.conductor_address,
         conductorDocument: document,
         vendorId: updateObj.vendor_id,
-        activeStatus: Boolean(updateObj.activeStatus)
+        activeStatus: Boolean(updateObj.activeStatus),
+        currentAddress: updateObj.current_address,
+        permanentAddress: updateObj.permanent_address,
+        primaryContact: updateObj.primary_contact,
+        emergencyContact: updateObj.emergency_contact,
+        adhaarNumber: updateObj.adhaar_number,
+        imeiNumber: updateObj.imei_number
       };
 
       console.log(body);
       axios
         .patch('http://192.168.1.230:3000/app/v1/conductor/updateconductors', body)
         .then((res) => {
-          console.log(res);
+          console.log(res.data);
           toast.success('update successfully');
           clearAllField();
         })
@@ -165,18 +197,27 @@ export const AllConductor = () => {
         });
     } else {
       updateObj.conductor_name == '' ? setConductorNameErr(true) : setConductorNameErr(false);
-      updateObj.conductor_mobile == '' ? setConductorMobileErr(true) : setConductorMobileErr(false);
-      updateObj.conductor_address == '' ? setConductorAddressErr(true) : setConductorAddressErr(false);
-      updateObj.conductor_document?.aadhar == '' ? setAdharErr(true) : setAdharErr(false);
-      updateObj.conductor_document?.pancard == '' ? setPancardErr(true) : setPancardErr(false);
+      updateObj.primary_contact == '' ? setPrimaryNoErr(true) : setPrimaryNoErr(false);
+      updateObj.emergency_contact == '' ? setSecondNoErr(true) : setSecondNoErr(false);
+      updateObj.current_address == '' ? setCurrAddressErr(true) : setCurrAddressErr(false);
+      updateObj.permanent_address == '' ? setPrmtAddressErr(true) : setPrmtAddressErr(false);
+      updateObj.adhaar_number == '' ? setAdharNoErr(true) : setAdharNoErr(false);
+      updateObj.imei_number == '' ? setIMEINoErr(true) : setIMEINoErr(false);
+      updateObj.conductor_document.bgv == '' ? setBGVErr(true) : setBGVErr(false);
+      updateObj.conductor_document.pcc == '' ? setPccErr(true) : setPccErr(false);
+      updateObj.conductor_document.resume == '' ? setResumeErr(true) : setResumeErr(false);
+      updateObj.conductor_document.profile == '' ? setPhotoErr(true) : setPhotoErr(false);
+      updateObj.conductor_document.aadharfront == '' ? setAdharFrontErr(true) : setAdharFrontErr(false);
+      updateObj.conductor_document.aadharBack == '' ? setAdharBackErr(true) : setAdharBackErr(false);
+      updateObj.conductor_document.fingerprint == '' ? setFingerPrintErr(true) : setFingerPrintErr(false);
+      updateObj.conductor_document.curr_address == '' ? setCurrAddressProofErr(true) : setCurrAddressProofErr(false);
+      updateObj.conductor_document.covidVaccination == '' ? setCovidVErr(true) : setCovidVErr(false);
+      updateObj.conductor_document.permanent_address == '' ? setPrmtAddressProofErr(true) : setPrmtAddressProofErr(false);
     }
   };
   const clearAllField = () => {
     setConductorNameErr(false);
-    setConductorMobileErr(false);
-    setConductorAddressErr(false);
-    setPancardErr(false);
-    setAdharErr(false);
+    setPrimaryNoErr(false);
   };
   //handle field
   const handleSearchField = (inputField) => {
@@ -234,6 +275,7 @@ export const AllConductor = () => {
       setCurrentPage((page) => page + 1);
     }
   };
+  // console.log(updateObj);
   return (
     <div>
       <div className=" flex flex-col gap-10 bg-white p-8 max-lg:p-4 max-lg:gap-5 rounded-xl">
@@ -278,24 +320,11 @@ export const AllConductor = () => {
                   </TableHead>
                   <TableBody>
                     {displayItems()?.map((item, i) => {
-                      const document = [];
-                      for (const ele in item.conductor_document) {
-                        document.push(ele);
-                      }
                       return (
                         <TableRow key={i} hover>
-                          <TableCell align="center">{item.conductor_id}</TableCell>
                           <TableCell align="center">{item.conductor_name}</TableCell>
-                          <TableCell align="center">{item.conductor_mobile}</TableCell>
-                          <TableCell align="center">{item.conductor_address}</TableCell>
-                          <TableCell align="center">
-                            {document.map((text, idx) => (
-                              <span key={idx} className="capitalize">
-                                {text}
-                                {', '}
-                              </span>
-                            ))}
-                          </TableCell>
+                          <TableCell align="center">{item.primary_contact}</TableCell>
+                          <TableCell align="center">{item.current_address}</TableCell>
                           <TableCell align="center">{item.vendor_name}</TableCell>
                           <TableCell align="center">
                             <button className="p-2 text-lg text-blue-600" onClick={() => handleOpen(item)}>
@@ -337,8 +366,14 @@ export const AllConductor = () => {
           </div>
         </div>
       </div>
-      <Modal open={updateOpen} onClose={handleClose} aria-labelledby="modal-modal-title" aria-describedby="modal-modal-description">
-        <Box sx={style} className=" w-full max-lg:h-screen max-lg:w-screen p-4 overflow-y-scroll">
+      <Modal
+        open={updateOpen}
+        onClose={handleClose}
+        aria-labelledby="modal-modal-title"
+        aria-describedby="modal-modal-description"
+        className="overflow-y-scroll"
+      >
+        <Box sx={style} className=" w-full h-screen p-4 ">
           <div>
             <Toaster />
           </div>
@@ -356,7 +391,7 @@ export const AllConductor = () => {
             </div>
             <>
               <div>
-                <div className="grid grid-cols-3 max-lg:grid-cols-2 max-lg:gap-5 max-md:grid-cols-1 max-sm:gap-3 gap-10">
+                <div className="grid grid-cols-3 max-lg:grid-cols-2 max-lg:gap-5 max-md:grid-cols-1 max-sm:gap-3 gap-5">
                   {/* conductor ID*/}
                   <div className="w-full">
                     <FormControl fullWidth>
@@ -389,58 +424,121 @@ export const AllConductor = () => {
                     {conductorNameErr && <p className="text-red-500 ml-2 text-xs">conductor Name error</p>}
                   </div>
 
-                  {/* conductor mobile */}
+                  {/* primary_contact */}
                   <div className="w-full">
                     <FormControl fullWidth>
                       <TextField
-                        fullWidth
                         id="outlined-basi"
-                        label="Mobile"
+                        label="Primary Contact"
                         variant="outlined"
                         type="tel"
                         inputProps={{ maxLength: 10, minLength: 10 }}
-                        value={updateObj.conductor_mobile}
-                        onChange={(e) => setUpdateObj({ ...updateObj, conductor_mobile: e.target.value })}
+                        value={updateObj.primary_contact}
+                        onChange={(e) => setUpdateObj({ ...updateObj, primary_contact: e.target.value })}
                       />
-                      {conductorMobileErr && <p className="text-red-500 ml-2 text-xs">mobile number error</p>}
+                      {primaryNoErr && <p className="text-red-500 ml-2 text-xs">primary number error</p>}
                     </FormControl>
                   </div>
 
-                  {/* conductor address*/}
+                  {/* emergency_contact */}
+                  <div className="w-full">
+                    <FormControl fullWidth>
+                      <TextField
+                        id="outlined-basi"
+                        label="Emergency Contact"
+                        variant="outlined"
+                        type="tel"
+                        inputProps={{ maxLength: 10, minLength: 10 }}
+                        value={updateObj.emergency_contact}
+                        onChange={(e) => setUpdateObj({ ...updateObj, emergency_contact: e.target.value })}
+                      />
+                      {secondNoErr && <p className="text-red-500 ml-2 text-xs">emergency number error</p>}
+                    </FormControl>
+                  </div>
+                  {/* current_address */}
                   <div className="w-full">
                     <FormControl fullWidth>
                       <TextField
                         fullWidth
                         id="outlined-basi"
-                        label="conductorAddress"
+                        label="current_address"
                         variant="outlined"
                         type="text"
-                        value={updateObj.conductor_address}
-                        onChange={(e) => setUpdateObj({ ...updateObj, conductor_address: e.target.value })}
+                        value={updateObj.current_address}
+                        onChange={(e) => setUpdateObj({ ...updateObj, current_address: e.target.value })}
                       />
                     </FormControl>
-                    {conductorAddressErr && <p className="text-red-500 ml-2 text-xs">Address Error</p>}
+                    {currAddressErr && <p className="text-red-500 ml-2 text-xs">current_address Error</p>}
+                  </div>
+
+                  {/* permanent_address */}
+                  <div className="w-full">
+                    <FormControl fullWidth>
+                      <TextField
+                        fullWidth
+                        id="outlined-basi"
+                        label="permanent_address"
+                        variant="outlined"
+                        type="text"
+                        value={updateObj.permanent_address}
+                        onChange={(e) => setUpdateObj({ ...updateObj, permanent_address: e.target.value })}
+                      />
+                    </FormControl>
+                    {prmtAddressErr && <p className="text-red-500 ml-2 text-xs">permanent_address Error</p>}
+                  </div>
+
+                  {/* adhaar_number */}
+                  <div className="w-full">
+                    <FormControl fullWidth>
+                      <TextField
+                        fullWidth
+                        id="outlined-basi"
+                        label="adhaar_number"
+                        variant="outlined"
+                        type="number"
+                        value={updateObj.adhaar_number}
+                        onChange={(e) => setUpdateObj({ ...updateObj, adhaar_number: e.target.value })}
+                      />
+                    </FormControl>
+                    {aadharNoErr && <p className="text-red-500 ml-2 text-xs">adhaar_number Error</p>}
+                  </div>
+                  {/* imei_number */}
+                  <div className="w-full">
+                    <FormControl fullWidth>
+                      <TextField
+                        fullWidth
+                        id="outlined-basi"
+                        label="imei_number"
+                        variant="outlined"
+                        type="number"
+                        value={updateObj.imei_number}
+                        onChange={(e) => setUpdateObj({ ...updateObj, imei_number: e.target.value })}
+                      />
+                    </FormControl>
+                    {imeiNoErr && <p className="text-red-500 ml-2 text-xs">imei_number Error</p>}
                   </div>
                 </div>{' '}
                 <div className=" grid grid-cols-3 gap-6 mt-4 max-lg:grid-cols-2 max-lg:gap-4  max-md:grid-cols-1">
                   <div>
-                    {updateObj?.conductor_document?.aadhar === undefined ? (
+                    <p className="text-md font-semibold">Aadhar Front</p>
+                    {updateObj?.conductor_document?.aadharfront === undefined ? (
                       <>
-                        <InputLabel id="aadhar">Aadhar Card</InputLabel>
                         <FormControl fullWidth>
-                          <TextField type="file" variant="outlined" name="aadhar" onChange={(e) => handleDocumentPhoto(e)} />
+                          <TextField type="file" variant="outlined" name="aadharfront" onChange={(e) => handleDocumentPhoto(e)} />
                         </FormControl>
-                        {adharErr && <p className="text-red-500 ml-2 text-xs">upload Aadhar</p>}
+                        {aadharFrontErr && <p className="text-red-500 ml-2 text-xs">upload Aadhar Front</p>}
                       </>
                     ) : (
                       <div>
-                        <p className="text-md">Aadhar Card</p>
                         <div className="flex justify-between">
                           {' '}
-                          <img src={updateObj?.conductor_document?.aadhar} alt="aadhar" className="w-20 h-20 rounded-xl" />
-                          <Button
+                          <a href={updateObj.conductor_document?.aadharBack} target='_blank'><img src={updateObj?.conductor_document?.aadharfront} alt="aadharfront" className="w-20 h-20 rounded-xl" />
+                          </a><Button
                             onClick={() =>
-                              setUpdateObj({ ...updateObj, conductor_document: { ...updateObj.conductor_document, aadhar: undefined } })
+                              setUpdateObj({
+                                ...updateObj,
+                                conductor_document: { ...updateObj.conductor_document, aadharfront: undefined }
+                              })
                             }
                             variant="outlined"
                             color="error"
@@ -452,24 +550,25 @@ export const AllConductor = () => {
                     )}
                   </div>
                   <div>
-                    {updateObj?.conductor_document?.pancard === undefined ? (
+                    <p className="text-md font-semibold">Aadhar Back</p>
+                    {updateObj?.conductor_document?.aadharBack === undefined ? (
                       <>
-                        {/* onChange={(e) => handleDocumentPhoto(e)} */}
-                        <InputLabel id="pancard">Pan Card</InputLabel>
                         <FormControl fullWidth>
-                          <TextField type="file" variant="outlined" name="pancard" onChange={(e) => handleDocumentPhoto(e)} />
+                          <TextField type="file" variant="outlined" name="aadharBack" onChange={(e) => handleDocumentPhoto(e)} />
                         </FormControl>
-                        {pancardErr && <p className="text-red-500 ml-2 text-xs">Pan Card Error</p>}
+                        {aadharBackErr && <p className="text-red-500 ml-2 text-xs">upload aadharBack</p>}
                       </>
                     ) : (
                       <div>
-                        <p>Pan Card</p>
                         <div className="flex justify-between">
                           {' '}
-                          <img src={updateObj?.conductor_document?.pancard} alt="pancard" className="w-20 h-20 rounded-xl" />
-                          <Button
+                          <a href={updateObj.conductor_document?.aadharBack} target='_blank'><img src={updateObj?.conductor_document?.aadharBack} alt="aadharBack" className="w-20 h-20 rounded-xl" />
+                          </a><Button
                             onClick={() =>
-                              setUpdateObj({ ...updateObj, conductor_document: { ...updateObj.conductor_document, pancard: undefined } })
+                              setUpdateObj({
+                                ...updateObj,
+                                conductor_document: { ...updateObj.conductor_document, aadharBack: undefined }
+                              })
                             }
                             variant="outlined"
                             color="error"
@@ -482,23 +581,246 @@ export const AllConductor = () => {
                   </div>
 
                   <div>
-                    {updateObj?.conductor_document?.voterId === undefined ? (
+                    {' '}
+                    <p className="text-md font-semibold">Resume</p>
+                    {updateObj?.conductor_document?.resume === undefined ? (
                       <>
-                        {/*  */}
-                        <InputLabel>Voter Id</InputLabel>
                         <FormControl fullWidth>
-                          <TextField type="file" variant="outlined" name="voterId" onChange={(e) => handleDocumentPhoto(e)} />
+                          <TextField type="file" variant="outlined" name="resume" onChange={(e) => handleDocumentPhoto(e)} />
                         </FormControl>
+                        {resumeErr && <p className="text-red-500 ml-2 text-xs">resume Error</p>}
                       </>
                     ) : (
                       <div>
-                        <p>VoterId</p>
                         <div className="flex justify-between">
-                          {' '}
-                          <img src={updateObj?.conductor_document?.voterId} alt="voterId" className="w-20 h-20 rounded-xl" />
+                          <a href={updateObj?.conductor_document?.resume} target="_blank">
+                            <img src={updateObj?.conductor_document?.resume} alt="resume" className="w-20 h-20 rounded-xl" />
+                          </a>
                           <Button
                             onClick={() =>
-                              setUpdateObj({ ...updateObj, conductor_document: { ...updateObj.conductor_document, voterId: undefined } })
+                              setUpdateObj({ ...updateObj, conductor_document: { ...updateObj.conductor_document, resume: undefined } })
+                            }
+                            variant="outlined"
+                            color="error"
+                          >
+                            remove
+                          </Button>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                  <div>
+                    <p className="text-md font-semibold">Fingerprint</p>
+                    {updateObj?.conductor_document?.fingerprint === undefined ? (
+                      <>
+                        <FormControl fullWidth>
+                          <TextField type="file" variant="outlined" name="fingerprint" onChange={(e) => handleDocumentPhoto(e)} />
+                        </FormControl>
+                        {fingerPrintErr && <p className="text-red-500 ml-2 text-xs">fingerprint Error</p>}
+                      </>
+                    ) : (
+                      <div>
+                        <div className="flex justify-between">
+                          <a href={updateObj?.conductor_document?.fingerprint} target="_blank">
+                            <img src={updateObj?.conductor_document?.fingerprint} alt="fingerprint" className="w-20 h-20 rounded-xl" />
+                          </a>
+                          <Button
+                            onClick={() =>
+                              setUpdateObj({
+                                ...updateObj,
+                                conductor_document: { ...updateObj.conductor_document, fingerprint: undefined }
+                              })
+                            }
+                            variant="outlined"
+                            color="error"
+                          >
+                            remove
+                          </Button>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                  <div>
+                    <p className="text-md font-semibold">Profile</p>
+                    {updateObj?.conductor_document?.profile === undefined ? (
+                      <>
+                        <FormControl fullWidth>
+                          <TextField type="file" variant="outlined" name="profile" onChange={(e) => handleDocumentPhoto(e)} />
+                        </FormControl>
+                        {photoErr && <p className="text-red-500 ml-2 text-xs">profile Error</p>}
+                      </>
+                    ) : (
+                      <div>
+                        <div className="flex justify-between">
+                          <a href={updateObj?.conductor_document?.profile} target="_blank">
+                            <img src={updateObj?.conductor_document?.profile} alt="profile" className="w-20 h-20 rounded-xl" />
+                          </a>
+                          <Button
+                            onClick={() =>
+                              setUpdateObj({ ...updateObj, conductor_document: { ...updateObj.conductor_document, profile: undefined } })
+                            }
+                            variant="outlined"
+                            color="error"
+                          >
+                            remove
+                          </Button>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                  <div>
+                    {' '}
+                    <p className="txet-md font-semibold">Covid Vaccination</p>
+                    {updateObj?.conductor_document?.covidVaccination === undefined ? (
+                      <>
+                        <FormControl fullWidth>
+                          <TextField type="file" variant="outlined" name="covidVaccination" onChange={(e) => handleDocumentPhoto(e)} />
+                        </FormControl>
+                        {covidVErr && <p className="text-red-500 ml-2 text-xs">covidVaccination Error</p>}
+                      </>
+                    ) : (
+                      <div>
+                        <div className="flex justify-between">
+                          <a href={updateObj?.conductor_document?.covidVaccination} target="_blank">
+                            <img
+                              src={updateObj?.conductor_document?.covidVaccination}
+                              alt="covidVaccination"
+                              className="w-20 h-20 rounded-xl"
+                            />
+                          </a>
+                          <Button
+                            onClick={() =>
+                              setUpdateObj({
+                                ...updateObj,
+                                conductor_document: { ...updateObj.conductor_document, covidVaccination: undefined }
+                              })
+                            }
+                            variant="outlined"
+                            color="error"
+                          >
+                            remove
+                          </Button>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                  <div>
+                    {' '}
+                    <p className="text-md font-semibold">Current Address</p>
+                    {updateObj?.conductor_document?.curr_address === undefined ? (
+                      <>
+                        <FormControl fullWidth>
+                          <TextField type="file" variant="outlined" name="curr_address" onChange={(e) => handleDocumentPhoto(e)} />
+                        </FormControl>
+                        {currAddressProofErr && <p className="text-red-500 ml-2 text-xs">curr_address Error</p>}
+                      </>
+                    ) : (
+                      <div>
+                        <div className="flex justify-between">
+                          <a href={updateObj?.conductor_document?.curr_address} target="_blank">
+                            <img src={updateObj?.conductor_document?.curr_address} alt="cur_address" className="w-20 h-20 rounded-xl" />
+                          </a>
+                          <Button
+                            onClick={() =>
+                              setUpdateObj({
+                                ...updateObj,
+                                conductor_document: { ...updateObj.conductor_document, curr_address: undefined }
+                              })
+                            }
+                            variant="outlined"
+                            color="error"
+                          >
+                            remove
+                          </Button>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                  <div>
+                    {' '}
+                    <p className="text-md font-semibold">Permanent Address</p>
+                    {updateObj?.conductor_document?.permanent_address === undefined ? (
+                      <>
+                        <FormControl fullWidth>
+                          <TextField type="file" variant="outlined" name="permanent_address" onChange={(e) => handleDocumentPhoto(e)} />
+                        </FormControl>
+                        {prmtAddressProofErr && <p className="text-red-500 ml-2 text-xs">permanent_address Error</p>}
+                      </>
+                    ) : (
+                      <div>
+                        <div className="flex justify-between">
+                          <a href={updateObj?.conductor_document?.permanent_address} target="_blank">
+                            <img
+                              src={updateObj?.conductor_document?.permanent_address}
+                              alt="permanent_address"
+                              className="w-20 h-20 rounded-xl"
+                            />
+                          </a>
+                          <Button
+                            onClick={() =>
+                              setUpdateObj({
+                                ...updateObj,
+                                conductor_document: { ...updateObj.conductor_document, permanent_address: undefined }
+                              })
+                            }
+                            variant="outlined"
+                            color="error"
+                          >
+                            remove
+                          </Button>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                  <div>
+                    {' '}
+                    <p className="text-md font-semibold">PCC</p>
+                    {updateObj?.conductor_document?.pcc === undefined ? (
+                      <>
+                        <FormControl fullWidth>
+                          <TextField type="file" variant="outlined" name="pcc" onChange={(e) => handleDocumentPhoto(e)} />
+                        </FormControl>
+                        {pccErr && <p className="text-red-500 ml-2 text-xs">PCC Error</p>}
+                      </>
+                    ) : (
+                      <div>
+                        <div className="flex justify-between">
+                          {' '}
+                          <a href={updateObj?.conductor_document?.pcc} target="_blank">
+                            {' '}
+                            <img src={updateObj?.conductor_document?.pcc} alt="pcc" className="w-20 h-20 rounded-xl" />
+                          </a>{' '}
+                          <Button
+                            onClick={() =>
+                              setUpdateObj({ ...updateObj, conductor_document: { ...updateObj.conductor_document, pcc: undefined } })
+                            }
+                            variant="outlined"
+                            color="error"
+                          >
+                            remove
+                          </Button>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                  <div>
+                    {' '}
+                    <p className="text-md font-semibold">BGV</p>
+                    {updateObj?.conductor_document?.bgv === undefined ? (
+                      <>
+                        <FormControl fullWidth>
+                          <TextField type="file" variant="outlined" name="bgv" onChange={(e) => handleDocumentPhoto(e)} />
+                        </FormControl>
+                        {BGVErr && <p className="ml-2 text-md">bgv error</p>}
+                      </>
+                    ) : (
+                      <div>
+                        <div className="flex justify-between">
+                          {' '}
+                          <img src={updateObj?.conductor_document?.bgv} alt="voterId" className="w-20 h-20 rounded-xl" />
+                          <Button
+                            onClick={() =>
+                              setUpdateObj({ ...updateObj, conductor_document: { ...updateObj.conductor_document, bgv: undefined } })
                             }
                             variant="outlined"
                             color="error"

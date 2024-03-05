@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { TextField, Button, FormControl } from '@mui/material';
 import toast, { Toaster } from 'react-hot-toast';
+import Loader from '../../ui-component/LoaderCircular';
 import axios from 'axios';
 function validateEmail(email) {
   const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -41,87 +42,122 @@ export const AddVendor = () => {
   const [nameErr, setNameErr] = useState(false);
   const [phnoErr, setPhnoErr] = useState(false);
   const [emailErr, setEmailErr] = useState(false);
-  // const [addressErr, setAddressErr] = useState(false);
+  const [currAddressErr, setCurrAddressErr] = useState(false);
+  const [prmtAddressErr, setPrmtAddressErr] = useState(false);
+  const [currAddressProofErr, setCurrAddressProofErr] = useState(false);
+  const [prmtAddressProofErr, setPrmtAddressProofErr] = useState(false);
   const [holderNameErr, setHolderNameErr] = useState(false);
   const [ifscErr, setIFSCErr] = useState(false);
   const [accountNoErr, setAccountNoErr] = useState(false);
-  const [aadharFrontErr, setaAdharFrontErr] = useState(false);
-  const [aadharBackErr, setaAdharBackErr] = useState(false);
+  const [aadharFrontErr, setAdharFrontErr] = useState(false);
+  const [aadharBackErr, setAdharBackErr] = useState(false);
   const [pancardErr, setPancardErr] = useState(false);
+  const [photoErr, setPhotoErr] = useState(false);
+  const [bankDetailsErr, setBankDetailsErr] = useState(false);
+  const [adharNoErr, setAdharNoErr] = useState(false);
+  const [panNoErr, setPanNoErr] = useState(false);
+  const [gstNoErr, setGstNoErr] = useState(false);
+  const [gstImgErr, setGstImgErr] = useState(false);
+  const [pccErr, setPccErr] = useState(false);
+  const [vagreeErr, setvagreeErr] = useState(false);
+  const [isLoading, setisLoading] = useState(false);
 
   const handleDocumentPhoto = async (event) => {
     const name = event.target.name;
-    // console.log(event, field);
-    //   setisLoading(true);
+    setisLoading(true);
     const link = await UploadDocumenttos3Bucket(event);
     setVendorForm({ ...vendorForm, [name]: link });
-    //   setisLoading(false);
+    setisLoading(false);
   };
-  // const imageUploadApi = async (value) => {
-  //   let result = await axios.request(value);
-  //   console.log(result.data.name);
-  //   let imageName = result.data.name;
-  //   return imageName;
-  // };
-  // console.log(vendorForm);
+  const imageUploadApi = async (value) => {
+    let result = await axios.request(value);
+    console.log(result.data.name);
+    let imageName = result.data.name;
+    return imageName;
+  };
+
   const UploadDocumenttos3Bucket = async (e) => {
-    console.log(e.target.files[0]);
-    // const reader = new FormData();
-    // reader.append('file', e.target.files[0]);
-    // let config = {
-    //   method: 'post',
-    //   maxBodyLength: Infinity,
-    //   url: `apiposttos3bucket`,
-    //   headers: {
-    //     'Content-Type': 'multipart/form-data'
-    //   },
-    //   data: reader
-    // };
-    // let imageName = await imageUploadApi(config);
-    // let totalUrl = `apitogets3bucket` + imageName;
+    // console.log(e.target.files[0]);
+    const reader = new FormData();
+    reader.append('file', e.target.files[0]);
+    let config = {
+      method: 'post',
+      maxBodyLength: Infinity,
+      url: `http://13.200.168.251:3000/app/v1/aws/upload/driverimages`,
+      headers: {
+        'Content-Type': 'multipart/form-data'
+      },
+      data: reader
+    };
+    let imageName = await imageUploadApi(config);
+    let totalUrl = `http://13.200.168.251:3000/app/v1/aws/getImage/driverimages/` + imageName;
     // console.log(totalUrl);
-    // setTitleImage(totalUrl);
-    // return totalUrl;
-    return 'https://images.unsplash.com/photo-1575936123452-b67c3203c357?q=80&w=1470&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D';
+    return totalUrl;
   };
   const handleAddVendor = () => {
     if (
       vendorForm.name != '' &&
       validateEmail(vendorForm.email) &&
+      vendorForm.phno != '' &&
+      vendorForm.photo != '' &&
+      vendorForm.currAddress != '' &&
+      vendorForm.currAddressProof != '' &&
+      vendorForm.prmtAddress != '' &&
+      vendorForm.prmtAddressProof != '' &&
+      vendorForm.bankName != '' &&
+      vendorForm.bankDetails != '' &&
+      vendorForm.holderName != '' &&
       vendorForm.IFSC != '' &&
       vendorForm.accountN0 != '' &&
-      vendorForm.pancard != '' &&
-      vendorForm.phno?.length == 10 &&
+      vendorForm.aadharNO != '' &&
       vendorForm.aadharFront != '' &&
       vendorForm.aadharBack != '' &&
-      vendorForm.holderName != '' &&
-      vendorForm.address != ''
+      vendorForm.pancard != '' &&
+      vendorForm.panNO != '' &&
+      vendorForm.GST_NO != '' &&
+      vendorForm.GST_IMG != '' &&
+      vendorForm.police_verification != '' &&
+      vendorForm.venderAggrement != ''
     ) {
       const document = {
         aadharFront: vendorForm.aadharFront,
         aadharBack: vendorForm.aadharBack,
-        pancard: vendorForm.pancard
+        pancard: vendorForm.pancard,
+        gstImg: vendorForm.GST_IMG,
+        pcc: vendorForm.police_verification,
+        venderAggrement: vendorForm.venderAggrement,
+        bankDetails: vendorForm.bankDetails,
+        currentAddressProof: vendorForm.currAddressProof,
+        parmanentAddressProof: vendorForm.prmtAddressProof,
+        profile: vendorForm.photo
       };
-      if (vendorForm.voterId != '') {
-        document.voterId = vendorForm.voterId;
-      }
 
       const body = {
         vendorName: vendorForm.name,
         vendorEmail: vendorForm.email,
         vendorMobile: vendorForm.phno,
-        vendorAddress: vendorForm.address,
+        currentAddress: vendorForm.currAddress,
+        permanentAddress: vendorForm.prmtAddress,
+        adhaarNumber: vendorForm.aadharNO,
+        panNumber: vendorForm.panNO,
+        gstNumber: vendorForm.GST_NO,
         vendorDocuments: document,
         ifsc: vendorForm.IFSC,
         holderName: vendorForm.holderName,
-        accountNumber: vendorForm.accountN0
+        accountNumber: vendorForm.accountN0,
+        bankName: vendorForm.bankName
       };
-      // console.log(body);
+      console.log(body);
       axios
         .post('http://192.168.1.230.:3000/app/v1/vendor/insertVendor', body, { headers: {} })
         .then((res) => {
-          console.log(res);
-          toast.success(`${res.data.result}`);
+          console.log(res.data);
+          if (res.data.isVendorCreated) {
+            clearAllField();
+            toast.success(`${res.data.result}`);
+          } else {
+            toast.error(`${res.data.result}`);
+          }
         })
         .catch((err) => {
           console.log('Api error ', err);
@@ -133,28 +169,69 @@ export const AddVendor = () => {
       setAccountNoErr(false);
       setPancardErr(false);
       setPhnoErr(false);
-      setaAdharFrontErr(false);
-      setaAdharBackErr(false);
+      setAdharFrontErr(false);
+      setAdharBackErr(false);
       setHolderNameErr(false);
-      // setAddressErr(false);
     } else {
+      vendorForm.police_verification == '' ? setPccErr(true) : setPccErr(false);
+      vendorForm.venderAggrement == '' ? setvagreeErr(true) : setvagreeErr(false);
+      vendorForm.GST_IMG == '' ? setGstImgErr(true) : setGstImgErr(false);
+      vendorForm.GST_NO == '' ? setGstNoErr(true) : setGstNoErr(false);
+      vendorForm.panNO == '' ? setPanNoErr(true) : setPanNoErr(false);
       vendorForm.name == '' ? setNameErr(true) : setNameErr(false);
       validateEmail(vendorForm.email) ? setEmailErr(false) : setEmailErr(true);
       vendorForm.IFSC == '' ? setIFSCErr(true) : setIFSCErr(false);
       vendorForm.accountN0 == '' ? setAccountNoErr(true) : setAccountNoErr(false);
       vendorForm.pancard == '' ? setPancardErr(true) : setPancardErr(false);
       vendorForm.phno.length != 10 ? setPhnoErr(true) : setPhnoErr(false);
-      vendorForm.aadharFront == '' ? setaAdharFrontErr(true) : setaAdharFrontErr(false);
-      vendorForm.aadharBack == '' ? setaAdharBackErr(true) : setaAdharBackErr(false);
+      vendorForm.aadharFront == '' ? setAdharFrontErr(true) : setAdharFrontErr(false);
+      vendorForm.aadharBack == '' ? setAdharBackErr(true) : setAdharBackErr(false);
       vendorForm.holderName == '' ? setHolderNameErr(true) : setHolderNameErr(false);
-      // vendorForm.address == '' ? setAddressErr(true) : setAddressErr(false);
+      vendorForm.currAddress == '' ? setCurrAddressErr(true) : setCurrAddressErr(false);
+      vendorForm.currAddressProof == '' ? setCurrAddressProofErr(true) : setCurrAddressProofErr(false);
+      vendorForm.prmtAddress == '' ? setPrmtAddressErr(true) : setPrmtAddressErr(false);
+      vendorForm.prmtAddressProof == '' ? setPrmtAddressProofErr(true) : setPrmtAddressProofErr(false);
+      vendorForm.photo == '' ? setPhotoErr(true) : setPhotoErr(false);
+      vendorForm.bankDetails == '' ? setBankDetailsErr(true) : setBankDetailsErr(false);
+      vendorForm.aadharNO == '' ? setAdharNoErr(true) : setAdharNoErr(false);
     }
+  };
+  const clearAllField = () => {
+    setVendorForm({
+      name: '',
+      phno: '',
+      email: '',
+      photo: '',
+      currAddress: '',
+      currAddressProof: '',
+      prmtAddress: '',
+      prmtAddressProof: '',
+      bankName: '',
+      bankDetails: '',
+      holderName: '',
+      IFSC: '',
+      accountN0: '',
+      aadharNO: '',
+      aadharFront: '',
+      aadharBack: '',
+      pancard: '',
+      panNO: '',
+      GST_NO: '',
+      GST_IMG: '',
+      police_verification: '',
+      venderAggrement: ''
+    });
   };
   return (
     <div>
       <div>
         <Toaster />
       </div>
+      {isLoading && (
+        <div>
+          <Loader />
+        </div>
+      )}
       <div className="flex flex-col gap-10 bg-white p-4 rounded-xl">
         {/* heading */}
         <div>
@@ -221,7 +298,7 @@ export const AddVendor = () => {
                   </Button>
                 </div>
               )}
-              <p className="text-red-500 text-xs ml-2">upload photo</p>
+              {photoErr && <p className="text-red-500 text-xs ml-2">upload photo</p>}
             </div>
           </div>
         </div>
@@ -246,10 +323,10 @@ export const AddVendor = () => {
                       onChange={(e) => setVendorForm({ ...vendorForm, currAddress: e.target.value })}
                     />
                   </FormControl>
-                  <p className="text-red-500 text-xs ml-2">currAddress error</p>
+                  {currAddressErr && <p className="text-red-500 text-xs ml-2">currAddress error</p>}
                 </div>
                 <div className="w-full ">
-                  {vendorForm.currAddress == '' ? (
+                  {vendorForm.currAddressProof == '' ? (
                     <p className="w-full flex justify-between border rounded-xl p-3  border-gray-400">
                       <label htmlFor="currAddress" className="w-full block max-lg:text-[12px] max-md:text-[10px]">
                         Upload current Address{' '}
@@ -259,19 +336,19 @@ export const AddVendor = () => {
                         id="currAddress"
                         name="currAddressProof"
                         onChange={(e) => handleDocumentPhoto(e)}
-                        className="text-xs w-24"
+                        className="text-xs w-28"
                       />
                     </p>
                   ) : (
                     <div className="flex justify-between">
                       {' '}
-                      <img src={vendorForm.currAddress} alt="currAddress" className="w-20 h-20 rounded-xl" />
-                      <Button onClick={() => setVendorForm({ ...vendorForm, currAddress: '' })} variant="outlined" color="error">
+                      <img src={vendorForm.currAddressProof} alt="currAddress" className="w-20 h-20 rounded-xl" />
+                      <Button onClick={() => setVendorForm({ ...vendorForm, currAddressProof: '' })} variant="outlined" color="error">
                         remove
                       </Button>
                     </div>
                   )}
-                  <p className="text-red-500 text-xs ml-2">upload Curr Address </p>
+                  {currAddressProofErr && <p className="text-red-500 text-xs ml-2">upload Curr Address </p>}
                 </div>
               </div>
               <div className="flex gap-10 items-center w-full">
@@ -286,10 +363,10 @@ export const AddVendor = () => {
                       onChange={(e) => setVendorForm({ ...vendorForm, prmtAddress: e.target.value })}
                     />
                   </FormControl>
-                  <p className="text-red-500  ml-2">currAddress error</p>
+                  {prmtAddressErr && <p className="text-red-500  ml-2">parmanent Address error</p>}
                 </div>
                 <div className="w-full ">
-                  {vendorForm.aadharFront == '' ? (
+                  {vendorForm.prmtAddressProof == '' ? (
                     <p className="w-full flex justify-between border rounded-xl p-3  border-gray-400">
                       <label htmlFor="currAddress" className="w-full block max-lg:text-[12px] max-md:text-[10px]">
                         Upload permanent Address{' '}
@@ -299,19 +376,19 @@ export const AddVendor = () => {
                         id="prmtAddress"
                         name="prmtAddressProof"
                         onChange={(e) => handleDocumentPhoto(e)}
-                        className="text-xs w-24"
+                        className="text-xs w-28"
                       />
                     </p>
                   ) : (
                     <div className="flex justify-between">
                       {' '}
-                      <img src={vendorForm.aadharFront} alt="aadharFront" className="w-20 h-20 rounded-xl" />
-                      <Button onClick={() => setVendorForm({ ...vendorForm, aadharFront: '' })} variant="outlined" color="error">
+                      <img src={vendorForm.prmtAddressProof} alt="aadharFront" className="w-20 h-20 rounded-xl" />
+                      <Button onClick={() => setVendorForm({ ...vendorForm, prmtAddressProof: '' })} variant="outlined" color="error">
                         remove
                       </Button>
                     </div>
                   )}
-                  <p className="text-red-500 text-xs ml-2">upload parmanent Address </p>
+                  {prmtAddressProofErr && <p className="text-red-500 text-xs ml-2">upload parmanent Address </p>}
                 </div>
               </div>
             </div>
@@ -358,7 +435,7 @@ export const AddVendor = () => {
                       id="outlined-basic"
                       label="Bank Name"
                       variant="outlined"
-                      type="number"
+                      type="text"
                       value={vendorForm.bankName}
                       onChange={(e) => setVendorForm({ ...vendorForm, bankName: e.target.value })}
                     />
@@ -402,7 +479,7 @@ export const AddVendor = () => {
                       </Button>
                     </div>
                   )}
-                  <p className="text-red-500 text-xs ml-2">upload Bank Details card </p>
+                  {bankDetailsErr && <p className="text-red-500 text-xs ml-2">upload Bank Details card </p>}
                 </div>
               </div>
             </div>
@@ -429,7 +506,7 @@ export const AddVendor = () => {
                         onChange={(e) => setVendorForm({ ...vendorForm, aadharNO: e.target.value })}
                       />
                     </FormControl>
-                    <p className="text-red-500  ml-2">Adhar number error</p>
+                    {adharNoErr && <p className="text-red-500  ml-2">Adhar number error</p>}
                   </div>
                   <div>
                     {vendorForm.aadharFront == '' ? (
@@ -495,7 +572,7 @@ export const AddVendor = () => {
                       onChange={(e) => setVendorForm({ ...vendorForm, panNO: e.target.value })}
                     />
                   </FormControl>
-                  <p className="text-red-500  ml-2">pan number error</p>
+                  {panNoErr && <p className="text-red-500  ml-2">pan number error</p>}
                 </div>
                 <div>
                   {vendorForm.pancard == '' ? (
@@ -530,7 +607,7 @@ export const AddVendor = () => {
                       onChange={(e) => setVendorForm({ ...vendorForm, GST_NO: e.target.value })}
                     />
                   </FormControl>
-                  <p className="text-red-500  ml-2">currAddress error</p>
+                  {gstNoErr && <p className="text-red-500  ml-2">gst number error</p>}
                 </div>
                 <div>
                   {vendorForm.GST_IMG == '' ? (
@@ -542,13 +619,13 @@ export const AddVendor = () => {
                     </p>
                   ) : (
                     <div className="flex justify-between">
-                      <img src={vendorForm.GST_NO} alt="GST_NO" className="w-20 h-20 rounded-xl" />
-                      <Button onClick={() => setVendorForm({ ...vendorForm, GST_NO: '' })} variant="outlined" color="error">
+                      <img src={vendorForm.GST_IMG} alt="GST_IMG" className="w-20 h-20 rounded-xl" />
+                      <Button onClick={() => setVendorForm({ ...vendorForm, GST_IMG: '' })} variant="outlined" color="error">
                         remove
                       </Button>
                     </div>
                   )}
-                  <p className="text-red-500 text-xs ml-2">upload GST_IMG</p>
+                  {gstImgErr && <p className="text-red-500 text-xs ml-2">upload GST_IMG</p>}
                 </div>
                 <div>
                   {vendorForm.police_verification == '' ? (
@@ -572,7 +649,7 @@ export const AddVendor = () => {
                       </Button>
                     </div>
                   )}
-                  <p className="text-red-500 text-xs ml-2">upload police_verification </p>
+                  {pccErr && <p className="text-red-500 text-xs ml-2">upload police_verification </p>}
                 </div>
                 <div>
                   {vendorForm.venderAggrement == '' ? (
@@ -596,7 +673,7 @@ export const AddVendor = () => {
                       </Button>
                     </div>
                   )}
-                  <p className="text-red-500 text-xs ml-2">upload vender Aggrement</p>
+                  {vagreeErr && <p className="text-red-500 text-xs ml-2">upload vender Aggrement</p>}
                 </div>
               </div>
             </div>

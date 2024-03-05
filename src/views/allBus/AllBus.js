@@ -272,7 +272,7 @@ export const AllBus = () => {
             </div>
             <>
               <div>
-                <div className="grid grid-cols-3 max-lg:grid-cols-2 max-lg:gap-5 max-sm:grid-cols-1 max-sm:gap-3 gap-10">
+                <div className="grid grid-cols-4 max-lg:grid-cols-2 max-lg:gap-5 max-sm:grid-cols-1 max-sm:gap-3 gap-5">
                   {/* bus ID*/}
                   <div className="w-full">
                     <FormControl fullWidth>
@@ -288,7 +288,7 @@ export const AllBus = () => {
                   {/* Driver Id*/}
                   <div className="w-full">
                     <FormControl fullWidth>
-                      <TextField id="demo-simple-seect" label="driver Id" disabled={true} value={updateObj.driver_id} />
+                      <TextField id="demo-simple-seet" label="driver Id" disabled={true} value={updateObj.driver_id} />
                     </FormControl>
                   </div>
                   {/* Conductor Id */}
@@ -301,7 +301,7 @@ export const AllBus = () => {
                   <div className="w-full">
                     <FormControl fullWidth>
                       <TextField
-                        id="demo-simple-seect"
+                        id="demo-simple-sect"
                         label="bus no"
                         value={updateObj.bus_number}
                         onChange={(e) => setUpdateObj({ ...updateObj, bus_number: e.target.value })}

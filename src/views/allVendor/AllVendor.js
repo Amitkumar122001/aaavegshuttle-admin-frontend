@@ -11,8 +11,7 @@ import {
   FormControl,
   Button,
   Modal,
-  Box,
-  InputLabel
+  Box
 } from '@mui/material';
 import axios from 'axios';
 import FilterListIcon from '@mui/icons-material/FilterList';
@@ -20,7 +19,6 @@ import { IconX } from '@tabler/icons-react';
 import toast, { Toaster } from 'react-hot-toast';
 
 const columns = [
-  { id: 'vendorId', label: 'Id', align: 'center', minWidth: 100 },
   { id: 'vendorName', label: 'Name', align: 'center', minWidth: 150 },
   {
     id: 'vendorEmail',
@@ -40,14 +38,6 @@ const columns = [
     id: 'vendorAddress',
     label: 'Address',
     minWidth: 170,
-    align: 'center',
-    format: (value) => value.toLocaleString('en-US')
-  },
-
-  {
-    id: 'Document',
-    label: 'Document ',
-    minWidth: 150,
     align: 'center',
     format: (value) => value.toLocaleString('en-US')
   },
@@ -98,12 +88,25 @@ export const AllVendor = () => {
   // console.log(updateObj);
 
   // update error state
-  const [pancardErr, setPancardErr] = useState(false);
-  const [adharErr, setAdharErr] = useState(false);
-  const [accountNumberErr, setAccountNumberErr] = useState(false);
+  const [currAddressErr, setCurrAddressErr] = useState(false);
+  const [prmtAddressErr, setPrmtAddressErr] = useState(false);
+  const [currAddressProofErr, setCurrAddressProofErr] = useState(false);
+  const [prmtAddressProofErr, setPrmtAddressProofErr] = useState(false);
   const [holderNameErr, setHolderNameErr] = useState(false);
-  const [ifscErr, setifscErr] = useState(false);
-  const [vendorAddressErr, setVendorAddressErr] = useState(false);
+  const [ifscErr, setIFSCErr] = useState(false);
+  const [aadharFrontErr, setAdharFrontErr] = useState(false);
+  const [aadharBackErr, setAdharBackErr] = useState(false);
+  const [pancardErr, setPancardErr] = useState(false);
+  const [photoErr, setPhotoErr] = useState(false);
+  const [bankNameErr, setBankNameErr] = useState(false);
+  const [bankDetailsErr, setBankDetailsErr] = useState(false);
+  const [adharNoErr, setAdharNoErr] = useState(false);
+  const [panNoErr, setPanNoErr] = useState(false);
+  const [gstNoErr, setGstNoErr] = useState(false);
+  const [gstImgErr, setGstImgErr] = useState(false);
+  const [pccErr, setPccErr] = useState(false);
+  const [vagreeErr, setvagreeErr] = useState(false);
+  const [accountNumberErr, setAccountNumberErr] = useState(false);
   const [vendorEmailErr, setVendorEmailErr] = useState(false);
   const [vendorNameErr, setVendorNameErr] = useState(false);
   const [vendorMobileErr, setVendorMobileErr] = useState(false);
@@ -152,9 +155,9 @@ export const AllVendor = () => {
   //   let imageName = result.data.name;
   //   return imageName;
   // };
-  // console.log(vendorForm);
+  // console.log(updateObj.vendorDocument);
   const UploadDocumenttos3Bucket = async (e) => {
-    console.log(e.target.files[0]);
+    // console.log(e.target.files[0]);
     // const reader = new FormData();
     // reader.append('file', e.target.files[0]);
     // let config = {
@@ -180,36 +183,61 @@ export const AllVendor = () => {
       validateEmail(updateObj.vendorEmail) &&
       updateObj.vendorMobile?.length == 10 &&
       updateObj.vendorAddress != '' &&
-      updateObj.accountNumber != '' &&
+      updateObj.currentAddress != '' &&
+      updateObj.permanentAddress != '' &&
+      updateObj.adhaarNumber != '' &&
+      updateObj.panNumber != '' &&
+      updateObj.gstNumber != '' &&
       updateObj.ifsc != '' &&
       updateObj.holderName != '' &&
-      updateObj.vendorDocument?.aadhar != '' &&
-      updateObj.vendorDocument?.pancard != ''
+      updateObj.accountNumber != '' &&
+      updateObj.bankName != '' &&
+      updateObj.vendorDocument?.pcc != '' &&
+      updateObj.vendorDocument?.gstImg != '' &&
+      updateObj.vendorDocument?.pancard != '' &&
+      updateObj.vendorDocument?.profile != '' &&
+      updateObj.vendorDocument?.aadharBack != '' &&
+      updateObj.vendorDocument?.aadharFront != '' &&
+      updateObj.vendorDocument?.bankDetails != '' &&
+      updateObj.vendorDocument?.venderAggrement != '' &&
+      updateObj.vendorDocument?.currentAddressProof != '' &&
+      updateObj.vendorDocument?.parmanentAddressProof != ''
     ) {
       const document = {
-        aadhar: updateObj.vendorDocument?.aadhar,
-        pancard: updateObj.vendorDocument?.pancard
+        aadharFront: updateObj.vendorDocument?.aadharFront,
+        aadharBack: updateObj.vendorDocument?.aadharBack,
+        pancard: updateObj.vendorDocument?.pancard,
+        gstImg: updateObj.vendorDocument.gstImg,
+        pcc: updateObj.vendorDocument?.pcc,
+        venderAggrement: updateObj.vendorDocument?.venderAggrement,
+        bankDetails: updateObj.vendorDocument?.bankDetails,
+        currentAddressProof: updateObj.vendorDocument?.currentAddressProof,
+        parmanentAddressProof: updateObj.vendorDocument?.parmanentAddressProof,
+        profile: updateObj.vendorDocument?.profile
       };
-      if (updateObj?.vendorDocument?.voterId != '') {
-        document.voterId = updateObj.vendorDocument?.voterId;
-      }
+
       const body = {
         vendorId: updateObj.vendorId,
         vendorName: updateObj.vendorName,
         vendorEmail: updateObj.vendorEmail,
         vendorMobile: updateObj.vendorMobile,
-        vendorAddress: updateObj.vendorAddress,
+        currentAddress: updateObj.currentAddress,
+        permanentAddress: updateObj.permanentAddress,
         vendorDocuments: document,
         ifsc: updateObj.ifsc,
         holderName: updateObj.holderName,
         accountNumber: updateObj.accountNumber,
-        activeStatus: Boolean(updateObj.activeStatus)
+        bankName: updateObj.bankName,
+        activeStatus: Boolean(updateObj.activeStatus),
+        adhaarNumber: updateObj.adhaarNumber,
+        panNumber: updateObj.panNumber,
+        gstNumber: updateObj.gstNumber
       };
       // console.log(body);
       axios
         .patch('http://192.168.1.230:3000/app/v1/vendor/updateVendors', body)
         .then((res) => {
-          //console.log(res);
+          console.log(res);
           setLoader(true);
           toast.success('update successfully');
           clearAllField();
@@ -219,15 +247,29 @@ export const AllVendor = () => {
           toast.error('Api Error');
         });
     } else {
+      window.alert('kj');
       updateObj.vendorName == '' ? setVendorNameErr(true) : setVendorNameErr(false);
       validateEmail(updateObj.vendorEmail) ? setVendorEmailErr(false) : setVendorEmailErr(true);
       updateObj.vendorMobile == '' ? setVendorMobileErr(true) : setVendorMobileErr(false);
       updateObj.accountNumber == '' ? setAccountNumberErr(true) : setAccountNumberErr(false);
-      updateObj.vendorAddress == '' ? setVendorAddressErr(true) : setVendorAddressErr(false);
-      updateObj.ifsc == '' ? setifscErr(true) : setifscErr(false);
+      updateObj.ifsc == '' ? setIFSCErr(true) : setIFSCErr(false);
       updateObj.holderName == '' ? setHolderNameErr(true) : setHolderNameErr(false);
-      updateObj.vendorDocument?.aadhar == '' ? setAdharErr(true) : setAdharErr(false);
-      updateObj.vendorDocument?.pancard == '' ? setPancardErr(true) : setPancardErr(false);
+      updateObj.vendorDocument.pcc == '' ? setPccErr(true) : setPccErr(false);
+      updateObj.vendorDocument.gstImg == '' ? setGstImgErr(true) : setGstImgErr(false);
+      updateObj.vendorDocument.pancard == '' ? setPancardErr(true) : setPancardErr(false);
+      updateObj.vendorDocument.profile == '' ? setPhotoErr(true) : setPhotoErr(false);
+      updateObj.vendorDocument.aadharBack == '' ? setAdharBackErr(true) : setAdharBackErr(false);
+      updateObj.vendorDocument.aadharFront == '' ? setAdharFrontErr(true) : setAdharFrontErr(false);
+      updateObj.vendorDocument.bankDetails == '' ? setBankDetailsErr(true) : setBankDetailsErr(false);
+      updateObj.vendorDocument.venderAggrement == '' ? setvagreeErr(true) : setvagreeErr(false);
+      updateObj.vendorDocument.currentAddressProof == '' ? setCurrAddressProofErr(true) : setCurrAddressProofErr(false);
+      updateObj.vendorDocument.parmanentAddressProof == '' ? setPrmtAddressProofErr(true) : setPrmtAddressProofErr(false);
+      updateObj.currentAddress == '' ? setCurrAddressErr(true) : setCurrAddressErr(false);
+      updateObj.permanentAddress == '' ? setPrmtAddressErr(true) : setPrmtAddressErr(false);
+      updateObj.adhaarNumber == '' ? setAdharNoErr(true) : setAdharNoErr(false);
+      updateObj.panNumber == '' ? setPanNoErr(true) : setPanNoErr(false);
+      updateObj.gstNumber == '' ? setGstNoErr(true) : setGstNoErr(false);
+      updateObj.bankName == '' ? setBankNameErr(true) : setBankNameErr(false);
     }
   };
   const clearAllField = () => {
@@ -236,11 +278,9 @@ export const AllVendor = () => {
     setVendorEmailErr(false);
     setVendorMobileErr(false);
     setAccountNumberErr(false);
-    setVendorAddressErr(false);
-    setifscErr(false);
+    setIFSCErr(false);
     setHolderNameErr(false);
     setPancardErr(false);
-    setAdharErr(false);
   };
   const style = {
     position: 'absolute',
@@ -324,29 +364,17 @@ export const AllVendor = () => {
                   </TableHead>
                   <TableBody>
                     {displayItems()?.map((item, i) => {
-                      const document = [];
-                      for (const ele in item.vendorDocument) {
-                        document.push(ele);
-                      }
                       return (
                         <TableRow key={i} hover>
-                          <TableCell align="center">{item.vendorId}</TableCell>
                           <TableCell align="center" className="capitalize">
-                            {item.vendorName}
+                            {item.vendorName || 'NA'}
                           </TableCell>
-                          <TableCell align="center">{item.vendorEmail}</TableCell>
-                          <TableCell align="center">{item.vendorMobile}</TableCell>
-                          <TableCell align="center">{item.vendorAddress}</TableCell>
-                          <TableCell align="center">
-                            {document.map((text, i) => (
-                              <span key={i} className="capitalize">
-                                {text}{' '}
-                              </span>
-                            ))}
-                          </TableCell>
-                          <TableCell align="center">{item?.holderName}</TableCell>
-                          <TableCell align="center">{item.ifsc}</TableCell>
-                          <TableCell align="center">{item.accountNumber}</TableCell>
+                          <TableCell align="center">{item.vendorEmail || 'NA'}</TableCell>
+                          <TableCell align="center">{item.vendorMobile || 'NA'}</TableCell>
+                          <TableCell align="center">{item.currentAddress || 'NA'}</TableCell>
+                          <TableCell align="center">{item?.holderName || 'NA'}</TableCell>
+                          <TableCell align="center">{item.ifsc || 'NA'}</TableCell>
+                          <TableCell align="center">{item.accountNumber || 'NA'}</TableCell>
                           <TableCell align="center">
                             <button className="p-2 text-lg text-blue-600" onClick={() => handleOpen(item)}>
                               edit
@@ -371,7 +399,7 @@ export const AllVendor = () => {
                       key={pageNumber}
                       onClick={() => setCurrentPage(pageNumber)}
                       className={`flex justify-center items-center bg-blue-500 px-2 py-1 rounded-full ${
-                        currentPage == pageNumber ? 'text-white' : 'text-black'
+                        currentPage == pageNumber ? 'text-white bg-red-500' : 'text-black'
                       }`}
                     >
                       {pageNumber}
@@ -389,12 +417,18 @@ export const AllVendor = () => {
       </div>
 
       {/* update api */}
-      <Modal open={updateOpen} onClose={handleClose} aria-labelledby="modal-modal-title" aria-describedby="modal-modal-description">
-        <Box sx={style} className=" w-full max-lg:h-screen max-lg:w-screen p-4 overflow-y-scroll">
+      <Modal
+        open={updateOpen}
+        onClose={handleClose}
+        aria-labelledby="modal-modal-title"
+        aria-describedby="modal-modal-description"
+        className="overflow-scroll"
+      >
+        <Box sx={style} className=" w-full h-screen  p-4">
           <div>
             <Toaster />
           </div>
-          <div className=" max-lg:w-full flex flex-col gap-1 bg-white my-4 p-4 rounded-xl">
+          <div className=" max-lg:w-full flex flex-col gap-1 bg-white my-4 p-4 rounded-xl ">
             <div className="flex justify-between pb-5">
               <p className="text-xl font-bold">Update Vendor</p>
               <button onClick={handleClose} className="">
@@ -402,8 +436,8 @@ export const AllVendor = () => {
               </button>
             </div>
             <>
-              <div>
-                <div className="grid grid-cols-3 max-lg:grid-cols-2 max-lg:gap-5 max-sm:grid-cols-1 max-sm:gap-3 gap-10">
+              <div className="">
+                <div className="grid grid-cols-4 max-lg:grid-cols-2 max-lg:gap-5 max-sm:grid-cols-1 max-sm:gap-3 gap-5">
                   {/* vendor ID*/}
                   <div className="w-full">
                     <FormControl fullWidth>
@@ -456,20 +490,66 @@ export const AllVendor = () => {
                     </FormControl>
                   </div>
 
-                  {/* vendor address*/}
+                  {/* vendor current address*/}
                   <div className="w-full">
                     <FormControl fullWidth>
                       <TextField
                         fullWidth
                         id="outlined-basi"
-                        label="vendorAddress"
+                        label="current Address"
                         variant="outlined"
                         type="text"
-                        value={updateObj.vendorAddress}
-                        onChange={(e) => setUpdateObj({ ...updateObj, vendorAddress: e.target.value })}
+                        value={updateObj.currentAddress}
+                        onChange={(e) => setUpdateObj({ ...updateObj, currentAddress: e.target.value })}
                       />
                     </FormControl>
-                    {vendorAddressErr && <p className="text-red-500 ml-2 text-xs">Address Error</p>}
+                    {currAddressErr && <p className="text-red-500 ml-2 text-xs">Address Error</p>}
+                  </div>
+
+                  {/* vendor PERMANENT address*/}
+                  <div className="w-full">
+                    <FormControl fullWidth>
+                      <TextField
+                        fullWidth
+                        id="outlined-basi"
+                        label="parmanent Address"
+                        variant="outlined"
+                        type="text"
+                        value={updateObj.permanentAddress}
+                        onChange={(e) => setUpdateObj({ ...updateObj, permanentAddress: e.target.value })}
+                      />
+                    </FormControl>
+                    {prmtAddressErr && <p className="text-red-500 ml-2 text-xs">permanent Address Error</p>}
+                  </div>
+                  {/* Adhar card*/}
+                  <div className="w-full">
+                    <FormControl fullWidth>
+                      <TextField
+                        fullWidth
+                        id="outlined-basi"
+                        label="Adhaar Number"
+                        variant="outlined"
+                        type="text"
+                        value={updateObj.adhaarNumber}
+                        onChange={(e) => setUpdateObj({ ...updateObj, adhaarNumber: e.target.value })}
+                      />
+                    </FormControl>
+                    {adharNoErr && <p className="text-red-500 ml-2 text-xs">adhaarNumber Error</p>}
+                  </div>
+                  {/* Bank name*/}
+                  <div className="w-full">
+                    <FormControl fullWidth>
+                      <TextField
+                        fullWidth
+                        id="outlined-basi"
+                        label="Bank Name"
+                        variant="outlined"
+                        type="text"
+                        value={updateObj.bankName}
+                        onChange={(e) => setUpdateObj({ ...updateObj, bankName: e.target.value })}
+                      />
+                    </FormControl>
+                    {bankNameErr && <p className="text-red-500 ml-2 text-xs">bank name error</p>}
                   </div>
                   {/* IFSC code */}
                   <div className="w-full">
@@ -510,25 +590,59 @@ export const AllVendor = () => {
                     </FormControl>
                     {accountNumberErr && <p className="text-red-500 ml-2 text-xs">Account Number Error</p>}
                   </div>
+                  {/* vendor PERMANENT address*/}
+                  <div className="w-full">
+                    <FormControl fullWidth>
+                      <TextField
+                        fullWidth
+                        id="outlined-basi"
+                        label="pan number"
+                        variant="outlined"
+                        type="text"
+                        value={updateObj.panNumber}
+                        onChange={(e) => setUpdateObj({ ...updateObj, panNumber: e.target.value })}
+                      />
+                    </FormControl>
+                    {panNoErr && <p className="text-red-500 ml-2 text-xs">pan card Error</p>}
+                  </div>
+                  {/* gstNO*/}
+                  <div className="w-full">
+                    <FormControl fullWidth>
+                      <TextField
+                        fullWidth
+                        id="outlined-basi"
+                        label="GST Number"
+                        variant="outlined"
+                        type="text"
+                        value={updateObj.gstNumber}
+                        onChange={(e) => setUpdateObj({ ...updateObj, gstNumber: e.target.value })}
+                      />
+                    </FormControl>
+                    {gstNoErr && <p className="text-red-500 ml-2 text-xs">Gst number Error</p>}
+                  </div>
                 </div>{' '}
                 <div className=" grid grid-cols-3 gap-6 mt-4 max-lg:grid-cols-2 max-lg:gap-4  max-md:grid-cols-1">
+                  {/* Aadhar front */}
                   <div>
-                    {updateObj?.vendorDocument?.aadhar == undefined ? (
+                    {' '}
+                    <p className="text-md font-semibold">Aadhar front</p>
+                    {updateObj?.vendorDocument?.aadharFront == undefined ? (
                       <>
-                        <InputLabel id="aadhar">Aadhar Card</InputLabel>
                         <FormControl fullWidth>
-                          <TextField type="file" variant="outlined" name="aadhar" onChange={(e) => handleDocumentPhoto(e)} />
+                          <TextField type="file" variant="outlined" name="aadharFront" onChange={(e) => handleDocumentPhoto(e)} />
                         </FormControl>
-                        {adharErr && <p className="text-red-500 ml-2 text-xs">upload Aadhar</p>}
+                        {aadharFrontErr && <p className="text-red-500 ml-2 text-xs">upload Aadhar front</p>}
                       </>
                     ) : (
                       <div>
-                        <p className="text-md">Aadhar Card</p>
                         <div className="flex justify-between">
-                          {' '}
-                          <img src={updateObj?.vendorDocument?.aadhar} alt="aadhar" className="w-20 h-20 rounded-xl" />
+                          <a href={updateObj?.vendorDocument?.aadharFront} target="_blank">
+                            <img src={updateObj?.vendorDocument?.aadharFront} alt="aadharFront" className="w-20 h-20 rounded-xl" />
+                          </a>{' '}
                           <Button
-                            onClick={() => setUpdateObj({ ...updateObj, vendorDocument: { ...updateObj.vendorDocument, aadhar: '' } })}
+                            onClick={() =>
+                              setUpdateObj({ ...updateObj, vendorDocument: { ...updateObj.vendorDocument, aadharFront: undefined } })
+                            }
                             variant="outlined"
                             color="error"
                           >
@@ -538,11 +652,42 @@ export const AllVendor = () => {
                       </div>
                     )}
                   </div>
+                  {/* Aadhar back */}
                   <div>
+                    {' '}
+                    <p className="text-md font-semibold">Aadhar Back</p>
+                    {updateObj?.vendorDocument?.aadharBack == undefined ? (
+                      <>
+                        <FormControl fullWidth>
+                          <TextField type="file" variant="outlined" name="aadharBack" onChange={(e) => handleDocumentPhoto(e)} />
+                        </FormControl>
+                        {aadharBackErr && <p className="text-red-500 ml-2 text-xs">Adhar back Error</p>}
+                      </>
+                    ) : (
+                      <div>
+                        <div className="flex justify-between">
+                          {' '}
+                          <a href={updateObj?.vendorDocument?.aadharBack} target="_blank">
+                            <img src={updateObj?.vendorDocument?.aadharBack} alt="aadharBack" className="w-20 h-20 rounded-xl" />
+                          </a>
+                          <Button
+                            onClick={() =>
+                              setUpdateObj({ ...updateObj, vendorDocument: { ...updateObj.vendorDocument, aadharBack: undefined } })
+                            }
+                            variant="outlined"
+                            color="error"
+                          >
+                            remove
+                          </Button>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                  {/* pancard */}
+                  <div>
+                    <p className="text-md font-semibold">Pan Card</p>
                     {updateObj?.vendorDocument?.pancard == undefined ? (
                       <>
-                        {/* onChange={(e) => handleDocumentPhoto(e)} */}
-                        <InputLabel id="pancard">Pan Card</InputLabel>
                         <FormControl fullWidth>
                           <TextField type="file" variant="outlined" name="pancard" onChange={(e) => handleDocumentPhoto(e)} />
                         </FormControl>
@@ -550,12 +695,15 @@ export const AllVendor = () => {
                       </>
                     ) : (
                       <div>
-                        <p>Pan Card</p>
                         <div className="flex justify-between">
                           {' '}
-                          <img src={updateObj?.vendorDocument?.pancard} alt="pancard" className="w-20 h-20 rounded-xl" />
+                          <a href={updateObj?.vendorDocument?.pancard} target="_blank">
+                            <img src={updateObj?.vendorDocument?.pancard} alt="pancard" className="w-20 h-20 rounded-xl" />
+                          </a>
                           <Button
-                            onClick={() => setUpdateObj({ ...updateObj, vendorDocument: { ...updateObj.vendorDocument, pancard: '' } })}
+                            onClick={() =>
+                              setUpdateObj({ ...updateObj, vendorDocument: { ...updateObj.vendorDocument, pancard: undefined } })
+                            }
                             variant="outlined"
                             color="error"
                           >
@@ -566,23 +714,221 @@ export const AllVendor = () => {
                     )}
                   </div>
 
+                  {/* gstImg */}
                   <div>
-                    {updateObj?.vendorDocument?.voterId == undefined ? (
+                    <p className="text-md font-semibold">GST document</p>
+                    {updateObj?.vendorDocument?.gstImg == undefined ? (
                       <>
-                        {/*  */}
-                        <InputLabel>Voter Id</InputLabel>
                         <FormControl fullWidth>
-                          <TextField type="file" variant="outlined" name="voterId" onChange={(e) => handleDocumentPhoto(e)} />
+                          <TextField type="file" variant="outlined" name="gstImg" onChange={(e) => handleDocumentPhoto(e)} />
                         </FormControl>
+                        {gstImgErr && <p className="text-red-500 ml-2 text-xs">gstImg Error</p>}
                       </>
                     ) : (
                       <div>
-                        <p>VoterId</p>
                         <div className="flex justify-between">
                           {' '}
-                          <img src={updateObj?.vendorDocument?.voterId} alt="voterId" className="w-20 h-20 rounded-xl" />
+                          <a href={updateObj?.vendorDocument?.gstImg} target="_blank">
+                            <img src={updateObj?.vendorDocument?.gstImg} alt="gstImg" className="w-20 h-20 rounded-xl" />
+                          </a>
                           <Button
-                            onClick={() => setUpdateObj({ ...updateObj, vendorDocument: { ...updateObj.vendorDocument, voterId: '' } })}
+                            onClick={() =>
+                              setUpdateObj({ ...updateObj, vendorDocument: { ...updateObj.vendorDocument, gstImg: undefined } })
+                            }
+                            variant="outlined"
+                            color="error"
+                          >
+                            remove
+                          </Button>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* pcc */}
+                  <div>
+                    <p className="text-md font-semibold">Pcc</p>
+                    {updateObj?.vendorDocument?.pcc == undefined ? (
+                      <>
+                        <FormControl fullWidth>
+                          <TextField type="file" variant="outlined" name="pcc" onChange={(e) => handleDocumentPhoto(e)} />
+                        </FormControl>
+                        {pccErr && <p className="text-red-500 ml-2 text-xs">PCC Error</p>}
+                      </>
+                    ) : (
+                      <div>
+                        <div className="flex justify-between">
+                          {' '}
+                          <a href={updateObj?.vendorDocument?.pcc} target="_blank">
+                            <img src={updateObj?.vendorDocument?.pcc} alt="pcc" className="w-20 h-20 rounded-xl" />
+                          </a>
+                          <Button
+                            onClick={() => setUpdateObj({ ...updateObj, vendorDocument: { ...updateObj.vendorDocument, pcc: undefined } })}
+                            variant="outlined"
+                            color="error"
+                          >
+                            remove
+                          </Button>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* venderAggrement */}
+                  <div>
+                    <p className="text-md font-semibold">Vender Aggrement</p>
+                    {updateObj?.vendorDocument?.venderAggrement == undefined ? (
+                      <>
+                        <FormControl fullWidth>
+                          <TextField type="file" variant="outlined" name="venderAggrement" onChange={(e) => handleDocumentPhoto(e)} />
+                        </FormControl>
+                        {vagreeErr && <p className="text-red-500 ml-2 text-xs">venderAggrement Error</p>}
+                      </>
+                    ) : (
+                      <div>
+                        <div className="flex justify-between">
+                          {' '}
+                          <a href={updateObj?.vendorDocument?.venderAggrement} target="_blank">
+                            {' '}
+                            <img src={updateObj?.vendorDocument?.venderAggrement} alt="venderAggrement" className="w-20 h-20 rounded-xl" />
+                          </a>
+                          <Button
+                            onClick={() =>
+                              setUpdateObj({ ...updateObj, vendorDocument: { ...updateObj.vendorDocument, venderAggrement: undefined } })
+                            }
+                            variant="outlined"
+                            color="error"
+                          >
+                            remove
+                          </Button>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* bankDetails */}
+                  <div>
+                    <p className="text-md font-semibold">Bank Details</p>
+                    {updateObj?.vendorDocument?.bankDetails == undefined ? (
+                      <>
+                        <FormControl fullWidth>
+                          <TextField type="file" variant="outlined" name="bankDetails" onChange={(e) => handleDocumentPhoto(e)} />
+                        </FormControl>
+                        {bankDetailsErr && <p className="text-red-500 ml-2 text-xs">Pan Card Error</p>}
+                      </>
+                    ) : (
+                      <div>
+                        <div className="flex justify-between">
+                          {' '}
+                          <a href={updateObj?.vendorDocument?.bankDetails} target="_blank">
+                            {' '}
+                            <img src={updateObj?.vendorDocument?.bankDetails} alt="bankDetails" className="w-20 h-20 rounded-xl" />
+                          </a>{' '}
+                          <Button
+                            onClick={() =>
+                              setUpdateObj({ ...updateObj, vendorDocument: { ...updateObj.vendorDocument, bankDetails: undefined } })
+                            }
+                            variant="outlined"
+                            color="error"
+                          >
+                            remove
+                          </Button>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* currentAddressProof */}
+                  <div>
+                    <p className="text-md font-semibold">Current Address Proof</p>
+                    {updateObj?.vendorDocument?.currentAddressProof == undefined ? (
+                      <>
+                        <FormControl fullWidth>
+                          <TextField type="file" variant="outlined" name="currentAddressProof" onChange={(e) => handleDocumentPhoto(e)} />
+                        </FormControl>
+                        {currAddressProofErr && <p className="text-red-500 ml-2 text-xs">currentAddressProof Error</p>}
+                      </>
+                    ) : (
+                      <div>
+                        <div className="flex justify-between">
+                          {' '}
+                          <a href={updateObj?.vendorDocument?.currentAddressProof} target="_blank">
+                            <img src={updateObj?.vendorDocument?.currentAddressProof} alt="pancard" className="w-20 h-20 rounded-xl" />
+                          </a>
+                          <Button
+                            onClick={() =>
+                              setUpdateObj({
+                                ...updateObj,
+                                vendorDocument: { ...updateObj.vendorDocument, currentAddressProof: undefined }
+                              })
+                            }
+                            variant="outlined"
+                            color="error"
+                          >
+                            remove
+                          </Button>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                  {/* parmanentAddressProof: */}
+                  <div>
+                    <p className="text-md font-semibold">Parmanent Address Proof</p>
+                    {updateObj?.vendorDocument?.parmanentAddressProof == undefined ? (
+                      <>
+                        <FormControl fullWidth>
+                          <TextField type="file" variant="outlined" name="parmanentAddressProof" onChange={(e) => handleDocumentPhoto(e)} />
+                        </FormControl>
+                        {prmtAddressProofErr && <p className="text-red-500 ml-2 text-xs">parmanentAddressProof Error</p>}
+                      </>
+                    ) : (
+                      <div>
+                        <div className="flex justify-between">
+                          {' '}
+                          <a href={updateObj?.vendorDocument?.parmanentAddressProof} target="_blank">
+                            <img
+                              src={updateObj?.vendorDocument?.parmanentAddressProof}
+                              alt="parmanentAddressProof"
+                              className="w-20 h-20 rounded-xl"
+                            />
+                          </a>
+                          <Button
+                            onClick={() =>
+                              setUpdateObj({
+                                ...updateObj,
+                                vendorDocument: { ...updateObj.vendorDocument, parmanentAddressProof: undefined }
+                              })
+                            }
+                            variant="outlined"
+                            color="error"
+                          >
+                            remove
+                          </Button>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                  {/* profile: */}
+                  <div>
+                    <p className="text-md font-semibold">Profile</p>
+                    {updateObj?.vendorDocument?.profile == undefined ? (
+                      <>
+                        <FormControl fullWidth>
+                          <TextField type="file" variant="outlined" name="profile" onChange={(e) => handleDocumentPhoto(e)} />
+                        </FormControl>
+                        {photoErr && <p className="text-red-500 ml-2 text-xs">profile Error</p>}
+                      </>
+                    ) : (
+                      <div>
+                        <div className="flex justify-between">
+                          {' '}
+                          <a href={updateObj?.vendorDocument?.profile} target="_blank">
+                            <img src={updateObj?.vendorDocument?.profile} alt="profile" className="w-20 h-20 rounded-xl" />
+                          </a>
+                          <Button
+                            onClick={() =>
+                              setUpdateObj({ ...updateObj, vendorDocument: { ...updateObj.vendorDocument, profile: undefined } })
+                            }
                             variant="outlined"
                             color="error"
                           >
@@ -593,15 +939,14 @@ export const AllVendor = () => {
                     )}
                   </div>
                 </div>
-                <div>
-                  <label>
-                    <input
-                      type="checkbox"
-                      checked={Boolean(updateObj.activeStatus)}
-                      onChange={(e) => setUpdateObj({ ...updateObj, activeStatus: e.target.checked })}
-                    />
-                    Active Status
-                  </label>
+                <div className="mt-1">
+                  <input
+                    type="checkbox"
+                    checked={Boolean(updateObj.activeStatus)}
+                    id="status"
+                    onChange={(e) => setUpdateObj({ ...updateObj, activeStatus: e.target.checked })}
+                  />{' '}
+                  <label htmlFor="status"> Active Status</label>
                 </div>
               </div>
 
