@@ -13,11 +13,14 @@ import {
   FormControl,
   Button,
   Modal,
-  Box
+  Box,
+  Checkbox,
+  FormControlLabel
 } from '@mui/material';
 import axios from 'axios';
-import toast, { Toaster } from 'react-hot-toast';
+import { Toaster } from 'react-hot-toast';
 import { IconX } from '@tabler/icons-react';
+import { BackendUrl } from 'utils/config';
 
 const columns = [
   { id: 'route_no', label: 'Route No', align: 'center', minWidth: 100 },
@@ -25,8 +28,11 @@ const columns = [
   { id: 'start_time', label: 'Start Time', align: 'center', minWidth: 200 },
   { id: 'end_point', label: 'End Point', align: 'center', minWidth: 200 },
   { id: 'end_time', label: 'End Point', align: 'center', minWidth: 200 },
+  { id: 'perkmrate', label: 'Rate/Km', align: 'center', minWidth: 100 },
   { id: 'fixed_rate', label: 'Fixed Rate', align: 'center', minWidth: 100 },
-  { id: 'distance', label: 'Distance (km)', align: 'center', minWidth: 200 },
+  { id: 'maxroutefare', label: 'Max Fare', align: 'center', minWidth: 100 },
+  { id: 'Adhoc Seats', label: 'Adhoc Seats', align: 'center', minWidth: 140 },
+  { id: 'distance', label: 'Distance(km)', align: 'center', minWidth: 120 },
   { id: 'status', label: 'Status', align: 'center', minWidth: 50 },
   { id: 'edit', label: 'Update', minWidth: 25, align: 'center' }
 ];
@@ -36,6 +42,8 @@ export const AllRoute = () => {
   // update state
   const [updateOpen, setUpdateOpen] = useState(false);
   const [updateObj, setUpdateObj] = useState({});
+  // refreshPage
+  const [refreshPage, setRefreshPage] = useState(false);
 
   // handle update field err
   const [startpointnameErr, setStartPointNameErr] = useState(false);
@@ -46,21 +54,24 @@ export const AllRoute = () => {
   const [endlatErr, setEndlatErr] = useState(false);
   const [endlngErr, setEndlngErr] = useState(false);
   const [totalroutedistanceErr, setTotalRouteDistanceErr] = useState(false);
-  const [routeNumberErr, setRouteNumberErr] = useState(false);
   const [routeendtimeErr, setRouteEndTimeErr] = useState(false);
   const [fixedRateErr, setFixedRateErr] = useState(false);
   const [baseRateErr, setBaseRateErr] = useState(false);
+  const [perKmRateErr, setPerKmRateErr] = useState(false);
+  const [maxRouteFareErr, setMaxRouteFareErr] = useState(false);
+  const [routeBaseAdhocErr, setRouteBaseAdhocErr] = useState(false);
 
   useEffect(() => {
+    setRefreshPage(false);
     axios
-      .get('http://192.168.1.230:3000/app/v1/route/getRouteDetails')
+      .get(`${BackendUrl}/app/v1/route/getRouteDetails`)
       .then((res) => {
         //  setConductorData(res.data?.result);
         // console.log(res.data.result);
         setRouteData(res.data?.result);
       })
       .catch((e) => console.log('Api fail ', e));
-  }, []);
+  }, [refreshPage]);
   const handleOpen = (item) => {
     setUpdateObj(item);
     setUpdateOpen(true);
@@ -92,18 +103,21 @@ export const AllRoute = () => {
         totalRouteDistance: updateObj.totalroutedistance,
         routeStartTime: updateObj.routestarttime,
         routeEndTime: updateObj.routeendtime,
-        isFixRate: false,
         activeStatus: Boolean(updateObj.activeStatus),
         routeFixedRateIn: updateObj.routefixedrate,
         routeBasePriceIn: updateObj.routebaseprice,
-        routeNumberIn: updateObj.routenumber
+        routeNumberIn: updateObj.routenumber,
+        userIsFixedRate: Boolean(updateObj.isFixedRate),
+        userPerKmRate: updateObj.perkmrate,
+        userBasePriceAdhoc: updateObj.routebasepriceadhoc,
+        userMaxRouteFare: updateObj.maxroutefare
       };
-      // console.log(body);
+      console.log(body);
       axios
-        .patch(' http://192.168.1.230:3000/app/v1/route/updateRoute', body)
+        .patch(`${BackendUrl}/app/v1/route/updateRoute`, body)
         .then((res) => {
-          console.log(res.data);
-          toast.success('Route Added Successfully');
+          // console.log(res.data);
+          toast.success(res.data.result);
         })
         .catch((err) => {
           console.log('Api error : ', err);
@@ -120,7 +134,6 @@ export const AllRoute = () => {
       setRouteEndTimeErr(false);
       setFixedRateErr(false);
       setBaseRateErr(false);
-      setRouteNumberErr(false);
     } else {
       updateObj.endlat == '' ? setEndlatErr(true) : setEndlatErr(false);
       updateObj.endlng == '' ? setEndlngErr(true) : setEndlngErr(false);
@@ -128,13 +141,19 @@ export const AllRoute = () => {
       updateObj.routebaseprice == '' ? setBaseRateErr(true) : setBaseRateErr(false);
       updateObj.routeendtime == '' ? setRouteEndTimeErr(true) : setRouteEndTimeErr(false);
       updateObj.routefixedrate == '' ? setFixedRateErr(true) : setFixedRateErr(false);
-      updateObj.routenumber == '' ? setRouteNumberErr(true) : setRouteNumberErr(false);
       updateObj.routestarttime == '' ? setRouteStartTimeErr(true) : setRouteStartTimeErr(false);
       updateObj.startlat == '' ? setStartlatErr(true) : setStartlatErr(false);
       updateObj.startlng == '' ? setStartlngErr(true) : setStartlngErr(false);
       updateObj.startpointname == '' ? setStartPointNameErr(true) : setStartPointNameErr(false);
       updateObj.totalroutedistance == '' ? setTotalRouteDistanceErr(true) : setTotalRouteDistanceErr(false);
+
+      updateObj.userMaxRouteFare == '' ? setMaxRouteFareErr(true) : setMaxRouteFareErr(false);
+      // route base price Adhoc
+      updateObj.userBasePriceAdhoc == '' ? setRouteBaseAdhocErr(true) : setRouteBaseAdhocErr(false);
+      // per km rate
+      updateObj.userPerKmRate == '' ? setPerKmRateErr(true) : setPerKmRateErr(false);
     }
+    setRefreshPage(true);
   };
   const handleTimeInput = (e) => {
     const inputValue = e.target.value;
@@ -145,7 +164,15 @@ export const AllRoute = () => {
       setUpdateObj({ ...updateObj, [field]: inputValue });
     }
   };
-
+  const handleActiveStatus = (value) => {
+    if (value) {
+      window.alert('Are you want to active the route');
+      setUpdateObj({ ...updateObj, activeStatus: value });
+    } else {
+      window.alert('Are you want to DeActive the route');
+      setUpdateObj({ ...updateObj, activeStatus: value });
+    }
+  };
   const style = {
     position: 'absolute',
     top: '50%',
@@ -184,9 +211,12 @@ export const AllRoute = () => {
                           <TableCell align="center">{item.routestarttime}</TableCell>
                           <TableCell align="center">{item.endpointname}</TableCell>
                           <TableCell align="center">{item.routeendtime}</TableCell>
+                          <TableCell align="center">{item.perkmrate}</TableCell>
                           <TableCell align="center">{item.routefixedrate}</TableCell>
+                          <TableCell align="center">{item.maxroutefare}</TableCell>
+                          <TableCell align="center">{item.routebasepriceadhoc}</TableCell>
                           <TableCell align="center">{parseFloat(item.totalroutedistance).toFixed(2)}</TableCell>
-                          <TableCell align="center">{Boolean(item.activeStatus) ? "Actived": "Deactived"}</TableCell>
+                          <TableCell align="center">{item.activeStatus == 1 ? 'Actived' : 'Deactived'}</TableCell>
                           <TableCell align="center">
                             <button className="text-blue-600" onClick={() => handleOpen(item)}>
                               edit
@@ -204,14 +234,19 @@ export const AllRoute = () => {
       </div>
 
       {/* update api */}
-      <Modal open={updateOpen} onClose={handleClose} aria-labelledby="modal-modal-title" aria-describedby="modal-modal-description">
-        <Box sx={style} className=" w-full max-lg:h-screen max-lg:w-screen p-4 overflow-y-scroll">
+      <Modal
+        open={updateOpen}
+        onClose={handleClose}
+        aria-labelledby="modal-modal-title"
+        aria-describedby="modal-modal-description"
+        className=""
+      >
+        <Box sx={style} className=" w-full max-lg:h-screen max-lg:w-screen p-4 overflow-x-hidden overflow-y-scroll">
           <div className=" max-lg:w-full flex flex-col gap-1 bg-white my-4 p-4 rounded-xl relative">
-            {' '}
             <div className="absolute top-5 left-1/2 ">
               <Toaster />
             </div>
-            <div className="flex justify-between pb-5 ">
+            <div className="flex justify-between pb-5 px-20 max-lg:px-0">
               <p className="text-xl font-bold">Update Route</p>
               <button onClick={handleClose} className="">
                 <IconX />
@@ -241,12 +276,10 @@ export const AllRoute = () => {
                         id="oulined-basic"
                         variant="outlined"
                         value={updateObj.routenumber}
-                        onChange={(e) => setUpdateObj({ ...updateObj, routenumber: e.target.value })}
+                        disabled={true}
                       />
                     </FormControl>
-                    {routeNumberErr && <p className="text-xs text-red-500 ml-2">Route number error</p>}
                   </div>
-
                   {/* total distance error */}
                   <div>
                     <FormControl fullWidth>
@@ -383,7 +416,7 @@ export const AllRoute = () => {
                         id="oulined-basic"
                         variant="outlined"
                         value={updateObj.routefixedrate}
-                        onChange={(e) => setUpdateObj({ ...updateObj, routefixedRate: e.target.value })}
+                        onChange={(e) => setUpdateObj({ ...updateObj, routefixedrate: e.target.value })}
                       />
                     </FormControl>
                     {fixedRateErr && <p className="text-red-500 text-xs ml-2">Fixed Rate Error</p>}
@@ -401,12 +434,60 @@ export const AllRoute = () => {
                     </FormControl>
                     {baseRateErr && <p className="text-red-500 text-xs ml-2">Base Rate Error</p>}
                   </div>
+                  <div>
+                    <FormControl fullWidth>
+                      <TextField
+                        type="number"
+                        label="per Km Rate"
+                        id="oulined-basic"
+                        variant="outlined"
+                        value={updateObj.perkmrate}
+                        onChange={(e) => setUpdateObj({ ...updateObj, perkmrate: e.target.value })}
+                      />
+                    </FormControl>
+                    {perKmRateErr && <p className="text-red-500 text-xs ml-2">per km Rate Error</p>}
+                  </div>
+                  <div>
+                    <FormControl fullWidth>
+                      <TextField
+                        type="number"
+                        label="Route Base Price Adhoc"
+                        id="oulined-basic"
+                        variant="outlined"
+                        value={updateObj.routebasepriceadhoc}
+                        onChange={(e) => setUpdateObj({ ...updateObj, routebasepriceadhoc: e.target.value })}
+                      />
+                    </FormControl>
+                    {routeBaseAdhocErr && <p className="text-red-500 text-xs ml-2">route Base Adhoc Error</p>}
+                  </div>
+
+                  <div>
+                    <FormControl fullWidth>
+                      <TextField
+                        type="number"
+                        label="Max Route Fare"
+                        id="oulined-basic"
+                        variant="outlined"
+                        value={updateObj.maxroutefare}
+                        onChange={(e) => setUpdateObj({ ...updateObj, maxroutefare: e.target.value })}
+                      />
+                    </FormControl>
+                    {maxRouteFareErr && <p className="text-red-500 text-xs ml-2">max Route Fare Error</p>}
+                  </div>
+                  <div>
+                    <FormControlLabel
+                      control={<Checkbox inputProps={{ 'aria-label': 'controlled' }} />}
+                      label="IsFixedRate"
+                      checked={Boolean(updateObj.isFixedRate)}
+                      onChange={(e) => setUpdateObj({ ...updateObj, isFixedRate: e.target.checked })}
+                    />
+                  </div>
                   <div className="m2-1 flex gap-2 items-center">
                     <input
                       type="checkbox"
                       id="check"
-                      checked={Boolean(updateObj.activeStatus)}
-                      onChange={(e) => setUpdateObj({ ...updateObj, activeStatus: e.target.checked })}
+                      checked={updateObj.activeStatus}
+                      onChange={(e) => handleActiveStatus(e.target.checked)}
                     />
                     <label htmlFor="check"> Active Status</label>
                   </div>
@@ -426,7 +507,6 @@ export const AllRoute = () => {
           </div>
         </Box>
       </Modal>
-      {/* update modal end */}
       {/* update modal end */}
     </div>
   );

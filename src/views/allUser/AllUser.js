@@ -20,6 +20,8 @@ import {
 import toast, { Toaster } from 'react-hot-toast';
 import { IconX } from '@tabler/icons-react';
 import axios from 'axios';
+import { BackendUrl } from 'utils/config';
+
 const columns = [
   { id: 'user_id', label: 'User Id', align: 'center', minWidth: 100 },
   { id: 'user_name', label: 'User Name', align: 'center', minWidth: 150 },
@@ -134,7 +136,7 @@ export const AllUser = () => {
   const [officeCityErr, setOfficeCityErr] = useState(false);
   const [officeAddressErr, setOfficeAddressErr] = useState(false);
   useEffect(() => {
-    fetch('http://13.200.168.251:3000/app/v1/user/getAllusers')
+    fetch(`${BackendUrl}/app/v1/user/getAllusers`)
       .then((res) => res.json())
       .then((data) => setUserData(data.users))
       .catch((e) => console.log('Api fail error', e));
@@ -225,7 +227,7 @@ export const AllUser = () => {
       };
       console.log(body);
       axios
-        .patch('http://192.168.1.230:3000/app/v1/user/editUser', body)
+        .patch(`${BackendUrl}/app/v1/user/editUser`, body)
         .then((res) => {
           toast.success(`${res.data.message}`);
           console.log(res.data.message);

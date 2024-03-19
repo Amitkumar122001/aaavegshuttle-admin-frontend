@@ -19,6 +19,7 @@ import {
   MenuItem
 } from '@mui/material';
 import toast, { Toaster } from 'react-hot-toast';
+import { BackendUrl } from 'utils/config';
 const columns = [
   { id: 'bus_id', label: 'Bus Id', align: 'center', minWidth: 100 },
   { id: 'bus_number', label: 'Bus Number', align: 'center', minWidth: 150 },
@@ -96,7 +97,7 @@ export const AllTrip = () => {
   };
   const handleClose = () => setUpdateOpen(false);
   useEffect(() => {
-    fetch('http://192.168.1.230:3000/app/v1/bus/getAllBuses')
+    fetch(`${BackendUrl}/app/v1/bus/getAllBuses`)
       .then((res) => res.json())
       .then((data) => {
         setBusData(data.buses);
@@ -151,8 +152,8 @@ export const AllTrip = () => {
   const [errTabletImei, setErrTabletImei] = useState(false);
   const [errCapacity, setErrCapacity] = useState(false);
 
-  //updatebus
-  const updateBus = () => {
+  //updateTrip
+  const updateTrip = () => {
     if (updateObj.bus_number != '') {
       toast.success('update successfully');
       console.log('right');
@@ -399,7 +400,7 @@ export const AllTrip = () => {
 
               <div>
                 <div className="flex gap-10 justify-between mb-3">
-                  <Button variant="contained" className={'bg-blue-700'} onClick={updateBus}>
+                  <Button variant="contained" className={'bg-blue-700'} onClick={updateTrip}>
                     Add Bus
                   </Button>
                   <Button variant="outlined" color="error">

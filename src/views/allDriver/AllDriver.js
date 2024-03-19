@@ -18,6 +18,8 @@ import FilterListIcon from '@mui/icons-material/FilterList';
 import toast, { Toaster } from 'react-hot-toast';
 import LoaderCircular from 'ui-component/LoaderCircular';
 import axios from 'axios';
+import { BackendUrl, AwsBucketUrl } from 'utils/config';
+
 const columns = [
   { id: 'driver_name', label: 'Driver Name', align: 'center', minWidth: 150 },
   {
@@ -66,7 +68,7 @@ export const AllDriver = () => {
   useEffect(() => {
     setRefreshPage(false);
     axios
-      .get('http://192.168.1.230:3000/app/v1/driver/getAllDriver')
+      .get(`${BackendUrl}/app/v1/driver/getAllDriver`)
       .then((res) => setDriverData(res.data?.result))
       .catch((e) => console.log('Api fail ', e));
   }, [refreshPage]);
@@ -79,10 +81,8 @@ export const AllDriver = () => {
     }
   }, [value, driverData]);
   // update error
-  const [pancardErr, setPancardErr] = useState(false);
   const [dlNoErr, setDlNoErr] = useState(false);
   const [driverNameErr, setDriverNameErr] = useState(false);
-  const [driverMobileErr, setDriverMobileErr] = useState(false);
   const [primaryNoErr, setPrimaryNoErr] = useState(false);
   const [secondNoErr, setSecondNoErr] = useState(false);
   const [currAddressErr, setCurrAddressErr] = useState(false);
@@ -119,46 +119,68 @@ export const AllDriver = () => {
   //update driver
   const updateDriver = () => {
     if (
-      updateObj.driver_name != '' &&
-      updateObj.driver_phonenumber?.length == 10 &&
-      updateObj.driver_address != '' &&
-      updateObj.driver_document?.aadhar != '' &&
-      updateObj.driver_document?.pancard != ''
+      updateObj.driver_name != undefined &&
+      updateObj.driver_name != undefined &&
+      updateObj.current_address != undefined &&
+      updateObj.permanent_address != undefined &&
+      updateObj.primary_contact.length == 10 &&
+      updateObj.emergency_contact.length == 10 &&
+      updateObj.adhaar_number != undefined &&
+      updateObj.dl_number != undefined &&
+      updateObj.imei_number != undefined &&
+      updateObj.vendor_name != undefined &&
+      updateObj.driver_document.dl != undefined &&
+      updateObj.driver_document.bgv != undefined &&
+      updateObj.driver_document.pcc != undefined &&
+      updateObj.driver_document.resume != undefined &&
+      updateObj.driver_document.profile != undefined &&
+      updateObj.driver_document.aadharBack != undefined &&
+      updateObj.driver_document.aadharfront != undefined &&
+      updateObj.driver_document.fingerprint != undefined &&
+      updateObj.driver_document.curr_address != undefined &&
+      updateObj.driver_document.covidVaccination != undefined &&
+      updateObj.driver_document.permanent_address != undefined
     ) {
       const document = {
-        dl: '',
-        bgv: '',
-        pcc: '',
-        resume: '',
-        profile: '',
-        aadharBack: '',
-        aadharfront: '',
-        fingerprint: '',
-        curr_address: '',
-        covidVaccination: '',
-        permanent_address: ''
+        dl: updateObj.driver_document?.dl,
+        bgv: updateObj.driver_document?.bgv,
+        pcc: updateObj.driver_document?.pcc,
+        resume: updateObj.driver_document?.resume,
+        profile: updateObj.driver_document?.profile,
+        aadharBack: updateObj.driver_document?.aadharBack,
+        aadharfront: updateObj.driver_document?.aadharfront,
+        fingerprint: updateObj.driver_document?.fingerprint,
+        curr_address: updateObj.driver_document?.curr_address,
+        covidVaccination: updateObj.driver_document?.covidVaccination,
+        permanent_address: updateObj.driver_document?.permanent_address
       };
-      if (updateObj?.driver_document?.voterId !== undefined) {
-        document.voterId = updateObj.driver_document?.voterId;
-      }
 
       const body = {
         driverId: updateObj.driver_id,
         driverName: updateObj.driver_name,
-        driverPhonenumber: updateObj.driver_phonenumber,
-        driverAddress: updateObj.driver_address,
+        currentAddress: updateObj.current_address,
+        permanentAddress: updateObj.permanent_address,
+        primaryContact: updateObj.primary_contact,
+        emergencyContact: updateObj.emergency_contact,
+        adhaarNumber: updateObj.adhaar_number,
+        dlNumber: updateObj.dl_number,
+        imeiNumber: updateObj.imei_number,
         driverDocument: document,
         vendorId: updateObj.vendor_id,
         activeStatus: Boolean(updateObj.activeStatus)
       };
-
-      //console.log(body);
+      // console.log(body);
 
       axios
-        .patch('http://192.168.1.230:3000/app/v1/driver/updateDriver', body)
+        .patch(`${BackendUrl}/app/v1/driver/updateDriver`, body)
         .then((res) => {
-          console.log(res.body);
-          toast.success('update successfully');
+          console.log(res.data);
+          if (res.data.isDriverUpdated) {
+            toast.success(res.data.result);
+          } else {
+            toast.success(res.data.result);
+          }
+
           setRefreshPage(true);
           clearAllField();
         })
@@ -167,33 +189,29 @@ export const AllDriver = () => {
           toast.error('Api Error');
         });
     } else {
-      updateObj.driver_name == '' ? setDriverNameErr(true) : setDriverNameErr(false);
-      updateObj.primary_contact == '' ? setPrimaryNoErr(true) : setPrimaryNoErr(false);
-      updateObj.emergency_contact == '' ? setSecondNoErr(true) : setSecondNoErr(false);
-      updateObj.current_address == '' ? setCurrAddressErr(true) : setCurrAddressErr(false);
-      updateObj.permanent_address == '' ? setPrmtAddressErr(true) : setPrmtAddressErr(false);
-      updateObj.driver_document.bgv == '' ? setBGVErr(true) : setBGVErr(false);
-      updateObj.driver_document.pcc == '' ? setPccErr(true) : setPccErr(false);
-      updateObj.driver_document.resume == '' ? setResumeErr(true) : setResumeErr(false);
-      updateObj.driver_document.profile == '' ? setPhotoErr(true) : setPhotoErr(false);
-      updateObj.driver_document.aadharfront == '' ? setAdharFrontErr(true) : setAdharFrontErr(false);
-      updateObj.driver_document.aadharBack == '' ? setAdharBackErr(true) : setAdharBackErr(false);
-      updateObj.driver_document.fingerprint == '' ? setFingerPrintErr(true) : setFingerPrintErr(false);
-      updateObj.driver_document.curr_address == '' ? setCurrAddressProofErr(true) : setCurrAddressProofErr(false);
-      updateObj.driver_document.covidVaccination == '' ? setCovidVErr(true) : setCovidVErr(false);
-      updateObj.driver_document.permanent_address == '' ? setPrmtAddressProofErr(true) : setPrmtAddressProofErr(false);
-
-      updateObj.adhaar_number == '' ? setAdharNoErr(true) : setAdharNoErr(false);
-      updateObj.dl_number == '' ? setDlNoErr(true) : setDlNoErr(false);
-      updateObj.imei_number == '' ? setIMEINoErr(true) : setIMEINoErr(false);
+      updateObj.driver_name == undefined ? setDriverNameErr(true) : setDriverNameErr(false);
+      updateObj.primary_contact.length != 10 || undefined ? setPrimaryNoErr(true) : setPrimaryNoErr(false);
+      updateObj.emergency_contact.length != 10 || undefined ? setSecondNoErr(true) : setSecondNoErr(false);
+      updateObj.current_address == undefined ? setCurrAddressErr(true) : setCurrAddressErr(false);
+      updateObj.permanent_address == undefined ? setPrmtAddressErr(true) : setPrmtAddressErr(false);
+      updateObj.driver_document.bgv == undefined ? setBGVErr(true) : setBGVErr(false);
+      updateObj.driver_document.pcc == undefined ? setPccErr(true) : setPccErr(false);
+      updateObj.driver_document.resume == undefined ? setResumeErr(true) : setResumeErr(false);
+      updateObj.driver_document.profile == undefined ? setPhotoErr(true) : setPhotoErr(false);
+      updateObj.driver_document.aadharfront == undefined ? setAdharFrontErr(true) : setAdharFrontErr(false);
+      updateObj.driver_document.aadharBack == undefined ? setAdharBackErr(true) : setAdharBackErr(false);
+      updateObj.driver_document.fingerprint == undefined ? setFingerPrintErr(true) : setFingerPrintErr(false);
+      updateObj.driver_document.curr_address == undefined ? setCurrAddressProofErr(true) : setCurrAddressProofErr(false);
+      updateObj.driver_document.covidVaccination == undefined ? setCovidVErr(true) : setCovidVErr(false);
+      updateObj.driver_document.permanent_address == undefined ? setPrmtAddressProofErr(true) : setPrmtAddressProofErr(false);
+      updateObj.adhaar_number == undefined ? setAdharNoErr(true) : setAdharNoErr(false);
+      updateObj.dl_number == undefined ? setDlNoErr(true) : setDlNoErr(false);
+      updateObj.imei_number == undefined ? setIMEINoErr(true) : setIMEINoErr(false);
     }
   };
   // console.log(updateObj);
   const clearAllField = () => {
     setDriverNameErr(false);
-    setDriverMobileErr(false);
-
-    setPancardErr(false);
   };
   // modal open
   const handleOpen = (item) => {
@@ -257,14 +275,14 @@ export const AllDriver = () => {
     let config = {
       method: 'post',
       maxBodyLength: Infinity,
-      url: `http://13.200.168.251:3000/app/v1/aws/upload/driverimages`,
+      url: `${AwsBucketUrl}/app/v1/aws/upload/driverimages`,
       headers: {
         'Content-Type': 'multipart/form-data'
       },
       data: reader
     };
     let imageName = await imageUploadApi(config);
-    let totalUrl = `http://13.200.168.251:3000/app/v1/aws/getImage/driverimages/` + imageName;
+    let totalUrl = `${AwsBucketUrl}/app/v1/aws/getImage/driverimages/` + imageName;
     // console.log(totalUrl);
     return totalUrl;
   };
@@ -423,14 +441,14 @@ export const AllDriver = () => {
                       <TextField
                         fullWidth
                         id="outlined-basi"
-                        label="Mobile"
+                        label="Primary contact"
                         variant="outlined"
                         inputProps={{ maxLength: 10, minLength: 10 }}
                         type="tel"
                         value={updateObj.primary_contact}
                         onChange={(e) => setUpdateObj({ ...updateObj, primary_contact: e.target.value })}
                       />
-                      {driverMobileErr && <p className="text-red-500 ml-2 text-xs">mobile number error</p>}
+                      {primaryNoErr && <p className="text-red-500 ml-2 text-xs">mobile number error</p>}
                     </FormControl>
                   </div>
                   {/* emergency_contact */}
@@ -495,6 +513,21 @@ export const AllDriver = () => {
                     </FormControl>
                     {aadharNoErr && <p className="text-red-500 ml-2 text-xs">adhaar_number Error</p>}
                   </div>
+                  {/* dl_number */}
+                  <div className="w-full">
+                    <FormControl fullWidth>
+                      <TextField
+                        fullWidth
+                        id="outlined-basi"
+                        label="dl_number"
+                        variant="outlined"
+                        type="text"
+                        value={updateObj.dl_number}
+                        onChange={(e) => setUpdateObj({ ...updateObj, dl_number: e.target.value })}
+                      />
+                    </FormControl>
+                    {dlNoErr && <p className="text-red-500 ml-2 text-xs">driving_number Error</p>}
+                  </div>
                   {/* imei_number */}
                   <div className="w-full">
                     <FormControl fullWidth>
@@ -511,6 +544,69 @@ export const AllDriver = () => {
                     {imeiNoErr && <p className="text-red-500 ml-2 text-xs">imei_number Error</p>}
                   </div>
                 </div>{' '}
+                <div className="grid grid-cols-2  gap-4 my-6">
+                  <div className="w-full">
+                    <p className="w-full border border-gray-400 rounded-xl px-2">
+                      <label htmlFor="dlStart" className="text-md w-full block">
+                        License start validity
+                      </label>
+                      <input
+                        type="date"
+                        className="outline-none border-none w-full"
+                        id="dlStart"
+                        // value={driverForm.dlStart}
+                        // onChange={(e) => setDriverForm({ ...driverForm, dlStart: e.target.value })}
+                      />
+                    </p>
+                    {true && <p className="text-red-500 ml-2">dl start error</p>}
+                  </div>
+                  {/* dl end time */}
+                  <div className="w-full">
+                    <p className="w-full border border-gray-400 rounded-xl px-2">
+                      <label htmlFor="dlExpiry" className="text-md w-full block">
+                        License Expiry validity
+                      </label>
+                      <input
+                        type="date"
+                        className="outline-none border-none w-full"
+                        id="dlExpiry"
+                        // value={driverForm.dlExpiry}
+                        // onChange={(e) => setDriverForm({ ...driverForm, dlExpiry: e.target.value })}
+                      />
+                    </p>
+                    {true && <p className="text-red-500  ml-2">Dl expiry error</p>}
+                  </div>
+                  <div>
+                    <label htmlFor="pccStart" className="text-md w-full block">
+                      pcc start
+                    </label>
+                    <p className="w-full border border-gray-400 rounded-xl px-2 py-3">
+                      <input
+                        type="date"
+                        className="outline-none border-none w-full"
+                        id="pccStart"
+                        // value={driverForm.pccStart}
+                        // onChange={(e) => setDriverForm({ ...driverForm, pccStart: e.target.value })}
+                      />
+                    </p>
+                    {true && <p className="text-red-500  ml-2">PCC end error</p>}
+                  </div>
+                  <div>
+                    <label htmlFor="pccEnd" className="text-md w-full block">
+                      pcc end
+                    </label>
+                    <p className="w-full border border-gray-400 rounded-xl px-2 py-3">
+                      <input
+                        type="date"
+                        className="outline-none border-none w-full"
+                        id="pccEnd"
+                        // value={driverForm.pccEnd}
+                        // onChange={(e) => setDriverForm({ ...driverForm, pccEnd: e.target.value })}
+                      />
+                    </p>
+                    {true && <p className="text-red-500  ml-2">PCC end error</p>}
+                  </div>
+                </div>
                 <div className=" grid grid-cols-3 gap-6 mt-4 max-lg:grid-cols-2 max-lg:gap-4  max-md:grid-cols-1">
                   <div>
                     <p className="text-md font-semibold">Aadhar Front</p>

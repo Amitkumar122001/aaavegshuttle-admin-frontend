@@ -3,6 +3,8 @@ import { TextField, Button, FormControl } from '@mui/material';
 import toast, { Toaster } from 'react-hot-toast';
 import Loader from '../../ui-component/LoaderCircular';
 import axios from 'axios';
+import { BackendUrl, AwsBucketUrl } from 'utils/config';
+
 function validateEmail(email) {
   const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
   return re.test(email);
@@ -83,14 +85,14 @@ export const AddVendor = () => {
     let config = {
       method: 'post',
       maxBodyLength: Infinity,
-      url: `http://13.200.168.251:3000/app/v1/aws/upload/driverimages`,
+      url: `${AwsBucketUrl}/app/v1/aws/upload/driverimages`,
       headers: {
         'Content-Type': 'multipart/form-data'
       },
       data: reader
     };
     let imageName = await imageUploadApi(config);
-    let totalUrl = `http://13.200.168.251:3000/app/v1/aws/getImage/driverimages/` + imageName;
+    let totalUrl = `${AwsBucketUrl}/app/v1/aws/getImage/driverimages/` + imageName;
     // console.log(totalUrl);
     return totalUrl;
   };
@@ -149,7 +151,7 @@ export const AddVendor = () => {
       };
       console.log(body);
       axios
-        .post('http://192.168.1.230.:3000/app/v1/vendor/insertVendor', body, { headers: {} })
+        .post(`${BackendUrl}/app/v1/vendor/insertVendor`, body, { headers: {} })
         .then((res) => {
           console.log(res.data);
           if (res.data.isVendorCreated) {
@@ -286,13 +288,13 @@ export const AddVendor = () => {
               {vendorForm.photo == '' ? (
                 <p className="w-full flex justify-between border rounded-xl p-3  border-gray-400">
                   <label htmlFor="photo" className="w-full block max-lg:text-[12px] max-md:text-[10px]">
-                    Upload current Address{' '}
+                    Upload Profile{' '}
                   </label>{' '}
                   <input type="file" id="photo" name="photo" onChange={(e) => handleDocumentPhoto(e)} className="text-xs w-24" />
                 </p>
               ) : (
                 <div className="flex justify-between">
-                  <img src={vendorForm.photo} alt="photo" className="w-20 h-20 rounded-xl" />
+                  <img src={vendorForm.photo} alt="" className="w-20 h-20 rounded-xl" />
                   <Button onClick={() => setVendorForm({ ...vendorForm, photo: '' })} variant="outlined" color="error">
                     remove
                   </Button>

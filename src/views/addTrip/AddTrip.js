@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Button, FormControl, Select, InputLabel, MenuItem, TextField } from '@mui/material';
 import toast, { Toaster } from 'react-hot-toast';
 import axios from 'axios';
+import { BackendUrl } from 'utils/config';
 export const AddTrip = () => {
   const [addTripForm, setAddTripForm] = useState({
     routeId: '',
@@ -17,11 +18,11 @@ export const AddTrip = () => {
   const [buses, setBuses] = useState([]);
   useEffect(() => {
     axios
-      .get('http://13.200.168.251:3000/app/v1/route/getAllRoutes')
+      .get(`${BackendUrl}/app/v1/route/getAllRoutes`)
       .then((res) => setRoutes(res?.data?.result))
       .catch((e) => console.log(e));
     axios
-      .get('http://13.200.168.251:3000/app/v1/bus/getAllBuses')
+      .get(`${BackendUrl}/app/v1/bus/getAllBuses`)
       .then((res) => setBuses(res?.data?.buses))
       .catch((e) => console.log(e));
   }, []);

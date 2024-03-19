@@ -18,6 +18,8 @@ import FilterListIcon from '@mui/icons-material/FilterList';
 import { IconX } from '@tabler/icons-react';
 import LoaderCircular from 'ui-component/LoaderCircular';
 import axios from 'axios';
+import { BackendUrl, AwsBucketUrl } from 'utils/config';
+
 const columns = [
   { id: 'conductor_name', label: 'Name', align: 'center', minWidth: 150 },
   {
@@ -59,13 +61,15 @@ export const AllConductor = () => {
   const [updateOpen, setUpdateOpen] = useState(false);
   const [updateObj, setUpdateObj] = useState({});
   const [isLoading, setisLoading] = useState(false);
-
+  // for refresh the page
+  const [refreshPage, setRefreshPage] = useState(false);
   useEffect(() => {
+    setRefreshPage(false);
     axios
-      .get('http://192.168.1.230:3000/app/v1/conductor/getAllConductors')
+      .get(`${BackendUrl}/app/v1/conductor/getAllConductors`)
       .then((res) => setConductorData(res.data?.result))
       .catch((e) => console.log('Api fail ', e));
-  }, []);
+  }, [refreshPage]);
   useEffect(() => {
     if (value.length > 0) {
       let res = conductorData?.filter((item) => item[field]?.includes(value));
@@ -115,14 +119,14 @@ export const AllConductor = () => {
     let config = {
       method: 'post',
       maxBodyLength: Infinity,
-      url: `http://13.200.168.251:3000/app/v1/aws/upload/driverimages`,
+      url: `${AwsBucketUrl}/app/v1/aws/upload/driverimages`,
       headers: {
         'Content-Type': 'multipart/form-data'
       },
       data: reader
     };
     let imageName = await imageUploadApi(config);
-    let totalUrl = `http://13.200.168.251:3000/app/v1/aws/getImage/driverimages/` + imageName;
+    let totalUrl = `${AwsBucketUrl}/app/v1/aws/getImage/driverimages/` + imageName;
     return totalUrl;
   };
 
@@ -151,7 +155,7 @@ export const AllConductor = () => {
       updateObj.conductor_document?.permanent_address != ''
     ) {
       if (updateObj.primary_contact == updateObj.emergency_contact) {
-        window.alert("primary and emergency contact is same");
+        window.alert('primary and emergency contact is same');
         return;
       }
       const document = {
@@ -185,7 +189,7 @@ export const AllConductor = () => {
 
       console.log(body);
       axios
-        .patch('http://192.168.1.230:3000/app/v1/conductor/updateconductors', body)
+        .patch(`${BackendUrl}/app/v1/conductor/updateconductors`, body)
         .then((res) => {
           console.log(res.data);
           toast.success('update successfully');
@@ -214,6 +218,7 @@ export const AllConductor = () => {
       updateObj.conductor_document.covidVaccination == '' ? setCovidVErr(true) : setCovidVErr(false);
       updateObj.conductor_document.permanent_address == '' ? setPrmtAddressProofErr(true) : setPrmtAddressProofErr(false);
     }
+    setRefreshPage(true);
   };
   const clearAllField = () => {
     setConductorNameErr(false);
@@ -276,6 +281,18 @@ export const AllConductor = () => {
     }
   };
   // console.log(updateObj);
+  // child modal setstate
+
+  const [activeState, setActiveState] = useState(false);
+  const [isactive, setisactive] = useState(null);
+  const [textData, setTextData] = useState('');
+  const handleActiveStatus = (value) => {
+    setTextData(value);
+    setActiveState(true);
+  };
+  useEffect(() => {
+    setUpdateObj({ ...updateObj, isActive: isactive });
+  }, [isactive]);
   return (
     <div>
       <div className=" flex flex-col gap-10 bg-white p-8 max-lg:p-4 max-lg:gap-5 rounded-xl">
@@ -517,6 +534,37 @@ export const AllConductor = () => {
                     </FormControl>
                     {imeiNoErr && <p className="text-red-500 ml-2 text-xs">imei_number Error</p>}
                   </div>
+                  <div>
+                      <p className="w-full border border-gray-400 rounded-xl px-2 py-1">
+                        <label htmlFor="pccstart" className="text-md w-full block">
+                          pcc Start
+                        </label>
+                        <input
+                          type="date"
+                          className="outline-none border-none w-full"
+                          id="pccstart"
+                          // value={conductorForm.pccStart}
+                          // onChange={(e) => setConductorForm({ ...conductorForm, pccStart: e.target.value })}
+                        />
+                      </p>
+                      {true && <p className="text-red-500  ml-2">PCC start error</p>}
+                    </div>
+
+                    <div>
+                      <p className="w-full border border-gray-400 rounded-xl px-2 py-1">
+                        <label htmlFor="pccEnd" className="text-md w-full block">
+                          pcc end
+                        </label>
+                        <input
+                          type="date"
+                          className="outline-none border-none w-full"
+                          id="pccEnd"
+                          // value={conductorForm.pccEnd}
+                          // onChange={(e) => setConductorForm({ ...conductorForm, pccEnd: e.target.value })}
+                        />
+                      </p>
+                      {true && <p className="text-red-500  ml-2">PCC end error</p>}
+                    </div>
                 </div>{' '}
                 <div className=" grid grid-cols-3 gap-6 mt-4 max-lg:grid-cols-2 max-lg:gap-4  max-md:grid-cols-1">
                   <div>
@@ -532,8 +580,10 @@ export const AllConductor = () => {
                       <div>
                         <div className="flex justify-between">
                           {' '}
-                          <a href={updateObj.conductor_document?.aadharBack} target='_blank'><img src={updateObj?.conductor_document?.aadharfront} alt="aadharfront" className="w-20 h-20 rounded-xl" />
-                          </a><Button
+                          <a href={updateObj.conductor_document?.aadharBack} target="_blank" rel="noreferrer">
+                            <img src={updateObj?.conductor_document?.aadharfront} alt="aadharfront" className="w-20 h-20 rounded-xl" />
+                          </a>
+                          <Button
                             onClick={() =>
                               setUpdateObj({
                                 ...updateObj,
@@ -562,8 +612,10 @@ export const AllConductor = () => {
                       <div>
                         <div className="flex justify-between">
                           {' '}
-                          <a href={updateObj.conductor_document?.aadharBack} target='_blank'><img src={updateObj?.conductor_document?.aadharBack} alt="aadharBack" className="w-20 h-20 rounded-xl" />
-                          </a><Button
+                          <a href={updateObj.conductor_document?.aadharBack} target="_blank" rel="noreferrer">
+                            <img src={updateObj?.conductor_document?.aadharBack} alt="aadharBack" className="w-20 h-20 rounded-xl" />
+                          </a>
+                          <Button
                             onClick={() =>
                               setUpdateObj({
                                 ...updateObj,
@@ -593,7 +645,7 @@ export const AllConductor = () => {
                     ) : (
                       <div>
                         <div className="flex justify-between">
-                          <a href={updateObj?.conductor_document?.resume} target="_blank">
+                          <a href={updateObj?.conductor_document?.resume} target="_blank" rel="noreferrer">
                             <img src={updateObj?.conductor_document?.resume} alt="resume" className="w-20 h-20 rounded-xl" />
                           </a>
                           <Button
@@ -621,7 +673,7 @@ export const AllConductor = () => {
                     ) : (
                       <div>
                         <div className="flex justify-between">
-                          <a href={updateObj?.conductor_document?.fingerprint} target="_blank">
+                          <a href={updateObj?.conductor_document?.fingerprint} target="_blank" rel="noreferrer">
                             <img src={updateObj?.conductor_document?.fingerprint} alt="fingerprint" className="w-20 h-20 rounded-xl" />
                           </a>
                           <Button
@@ -652,7 +704,7 @@ export const AllConductor = () => {
                     ) : (
                       <div>
                         <div className="flex justify-between">
-                          <a href={updateObj?.conductor_document?.profile} target="_blank">
+                          <a href={updateObj?.conductor_document?.profile} target="_blank" rel="noreferrer">
                             <img src={updateObj?.conductor_document?.profile} alt="profile" className="w-20 h-20 rounded-xl" />
                           </a>
                           <Button
@@ -681,7 +733,7 @@ export const AllConductor = () => {
                     ) : (
                       <div>
                         <div className="flex justify-between">
-                          <a href={updateObj?.conductor_document?.covidVaccination} target="_blank">
+                          <a href={updateObj?.conductor_document?.covidVaccination} target="_blank" rel="noreferrer">
                             <img
                               src={updateObj?.conductor_document?.covidVaccination}
                               alt="covidVaccination"
@@ -717,7 +769,7 @@ export const AllConductor = () => {
                     ) : (
                       <div>
                         <div className="flex justify-between">
-                          <a href={updateObj?.conductor_document?.curr_address} target="_blank">
+                          <a href={updateObj?.conductor_document?.curr_address} target="_blank" rel="noreferrer">
                             <img src={updateObj?.conductor_document?.curr_address} alt="cur_address" className="w-20 h-20 rounded-xl" />
                           </a>
                           <Button
@@ -749,7 +801,7 @@ export const AllConductor = () => {
                     ) : (
                       <div>
                         <div className="flex justify-between">
-                          <a href={updateObj?.conductor_document?.permanent_address} target="_blank">
+                          <a href={updateObj?.conductor_document?.permanent_address} target="_blank" rel="noreferrer">
                             <img
                               src={updateObj?.conductor_document?.permanent_address}
                               alt="permanent_address"
@@ -786,7 +838,7 @@ export const AllConductor = () => {
                       <div>
                         <div className="flex justify-between">
                           {' '}
-                          <a href={updateObj?.conductor_document?.pcc} target="_blank">
+                          <a href={updateObj?.conductor_document?.pcc} target="_blank" rel="noreferrer">
                             {' '}
                             <img src={updateObj?.conductor_document?.pcc} alt="pcc" className="w-20 h-20 rounded-xl" />
                           </a>{' '}
@@ -832,18 +884,25 @@ export const AllConductor = () => {
                     )}
                   </div>
                 </div>
-                <div className="mt-2">
-                  <label>
-                    <input
-                      type="checkbox"
-                      checked={Boolean(updateObj.activeStatus)}
-                      onChange={(e) => setUpdateObj({ ...updateObj, activeStatus: e.target.checked })}
-                    />
-                    Active Status
-                  </label>
-                </div>
               </div>
-
+              <div className="mt-2">
+                {updateObj.isActive == 1 ? (
+                  <Button onClick={() => handleActiveStatus('Deactivate')} className="bg-green-500 text-white">
+                    Activated
+                  </Button>
+                ) : (
+                  <Button onClick={() => handleActiveStatus('Activate')} className="bg-red-600 text-white">
+                    Deactivated
+                  </Button>
+                )}
+              </div>
+              <ActiveStatusModal
+                setisactive={setisactive}
+                updateObj={updateObj}
+                textData={textData}
+                activeState={activeState}
+                setActiveState={setActiveState}
+              />
               <div className="mt-2">
                 <div className="flex gap-10 justify-between mb-3">
                   <Button variant="contained" className={'bg-blue-700'} onClick={updateConductor}>
@@ -861,3 +920,53 @@ export const AllConductor = () => {
     </div>
   );
 };
+const style = {
+  position: 'absolute',
+  top: '50%',
+  left: '50%',
+  transform: 'translate(-50%, -50%)',
+  width: 400,
+  bgcolor: 'background.paper',
+  //border: '0px solid #000',
+  boxShadow: 24,
+  p: 3
+  // pt: 2,
+  // px: 4,
+  // pb: 3
+};
+
+function ActiveStatusModal({ setisactive, textData, activeState, setActiveState }) {
+  const handleClose = () => {
+    setActiveState(false);
+  };
+  const handleActiveStatusChange = () => {
+    textData == 'Deactivate' ? setisactive(false) : setisactive(true);
+    handleClose();
+  };
+  return (
+    <>
+      <Modal open={activeState} onClose={handleClose} aria-labelledby="child-modal-title" aria-describedby="child-modal-description">
+        <Box sx={{ ...style, width: 320 }} className="rounded">
+          <h2 id="child-modal-title" className="font-semibold text-lg mb-4">
+            Do you want to {textData} the Bus ?
+          </h2>
+
+          <div className="flex justify-between">
+            {
+              <Button
+                onClick={() => handleActiveStatusChange()}
+                className={textData == 'Deactivate' ? 'bg-red-700 text-white' : 'bg-green-700 text-white hover:bg-green-500'}
+              >
+                {textData}
+              </Button>
+            }
+
+            <Button onClick={handleClose} variant="outlined" color="error">
+              Cancel
+            </Button>
+          </div>
+        </Box>
+      </Modal>
+    </>
+  );
+}

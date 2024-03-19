@@ -17,6 +17,7 @@ import axios from 'axios';
 import FilterListIcon from '@mui/icons-material/FilterList';
 import { IconX } from '@tabler/icons-react';
 import toast, { Toaster } from 'react-hot-toast';
+import { BackendUrl, AwsBucketUrl } from 'utils/config';
 
 const columns = [
   { id: 'vendorName', label: 'Name', align: 'center', minWidth: 150 },
@@ -86,7 +87,6 @@ export const AllVendor = () => {
   const [updateOpen, setUpdateOpen] = useState(false);
   const [updateObj, setUpdateObj] = useState({});
   // console.log(updateObj);
-
   // update error state
   const [currAddressErr, setCurrAddressErr] = useState(false);
   const [prmtAddressErr, setPrmtAddressErr] = useState(false);
@@ -112,7 +112,7 @@ export const AllVendor = () => {
   const [vendorMobileErr, setVendorMobileErr] = useState(false);
   useEffect(() => {
     axios
-      .get('http://192.168.1.230:3000/app/v1/vendor/getAllVendors')
+      .get(`${BackendUrl}/app/v1/vendor/getAllVendors`)
       .then((res) => setVendorData(res?.data?.result))
       .catch((err) => console.log('Api Error ', err));
     setLoader(false);
@@ -149,32 +149,31 @@ export const AllVendor = () => {
     setUpdateObj({ ...updateObj, vendorDocument: { ...updateObj.vendorDocument, [name]: link } });
     //   setisLoading(false);
   };
-  // const imageUploadApi = async (value) => {
-  //   let result = await axios.request(value);
-  //   console.log(result.data.name);
-  //   let imageName = result.data.name;
-  //   return imageName;
-  // };
-  // console.log(updateObj.vendorDocument);
+  const imageUploadApi = async (value) => {
+    let result = await axios.request(value);
+    console.log(result.data.name);
+    let imageName = result.data.name;
+    return imageName;
+  };
+
   const UploadDocumenttos3Bucket = async (e) => {
     // console.log(e.target.files[0]);
-    // const reader = new FormData();
-    // reader.append('file', e.target.files[0]);
-    // let config = {
-    //   method: 'post',
-    //   maxBodyLength: Infinity,
-    //   url: `apiposttos3bucket`,
-    //   headers: {
-    //     'Content-Type': 'multipart/form-data'
-    //   },
-    //   data: reader
-    // };
-    // let imageName = await imageUploadApi(config);
-    // let totalUrl = `apitogets3bucket` + imageName;
+    const reader = new FormData();
+    reader.append('file', e.target.files[0]);
+    let config = {
+      method: 'post',
+      maxBodyLength: Infinity,
+      url: `${AwsBucketUrl}/app/v1/aws/upload/driverimages`,
+      headers: {
+        'Content-Type': 'multipart/form-data'
+      },
+      data: reader
+    };
+    let imageName = await imageUploadApi(config);
+    let totalUrl = `${AwsBucketUrl}/app/v1/aws/getImage/driverimages/` + imageName;
     // console.log(totalUrl);
-    // setTitleImage(totalUrl);
-    // return totalUrl;
-    return 'https://images.unsplash.com/photo-1575936123452-b67c3203c357?q=80&w=1470&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D';
+    setTitleImage(totalUrl);
+    return totalUrl;
   };
   //update vendor
   const updateVendor = () => {
@@ -235,9 +234,9 @@ export const AllVendor = () => {
       };
       // console.log(body);
       axios
-        .patch('http://192.168.1.230:3000/app/v1/vendor/updateVendors', body)
+        .patch(`${BackendUrl}/app/v1/vendor/updateVendors`, body)
         .then((res) => {
-          console.log(res);
+          console.log(res.data);
           setLoader(true);
           toast.success('update successfully');
           clearAllField();
@@ -247,7 +246,7 @@ export const AllVendor = () => {
           toast.error('Api Error');
         });
     } else {
-      window.alert('kj');
+      window.alert('error');
       updateObj.vendorName == '' ? setVendorNameErr(true) : setVendorNameErr(false);
       validateEmail(updateObj.vendorEmail) ? setVendorEmailErr(false) : setVendorEmailErr(true);
       updateObj.vendorMobile == '' ? setVendorMobileErr(true) : setVendorMobileErr(false);
@@ -636,7 +635,7 @@ export const AllVendor = () => {
                     ) : (
                       <div>
                         <div className="flex justify-between">
-                          <a href={updateObj?.vendorDocument?.aadharFront} target="_blank">
+                          <a href={updateObj?.vendorDocument?.aadharFront} target="_blank" rel="noreferrer">
                             <img src={updateObj?.vendorDocument?.aadharFront} alt="aadharFront" className="w-20 h-20 rounded-xl" />
                           </a>{' '}
                           <Button
@@ -667,7 +666,7 @@ export const AllVendor = () => {
                       <div>
                         <div className="flex justify-between">
                           {' '}
-                          <a href={updateObj?.vendorDocument?.aadharBack} target="_blank">
+                          <a href={updateObj?.vendorDocument?.aadharBack} target="_blank" rel="noreferrer">
                             <img src={updateObj?.vendorDocument?.aadharBack} alt="aadharBack" className="w-20 h-20 rounded-xl" />
                           </a>
                           <Button
@@ -697,7 +696,7 @@ export const AllVendor = () => {
                       <div>
                         <div className="flex justify-between">
                           {' '}
-                          <a href={updateObj?.vendorDocument?.pancard} target="_blank">
+                          <a href={updateObj?.vendorDocument?.pancard} target="_blank" rel="noreferrer">
                             <img src={updateObj?.vendorDocument?.pancard} alt="pancard" className="w-20 h-20 rounded-xl" />
                           </a>
                           <Button
@@ -728,7 +727,7 @@ export const AllVendor = () => {
                       <div>
                         <div className="flex justify-between">
                           {' '}
-                          <a href={updateObj?.vendorDocument?.gstImg} target="_blank">
+                          <a href={updateObj?.vendorDocument?.gstImg} target="_blank" rel="noreferrer">
                             <img src={updateObj?.vendorDocument?.gstImg} alt="gstImg" className="w-20 h-20 rounded-xl" />
                           </a>
                           <Button
@@ -759,7 +758,7 @@ export const AllVendor = () => {
                       <div>
                         <div className="flex justify-between">
                           {' '}
-                          <a href={updateObj?.vendorDocument?.pcc} target="_blank">
+                          <a href={updateObj?.vendorDocument?.pcc} target="_blank" rel="noreferrer">
                             <img src={updateObj?.vendorDocument?.pcc} alt="pcc" className="w-20 h-20 rounded-xl" />
                           </a>
                           <Button
@@ -788,7 +787,7 @@ export const AllVendor = () => {
                       <div>
                         <div className="flex justify-between">
                           {' '}
-                          <a href={updateObj?.vendorDocument?.venderAggrement} target="_blank">
+                          <a href={updateObj?.vendorDocument?.venderAggrement} target="_blank" rel="noreferrer">
                             {' '}
                             <img src={updateObj?.vendorDocument?.venderAggrement} alt="venderAggrement" className="w-20 h-20 rounded-xl" />
                           </a>
@@ -820,7 +819,7 @@ export const AllVendor = () => {
                       <div>
                         <div className="flex justify-between">
                           {' '}
-                          <a href={updateObj?.vendorDocument?.bankDetails} target="_blank">
+                          <a href={updateObj?.vendorDocument?.bankDetails} target="_blank" rel="noreferrer">
                             {' '}
                             <img src={updateObj?.vendorDocument?.bankDetails} alt="bankDetails" className="w-20 h-20 rounded-xl" />
                           </a>{' '}
@@ -852,7 +851,7 @@ export const AllVendor = () => {
                       <div>
                         <div className="flex justify-between">
                           {' '}
-                          <a href={updateObj?.vendorDocument?.currentAddressProof} target="_blank">
+                          <a href={updateObj?.vendorDocument?.currentAddressProof} target="_blank" rel="noreferrer">
                             <img src={updateObj?.vendorDocument?.currentAddressProof} alt="pancard" className="w-20 h-20 rounded-xl" />
                           </a>
                           <Button
@@ -885,7 +884,7 @@ export const AllVendor = () => {
                       <div>
                         <div className="flex justify-between">
                           {' '}
-                          <a href={updateObj?.vendorDocument?.parmanentAddressProof} target="_blank">
+                          <a href={updateObj?.vendorDocument?.parmanentAddressProof} target="_blank" rel="noreferrer">
                             <img
                               src={updateObj?.vendorDocument?.parmanentAddressProof}
                               alt="parmanentAddressProof"
@@ -922,7 +921,7 @@ export const AllVendor = () => {
                       <div>
                         <div className="flex justify-between">
                           {' '}
-                          <a href={updateObj?.vendorDocument?.profile} target="_blank">
+                          <a href={updateObj?.vendorDocument?.profile} target="_blank" rel="noreferrer">
                             <img src={updateObj?.vendorDocument?.profile} alt="profile" className="w-20 h-20 rounded-xl" />
                           </a>
                           <Button

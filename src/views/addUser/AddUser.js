@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { TextField, Button, FormControl, InputLabel, MenuItem, Select } from '@mui/material';
 import toast, { Toaster } from 'react-hot-toast';
 import axios from 'axios';
+import { BackendUrl } from 'utils/config';
 function validateEmail(email) {
   const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
   return re.test(email);
@@ -81,7 +82,7 @@ export const AddUser = () => {
       };
       console.log(body);
       axios
-        .post('http://13.200.168.251:3000/app/v1/user/createUser', body, { headers: {} })
+        .post(`${BackendUrl}/app/v1/user/createUser`, body, { headers: {} })
         .then((res) => {
           console.log(res);
           toast.success('User Added SuccessFully');

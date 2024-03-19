@@ -1,7 +1,9 @@
 import React, { useState } from 'react';
-import { TextField, Button, FormControl } from '@mui/material';
-import toast, { Toaster } from 'react-hot-toast';
-import axios from 'axios';
+import { TextField, Button, FormControl, Checkbox, FormControlLabel } from '@mui/material';
+import { Toaster } from 'react-hot-toast';
+// import axios from 'axios';
+// import { BackendUrl } from 'utils/config';
+// perkmrate
 export const AddRoute = () => {
   const [routeForm, setRouteForm] = useState({
     startpointname: '',
@@ -15,7 +17,11 @@ export const AddRoute = () => {
     routeendtime: '00:00:00',
     routeNo: '',
     fixedRate: '',
-    baseRate: ''
+    isFixedRate: true,
+    baseRate: '',
+    perKmRate: '',
+    routeBasePriceAdhoc: '',
+    maxRouteFare: ''
   });
 
   const [startpointnameErr, setStartPointNameErr] = useState(false);
@@ -30,6 +36,9 @@ export const AddRoute = () => {
   const [routeNumberErr, setRouteNumberErr] = useState(false);
   const [fixedRateErr, setFixedRateErr] = useState(false);
   const [baseRateErr, setBaseRateErr] = useState(false);
+  const [perKmRateErr, setPerKmRateErr] = useState(false);
+  const [maxRouteFareErr, setMaxRouteFareErr] = useState(false);
+  const [routeBaseAdhocErr, setRouteBaseAdhocErr] = useState(false);
   const handleTimeInput = (e) => {
     const inputValue = e.target.value;
     const field = e.target.name;
@@ -39,7 +48,6 @@ export const AddRoute = () => {
       setRouteForm({ ...routeForm, [field]: inputValue });
     }
   };
-
   const handleRoute = () => {
     if (
       routeForm.endlat != '' &&
@@ -52,7 +60,10 @@ export const AddRoute = () => {
       routeForm.routeendtime > routeForm.routestarttime &&
       routeForm.fixedRate != '' &&
       routeForm.baseRate != '' &&
-      routeForm.routeNo != ''
+      routeForm.routeNo != '' &&
+      routeForm.maxRouteFare != '' &&
+      routeForm.routeBasePriceAdhoc != '' &&
+      routeForm.perKmRate != ''
     ) {
       const body = {
         startPointName: routeForm.startpointname,
@@ -66,19 +77,23 @@ export const AddRoute = () => {
         startTime: routeForm.routestarttime,
         routeFixedRate: routeForm.fixedRate,
         routeBasePrice: routeForm.baseRate,
-        routeNumber: routeForm.routeNo
+        routeNumber: routeForm.routeNo,
+        userIsFixedRate: routeForm.isFixedRate,
+        userPerKmRate: routeForm.perKmRate,
+        userBasePriceAdhoc: routeForm.routeBasePriceAdhoc,
+        userMaxRouteFare: routeForm.maxRouteFare
       };
-      // console.log(body)
-      axios
-        .post('http://192.168.1.230:3000/app/v1/route/createRoute', body, { headers: {} })
-        .then((res) => {
-          console.log(res.data);
-          toast.success('Route Add Successfully');
-        })
-        .catch((e) => {
-          console.log('Api Failed : ', e);
-          toast.error('Error');
-        });
+      console.log(body);
+      // axios
+      //   .post(`${BackendUrl}/app/v1/route/createRoute`, body, { headers: {} })
+      //   .then((res) => {
+      //     console.log(res.data);
+      //     toast.success('Route Add Successfully');
+      //   })
+      //   .catch((e) => {
+      //     console.log('Api Failed : ', e);
+      //     toast.error('Error');
+      //   });
       setRouteEndTimeErr(false);
       setRouteStartTimeErr(false);
       setStartPointNameErr(false);
@@ -120,6 +135,12 @@ export const AddRoute = () => {
       routeForm.baseRate == '' ? setBaseRateErr(true) : setBaseRateErr(false);
       //route number
       routeForm.routeNo == '' ? setRouteNumberErr(true) : setRouteNumberErr(false);
+      // max route fare
+      routeForm.maxRouteFare == '' ? setMaxRouteFareErr(true) : setMaxRouteFareErr(false);
+      // route base price Adhoc
+      routeForm.routeBasePriceAdhoc == '' ? setRouteBaseAdhocErr(true) : setRouteBaseAdhocErr(false);
+      // per km rate
+      routeForm.perKmRate == '' ? setPerKmRateErr(true) : setPerKmRateErr(false);
     }
   };
   const handleClear = () => {
@@ -302,6 +323,54 @@ export const AddRoute = () => {
               />
             </FormControl>
             {baseRateErr && <p className="text-red-500 text-xs ml-2">Base Rate Error</p>}
+          </div>
+          {/*  */}
+          <div>
+            <FormControl fullWidth>
+              <TextField
+                type="number"
+                label="per Km Rate"
+                id="oulined-basic"
+                variant="outlined"
+                value={routeForm.perKmRate}
+                onChange={(e) => setRouteForm({ ...routeForm, perKmRate: e.target.value })}
+              />
+            </FormControl>
+            {perKmRateErr && <p className="text-red-500 text-xs ml-2">per km Rate Error</p>}
+          </div>
+          <div>
+            <FormControl fullWidth>
+              <TextField
+                type="number"
+                label="Route Base Price Adhoc"
+                id="oulined-basic"
+                variant="outlined"
+                value={routeForm.routeBasePriceAdhoc}
+                onChange={(e) => setRouteForm({ ...routeForm, routeBasePriceAdhoc: e.target.value })}
+              />
+            </FormControl>
+            {routeBaseAdhocErr && <p className="text-red-500 text-xs ml-2">route Base Adhoc Error</p>}
+          </div>
+          <div>
+            <FormControl fullWidth>
+              <TextField
+                type="number"
+                label="Max Route Fare"
+                id="oulined-basic"
+                variant="outlined"
+                value={routeForm.maxRouteFare}
+                onChange={(e) => setRouteForm({ ...routeForm, maxRouteFare: e.target.value })}
+              />
+            </FormControl>
+            {maxRouteFareErr && <p className="text-red-500 text-xs ml-2">max Route Fare Error</p>}
+          </div>
+          <div>
+            <FormControlLabel
+              control={<Checkbox inputProps={{ 'aria-label': 'controlled' }} />}
+              label="IsFixedRate"
+              checked={routeForm.isFixedRate}
+              onChange={(e) => setRouteForm({ ...routeForm, isFixedRate: e.target.checked })}
+            />
           </div>
         </div>
 

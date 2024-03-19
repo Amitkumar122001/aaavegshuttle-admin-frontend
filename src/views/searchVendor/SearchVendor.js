@@ -16,7 +16,10 @@ import {
 import axios from 'axios';
 import toast, { Toaster } from 'react-hot-toast';
 import { IconX, IconPencil } from '@tabler/icons-react';
+import LoaderCircular from 'ui-component/LoaderCircular';
+import { BackendUrl } from 'utils/config';
 
+// email function for validation
 function validateEmail(email) {
   const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
   return re.test(email);
@@ -29,6 +32,7 @@ export const SearchVendor = () => {
   // update state
   const [updateOpen, setUpdateOpen] = useState(false);
   const [updateObj, setUpdateObj] = useState({});
+  const [isLoading, setisLoading] = useState(false);
   // error state
   const [pancardErr, setPancardErr] = useState(false);
   const [adharErr, setAdharErr] = useState(false);
@@ -42,7 +46,7 @@ export const SearchVendor = () => {
   const handleSearchBus = () => {
     if (busNo != '') {
       axios
-        .get(`http://192.168.1.230:3000/app/v1/vendor/getVendorsByBusNo/${busNo}`)
+        .get(`${BackendUrl}/app/v1/vendor/getVendorsByBusNo/${busNo}`)
         .then((res) => {
           if (res?.data?.vendorExists) {
             setVendorData(res.data.message[0]);
@@ -66,37 +70,36 @@ export const SearchVendor = () => {
   const handleDocumentPhoto = async (event) => {
     const name = event.target.name;
     // console.log(event, field);
-    //   setisLoading(true);
+    setisLoading(true);
     const link = await UploadDocumenttos3Bucket(event);
     setUpdateObj({ ...updateObj, vendorDocument: { ...updateObj.vendorDocument, [name]: link } });
-    //   setisLoading(false);
+    setisLoading(false);
   };
-  // const imageUploadApi = async (value) => {
-  //   let result = await axios.request(value);
-  //   console.log(result.data.name);
-  //   let imageName = result.data.name;
-  //   return imageName;
-  // };
+  const imageUploadApi = async (value) => {
+    let result = await axios.request(value);
+    console.log(result.data.name);
+    let imageName = result.data.name;
+    return imageName;
+  };
   // console.log(vendorForm);
   const UploadDocumenttos3Bucket = async (e) => {
     console.log(e.target.files[0]);
-    // const reader = new FormData();
-    // reader.append('file', e.target.files[0]);
-    // let config = {
-    //   method: 'post',
-    //   maxBodyLength: Infinity,
-    //   url: `apiposttos3bucket`,
-    //   headers: {
-    //     'Content-Type': 'multipart/form-data'
-    //   },
-    //   data: reader
-    // };
-    // let imageName = await imageUploadApi(config);
-    // let totalUrl = `apitogets3bucket` + imageName;
-    // console.log(totalUrl);
-    // setTitleImage(totalUrl);
-    // return totalUrl;
-    return 'https://images.unsplash.com/photo-1575936123452-b67c3203c357?q=80&w=1470&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D';
+    const reader = new FormData();
+    reader.append('file', e.target.files[0]);
+    let config = {
+      method: 'post',
+      maxBodyLength: Infinity,
+      url: `${BackendUrl}/app/v1/aws/upload/driverimages`,
+      headers: {
+        'Content-Type': 'multipart/form-data'
+      },
+      data: reader
+    };
+    let imageName = await imageUploadApi(config);
+    let totalUrl = `${BackendUrl}/app/v1/aws/getImage/driverimages/` + imageName;
+    console.log(totalUrl);
+    setTitleImage(totalUrl);
+    return totalUrl;
   };
   //update vendor
   const updateVendor = () => {
@@ -132,9 +135,9 @@ export const SearchVendor = () => {
       };
       // console.log(body);
       axios
-        .patch('http://192.168.1.230:3000/app/v1/vendor/updateVendors', body)
+        .patch(`${BackendUrl}/app/v1/vendor/updateVendors`, body)
         .then((res) => {
-          // console.log(res);
+          console.log(res.data);
           toast.success('update successfully');
           clearAllField();
         })
@@ -284,10 +287,15 @@ export const SearchVendor = () => {
       </div>
       {/* update api */}
       <Modal open={updateOpen} onClose={handleClose} aria-labelledby="modal-modal-title" aria-describedby="modal-modal-description">
-        <Box sx={style} className=" w-full max-lg:h-screen max-lg:w-screen p-4 overflow-y-scroll">
+        <Box sx={style} className="w-full max-lg:h-screen max-lg:w-screen p-4 overflow-y-scroll">
           <div>
             <Toaster />
           </div>
+          {isLoading && (
+            <div>
+              <LoaderCircular />
+            </div>
+          )}
           <div className=" max-lg:w-full flex flex-col gap-1 bg-white my-4 p-4 rounded-xl">
             <div className="flex justify-between pb-5">
               <p className="text-xl font-bold">Update Vendor</p>

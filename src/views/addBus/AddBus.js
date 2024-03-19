@@ -3,15 +3,8 @@ import axios from 'axios';
 import { TextField, Select, FormControl, MenuItem, InputLabel, Button } from '@mui/material';
 import toast, { Toaster } from 'react-hot-toast';
 import Loader from 'ui-component/LoaderCircular';
+import { BackendUrl, AwsBucketUrl } from 'utils/config';
 
-{
-  /* 
-    <TableCell align="center">{item.conductor_id}</TableCell>
-    <TableCell align="center">{item.conductor_name}</TableCell>
-    <TableCell align="center">{item.driver_id}</TableCell>
-    <TableCell align="center">{item.driver_name}</TableCell> 
-*/
-}
 export const AddBus = () => {
   const [addBusForm, setAddBusForm] = useState({
     vendorId: '',
@@ -22,32 +15,43 @@ export const AddBus = () => {
     conductorId: '',
     fuelType: '',
     tabletIMEI: '',
-    passengerType: false,
+    femaleBus: false,
     makeDate: '',
     busModel: '',
     regDate: '',
+    regEndDate: '',
     regCert: '',
     busAC: false,
     insuranceImg: '',
     pollutionImg: '',
     tourPermitImg: '',
     carriagePermitImg: '',
-    fitnessImg: ''
+    fitnessImg: '',
+    insuranceStart: '',
+    pollutionStart: '',
+    tourPermitStart: '',
+    carriagePermitStart: '',
+    fitnessStart: '',
+    insuranceExpiry: '',
+    pollutionExpiry: '',
+    tourPermitExpiry: '',
+    carriagePermitExpiry: '',
+    fitnessExpiry: ''
   });
   const [vendorData, setVendorData] = useState([]);
   const [driverData, setDriverData] = useState([]);
   const [conductorData, setConductorData] = useState([]);
   useEffect(() => {
     axios
-      .get('http://192.168.1.230:3000/app/v1/vendor/getAllVendors')
+      .get(`${BackendUrl}/app/v1/vendor/getAllVendors`)
       .then((res) => setVendorData(res.data?.result))
       .catch((err) => console.log(err));
     axios
-      .get('http://192.168.1.230:3000/app/v1/conductor/getAllConductors')
+      .get(`${BackendUrl}/app/v1/conductor/getAllConductors`)
       .then((res) => setConductorData(res.data?.result))
       .catch((e) => console.log('Api fail ', e));
     axios
-      .get('http://192.168.1.230:3000/app/v1/driver/getAllDriver')
+      .get(`${BackendUrl}/app/v1/driver/getAllDriver`)
       .then((res) => setDriverData(res.data?.result))
       .catch((e) => console.log('Api fail ', e));
   }, []);
@@ -65,13 +69,25 @@ export const AddBus = () => {
   const [makeDateErr, setMakeDateErr] = useState(false);
   const [tourImgErr, setTourImgErr] = useState(false);
   const [regCertErr, setRegCertErr] = useState(false);
-
   const [insurImgErr, setInsurErr] = useState(false);
   const [pollutionImgErr, setPollutionImgErr] = useState(false);
-  const [regDateErr, setRegDateErr] = useState(false);
   const [carriageImgErr, setCarriageImgErr] = useState(false);
   const [fitnessImgErr, setFitnessImgErr] = useState(false);
   const [isLoading, setisLoading] = useState(false);
+
+  const [regDateErr, setRegDateErr] = useState(false);
+  const [tourdateErr, setTourdateErr] = useState(false);
+  const [insurdateErr, setInsurdateErr] = useState(false);
+  const [pollutiondateErr, setPollutiondateErr] = useState(false);
+  const [carriagedateErr, setCarriagedateErr] = useState(false);
+  const [fitnessdateErr, setFitnessdateErr] = useState(false);
+  const [regStartDateErr, setRegStartDateErr] = useState(false);
+  const [tourStartdateErr, setTourStartdateErr] = useState(false);
+  const [insurStartdateErr, setInsurStartdateErr] = useState(false);
+  const [pollutionStartdateErr, setPollutionStartdateErr] = useState(false);
+  const [carriageStartdateErr, setCarriageStartdateErr] = useState(false);
+  const [fitnessdateStartErr, setFitnessStartdateErr] = useState(false);
+
   const handleDocumentPhoto = async (event) => {
     const name = event.target.name;
     setisLoading(true);
@@ -92,14 +108,14 @@ export const AddBus = () => {
     let config = {
       method: 'post',
       maxBodyLength: Infinity,
-      url: `http://13.200.168.251:3000/app/v1/aws/upload/driverimages`,
+      url: `${AwsBucketUrl}/app/v1/aws/upload/driverimages`,
       headers: {
         'Content-Type': 'multipart/form-data'
       },
       data: reader
     };
     let imageName = await imageUploadApi(config);
-    let totalUrl = `http://13.200.168.251:3000/app/v1/aws/getImage/driverimages/` + imageName;
+    let totalUrl = `${AwsBucketUrl}/app/v1/aws/getImage/driverimages/` + imageName;
     return totalUrl;
   };
   const handleBus = () => {
@@ -117,11 +133,23 @@ export const AddBus = () => {
       addBusForm.regDate != '' &&
       addBusForm.regCert != '' &&
       addBusForm.insuranceImg != '' &&
+      addBusForm.insuranceStart != '' &&
+      addBusForm.insuranceExpiry != '' &&
       addBusForm.pollutionImg != '' &&
+      addBusForm.pollutionExpiry != '' &&
       addBusForm.tourPermitImg != '' &&
+      addBusForm.tourPermitExpiry != '' &&
+      addBusForm.tourPermitStart != '' &&
+      addBusForm.carriagePermitStart != '' &&
+      addBusForm.carriagePermitExpiry != '' &&
       addBusForm.carriagePermitImg != '' &&
-      addBusForm.fitnessImg != ''
+      addBusForm.pollutionStart != '' &&
+      addBusForm.fitnessStart != '' &&
+      addBusForm.fitnessImg != '' &&
+      addBusForm.fitnessExpiry != '' &&
+      addBusForm.regEndDate != ''
     ) {
+      //  start and end date
       const document = {
         pollutionCert: addBusForm.pollutionImg,
         touriestPermitCert: addBusForm.tourPermitImg,
@@ -139,7 +167,7 @@ export const AddBus = () => {
         conductorid: addBusForm.conductorId,
         fueltype: addBusForm.fuelType,
         tabletimei: addBusForm.tabletIMEI,
-        femalebus: addBusForm.passengerType,
+        femalebus: addBusForm.femaleBus,
         busDocuments: document,
         makeDate: addBusForm.makeDate,
         registrationDate: addBusForm.regDate,
@@ -148,10 +176,14 @@ export const AddBus = () => {
       console.log(body);
 
       axios
-        .post('http://192.168.1.230:3000/app/v1/bus/insertBus', body, { headers: {} })
+        .post(`${BackendUrl}/app/v1/bus/insertBus`, body, { headers: {} })
         .then((res) => {
-          console.log(res);
-          toast.success('Bus Added SuccessFully');
+          if (res.data.isBusAdded) {
+            toast.success(res.data.result);
+          } else {
+            toast.error(res.data.result);
+          }
+          console.log(res.data);
         })
         .catch((e) => {
           console.log('api Failed ', e);
@@ -175,7 +207,6 @@ export const AddBus = () => {
       addBusForm.regCert == '' ? setRegCertErr(true) : setRegCertErr(false);
       addBusForm.pollutionImg == '' ? setPollutionImgErr(true) : setPollutionImgErr(false);
       addBusForm.insuranceImg == '' ? setInsurErr(true) : setInsurErr(false);
-
       addBusForm.vendorId == '' ? setVendorIdErr(true) : setVendorIdErr(false);
       addBusForm.busNo == '' ? setBusNoErr(true) : setBusNoErr(false);
       addBusForm.capacity == '' ? setCapacityErr(true) : setCapacityErr(false);
@@ -184,7 +215,17 @@ export const AddBus = () => {
       addBusForm.conductorId == '' ? setConductorIdErr(true) : setConductorIdErr(false);
       addBusForm.fuelType == '' ? setFuelTypeErr(true) : setFuelTypeErr(false);
       addBusForm.tabletIMEI == '' ? setTabletIMEIErr(true) : setTabletIMEIErr(false);
-      addBusForm.busModel == '';
+      addBusForm.insuranceExpiry == '' ? setInsurdateErr(true) : setInsurdateErr(false);
+      addBusForm.pollutionExpiry == '' ? setPollutiondateErr(true) : setPollutiondateErr(false);
+      addBusForm.tourPermitExpiry == '' ? setTourdateErr(true) : setTourdateErr(false);
+      addBusForm.carriagePermitExpiry == '' ? setCarriagedateErr(true) : setCarriagedateErr(false);
+      addBusForm.fitnessExpiry == '' ? setFitnessdateErr(true) : setFitnessdateErr(false);
+      addBusForm.fitnessStart == '' ? setFitnessStartdateErr(true) : setFitnessStartdateErr(false);
+      addBusForm.tourPermitStart == '' ? setTourStartdateErr(true) : setTourStartdateErr(false);
+      addBusForm.carriagePermitStart == '' ? setCarriageStartdateErr(true) : setCarriageStartdateErr(false);
+      addBusForm.pollutionStart == '' ? setPollutionStartdateErr(true) : setPollutionStartdateErr(false);
+      addBusForm.regEndDate == '' ? setRegStartDateErr(true) : setRegStartDateErr(false);
+      addBusForm.insuranceStart == '' ? setInsurStartdateErr(true) : setInsurStartdateErr(false);
       toast.error('input Field Error ');
     }
   };
@@ -355,13 +396,13 @@ export const AddBus = () => {
                 {/* Passenger Type */}
                 <div className="w-full">
                   <FormControl fullWidth>
-                    <InputLabel id="Passenger_type">Passenger Type</InputLabel>
+                    <InputLabel id="Passenger_type">Female Bus</InputLabel>
                     <Select
                       labelId="Passenger_type"
                       id="demo-sple-select"
-                      label="Passenger Type"
-                      value={addBusForm.passengerType}
-                      onChange={(e) => setAddBusForm({ ...addBusForm, passengerType: e.target.value })}
+                      label="Female Bus"
+                      value={addBusForm.femaleBus}
+                      onChange={(e) => setAddBusForm({ ...addBusForm, femaleBus: e.target.value })}
                     >
                       <MenuItem value={true}>Yes</MenuItem>
                       <MenuItem value={false}>No</MenuItem>
@@ -408,7 +449,7 @@ export const AddBus = () => {
                 </div>
 
                 {/* insurance */}
-                <div className="grid grid-cols-2 max-md:grid-cols-1 gap-8 max-lg:gap-6 max-md:gap-4">
+                <div className="grid grid-cols-3 max-md:grid-cols-1 gap-8 max-lg:gap-6 max-md:gap-4">
                   <div className="w-full">
                     <InputLabel>Make Date</InputLabel>
                     <FormControl fullWidth>
@@ -422,19 +463,8 @@ export const AddBus = () => {
                     </FormControl>
                     {makeDateErr && <p className="text-xs text-red-500 ml-2">make Date Error</p>}
                   </div>
-                  <div className="w-full">
-                    <InputLabel>Reg Date</InputLabel>
-                    <FormControl fullWidth>
-                      <TextField
-                        type="date"
-                        id="demo-simple-seect"
-                        label=""
-                        value={addBusForm.regDate}
-                        onChange={(e) => setAddBusForm({ ...addBusForm, regDate: e.target.value })}
-                      ></TextField>
-                    </FormControl>
-                    {regDateErr && <p className="text-xs text-red-500 ml-2">Reg date Error</p>}
-                  </div>
+                  <div className="max-md:hidden"></div>
+                  <div className="max-md:hidden"></div>
                   <div className="w-full">
                     {addBusForm.regCert == '' ? (
                       <>
@@ -453,7 +483,33 @@ export const AddBus = () => {
                     )}
                     {regCertErr && <p className="text-xs text-red-500 ml-2">Bus reg cert Error</p>}
                   </div>
-
+                  <div className="w-full">
+                    <InputLabel>Reg Start Date</InputLabel>
+                    <FormControl fullWidth>
+                      <TextField
+                        type="date"
+                        id="demo-simple-ct"
+                        label=""
+                        value={addBusForm.regDate}
+                        onChange={(e) => setAddBusForm({ ...addBusForm, regDate: e.target.value })}
+                      ></TextField>
+                    </FormControl>
+                    {regDateErr && <p className="text-xs text-red-500 ml-2">Reg date Error</p>}
+                  </div>
+                  {/* bus reg end date */}
+                  <div className="">
+                    <InputLabel>Reg End Date</InputLabel>
+                    <FormControl fullWidth>
+                      <TextField
+                        type="date"
+                        id="demo-simple-ct"
+                        label=""
+                        value={addBusForm.regEndDate}
+                        onChange={(e) => setAddBusForm({ ...addBusForm, regEndDate: e.target.value })}
+                      ></TextField>
+                    </FormControl>
+                    {regStartDateErr && <p className="text-xs text-red-500 ml-2">Reg end date Error</p>}
+                  </div>
                   <div>
                     {addBusForm.insuranceImg == '' ? (
                       <>
@@ -472,7 +528,34 @@ export const AddBus = () => {
                     )}
                     {insurImgErr && <p className="text-red-500 text-xs ml-2">insuranceImg error</p>}
                   </div>
-
+                  {/* insurance start date */}
+                  <div className="">
+                    <InputLabel>Insurance Start</InputLabel>
+                    <FormControl fullWidth>
+                      <TextField
+                        type="date"
+                        id="demo-simple-ct"
+                        label=""
+                        value={addBusForm.insuranceStart}
+                        onChange={(e) => setAddBusForm({ ...addBusForm, insuranceStart: e.target.value })}
+                      ></TextField>
+                    </FormControl>
+                    {insurStartdateErr && <p className="text-xs text-red-500 ml-2">Insurance start Error</p>}
+                  </div>
+                  {/* insurance expiry */}
+                  <div className="w-full">
+                    <InputLabel>Insurance expiry</InputLabel>
+                    <FormControl fullWidth>
+                      <TextField
+                        type="date"
+                        id="demo-simple"
+                        label=""
+                        value={addBusForm.insuranceExpiry}
+                        onChange={(e) => setAddBusForm({ ...addBusForm, insuranceExpiry: e.target.value })}
+                      ></TextField>
+                    </FormControl>
+                    {insurdateErr && <p className="text-xs text-red-500 ml-2">insurance Error</p>}
+                  </div>
                   <div>
                     {addBusForm.pollutionImg == '' ? (
                       <>
@@ -491,7 +574,34 @@ export const AddBus = () => {
                     )}
                     {pollutionImgErr && <p className="text-red-500 text-xs ml-2">pollutionImg error</p>}
                   </div>
-
+                  {/*  polution start  */}
+                  <div className="">
+                    <InputLabel>polution Start Date</InputLabel>
+                    <FormControl fullWidth>
+                      <TextField
+                        type="date"
+                        id="demo-simple-ct"
+                        label=""
+                        value={addBusForm.pollutionStart}
+                        onChange={(e) => setAddBusForm({ ...addBusForm, pollutionStart: e.target.value })}
+                      ></TextField>
+                    </FormControl>
+                    {pollutionStartdateErr && <p className="text-xs text-red-500 ml-2">pollutionStart Error</p>}
+                  </div>
+                  {/* pollution cert Expiry */}
+                  <div className="w-full">
+                    <InputLabel>pollution expiry</InputLabel>
+                    <FormControl fullWidth>
+                      <TextField
+                        type="date"
+                        id="demo-seect"
+                        label=""
+                        value={addBusForm.pollutionExpiry}
+                        onChange={(e) => setAddBusForm({ ...addBusForm, pollutionExpiry: e.target.value })}
+                      ></TextField>
+                    </FormControl>
+                    {pollutiondateErr && <p className="text-xs text-red-500 ml-2">pollution Error</p>}
+                  </div>
                   <div>
                     {addBusForm.tourPermitImg == '' ? (
                       <>
@@ -508,9 +618,36 @@ export const AddBus = () => {
                         </Button>
                       </div>
                     )}
-                    {tourImgErr && <p className="text-red-500 text-xs ml-2">tourPermitImg error</p>}
+                    {tourImgErr && <p className="text-red-500 text-xs ml-2">tour PermitImg error</p>}
                   </div>
-
+                  {/*  Tourpermit start  */}
+                  <div className="">
+                    <InputLabel>TourPermit Start Date</InputLabel>
+                    <FormControl fullWidth>
+                      <TextField
+                        type="date"
+                        id="demo-simple-ct"
+                        label=""
+                        value={addBusForm.tourPermitStart}
+                        onChange={(e) => setAddBusForm({ ...addBusForm, tourPermitStart: e.target.value })}
+                      ></TextField>
+                    </FormControl>
+                    {tourStartdateErr && <p className="text-xs text-red-500 ml-2">TourPermit start date Error</p>}
+                  </div>
+                  {/* TourPermit Expiry */}
+                  <div className="w-full">
+                    <InputLabel>TourPermit Expiry</InputLabel>
+                    <FormControl fullWidth>
+                      <TextField
+                        type="date"
+                        id="d-simple-seect"
+                        label=""
+                        value={addBusForm.tourPermitExpiry}
+                        onChange={(e) => setAddBusForm({ ...addBusForm, tourPermitExpiry: e.target.value })}
+                      ></TextField>
+                    </FormControl>
+                    {tourdateErr && <p className="text-xs text-red-500 ml-2">tourPermitExpiry Error</p>}
+                  </div>
                   <div>
                     {addBusForm.carriagePermitImg == '' ? (
                       <>
@@ -529,7 +666,34 @@ export const AddBus = () => {
                     )}
                     {carriageImgErr && <p className="text-red-500 text-xs ml-2">carriagePermitImg error</p>}
                   </div>
-
+                  {/*  carriage start  */}
+                  <div className="">
+                    <InputLabel>carriage Start Date</InputLabel>
+                    <FormControl fullWidth>
+                      <TextField
+                        type="date"
+                        id="demo-simple-ct"
+                        label=""
+                        value={addBusForm.carriagePermitStart}
+                        onChange={(e) => setAddBusForm({ ...addBusForm, carriagePermitStart: e.target.value })}
+                      ></TextField>
+                    </FormControl>
+                    {carriageStartdateErr && <p className="text-xs text-red-500 ml-2">carriageStartdateErr date Error</p>}
+                  </div>
+                  {/* carriagePermit expiry */}
+                  <div className="w-full">
+                    <InputLabel>carriagePermit expiry</InputLabel>
+                    <FormControl fullWidth>
+                      <TextField
+                        type="date"
+                        id="demle-seect"
+                        label=""
+                        value={addBusForm.carriagePermitExpiry}
+                        onChange={(e) => setAddBusForm({ ...addBusForm, carriagePermitExpiry: e.target.value })}
+                      ></TextField>
+                    </FormControl>
+                    {carriagedateErr && <p className="text-xs text-red-500 ml-2">carriage Error</p>}
+                  </div>
                   <div>
                     {addBusForm.fitnessImg == '' ? (
                       <>
@@ -547,6 +711,34 @@ export const AddBus = () => {
                       </div>
                     )}
                     {fitnessImgErr && <p className="text-red-500 text-xs ml-2">fitnessImg error</p>}
+                  </div>
+                  {/*  fitness start  */}
+                  <div className="">
+                    <InputLabel>polution Start Date</InputLabel>
+                    <FormControl fullWidth>
+                      <TextField
+                        type="date"
+                        id="demo-simple-ct"
+                        label=""
+                        value={addBusForm.fitnessStart}
+                        onChange={(e) => setAddBusForm({ ...addBusForm, fitnessStart: e.target.value })}
+                      ></TextField>
+                    </FormControl>
+                    {fitnessdateStartErr && <p className="text-xs text-red-500 ml-2">fitnessdateStartErr Error</p>}
+                  </div>
+                  {/* fitness expriry */}
+                  <div className="w-full">
+                    <InputLabel>FitnessCert expiry</InputLabel>
+                    <FormControl fullWidth>
+                      <TextField
+                        type="date"
+                        id="demo-simect"
+                        label=""
+                        value={addBusForm.fitnessExpiry}
+                        onChange={(e) => setAddBusForm({ ...addBusForm, fitnessExpiry: e.target.value })}
+                      ></TextField>
+                    </FormControl>
+                    {fitnessdateErr && <p className="text-xs text-red-500 ml-2">fitness Error</p>}
                   </div>
                 </div>
               </div>

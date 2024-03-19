@@ -3,6 +3,7 @@ import axios from 'axios';
 import { TextField, Button, FormControl, InputLabel, Select, MenuItem } from '@mui/material';
 import toast, { Toaster } from 'react-hot-toast';
 import LoaderCircular from 'ui-component/LoaderCircular';
+import { BackendUrl, AwsBucketUrl } from 'utils/config';
 export const AddConductor = () => {
   const [conductorForm, setConductorForm] = useState({
     conName: '',
@@ -29,7 +30,7 @@ export const AddConductor = () => {
   const [vendorData, setVendorData] = useState([]);
   useEffect(() => {
     axios
-      .get('http://192.168.1.230:3000/app/v1/vendor/getAllVendors')
+      .get(`${BackendUrl}/app/v1/vendor/getAllVendors`)
       .then((res) => setVendorData(res.data?.result))
       .catch((err) => console.log(err));
   }, []);
@@ -40,8 +41,8 @@ export const AddConductor = () => {
   const [conProfileErr, setConProfileErr] = useState(false);
   const [conAdharNoErr, setConAdharNoErr] = useState(false);
   const [conAdharFrontErr, setConAdharFrontErr] = useState(false);
-  const [conPccStartErr, setConPccStartErr] = useState(false);
   const [conPccEndErr, setConPccEndErr] = useState(false);
+  const [conPccStartErr, setConPccStartErr] = useState(false);
   const [conAdharBackErr, setConAdharBackErr] = useState(false);
   const [currAddressErr, setCurrAddressErr] = useState(false);
   const [currAddressProofErr, setCurrAddressProofErr] = useState(false);
@@ -75,14 +76,14 @@ export const AddConductor = () => {
     let config = {
       method: 'post',
       maxBodyLength: Infinity,
-      url: `http://13.200.168.251:3000/app/v1/aws/upload/driverimages`,
+      url: `${AwsBucketUrl}/app/v1/aws/upload/driverimages`,
       headers: {
         'Content-Type': 'multipart/form-data'
       },
       data: reader
     };
     let imageName = await imageUploadApi(config);
-    let totalUrl = `http://13.200.168.251:3000/app/v1/aws/getImage/driverimages/` + imageName;
+    let totalUrl = `${AwsBucketUrl}/app/v1/aws/getImage/driverimages/` + imageName;
     return totalUrl;
   };
   // const clearAll = () => {
@@ -114,7 +115,6 @@ export const AddConductor = () => {
       conductorForm.conAlternatemobile != '' &&
       conductorForm.police_verification != '' &&
       conductorForm.pccEnd != '' &&
-      conductorForm.pccStart != '' &&
       conductorForm.currAddress != '' &&
       conductorForm.currAddressProof != '' &&
       conductorForm.prmtAddress != '' &&
@@ -122,10 +122,11 @@ export const AddConductor = () => {
       conductorForm.conBGV != '' &&
       conductorForm.IMEI_No != '' &&
       conductorForm.conFingerPrint != '' &&
-      conductorForm.conResume != ''
+      conductorForm.conResume != '' &&
+      conductorForm.pccStart != ''
     ) {
-      if(conductorForm.conMobile==conductorForm.conAlternatemobile){
-        window.alert("modile number and Alternate mobile number same");
+      if (conductorForm.conMobile == conductorForm.conAlternatemobile) {
+        window.alert('modile number and Alternate mobile number same');
         return;
       }
       const document = {
@@ -140,6 +141,7 @@ export const AddConductor = () => {
         fingerprint: conductorForm.conFingerPrint,
         resume: conductorForm.conResume
       };
+      // pcc end & start
       const body = {
         conductorName: conductorForm.conName,
         currentAddress: conductorForm.currAddress,
@@ -153,7 +155,7 @@ export const AddConductor = () => {
       };
       console.log(body);
       axios
-        .post('http://192.168.1.230:3000/app/v1/conductor/insertConductor', body)
+        .post(`${BackendUrl}/app/v1/conductor/insertConductor`, body)
         .then((res) => {
           // console.log(res.data)
           if (!res.data.isConductorCreated) {
@@ -178,7 +180,6 @@ export const AddConductor = () => {
       conductorForm.conAadharBack == '' ? setConAdharBackErr(true) : setConAdharBackErr(false);
       conductorForm.currAddress == '' ? setCurrAddressErr(true) : setCurrAddressErr(false);
       conductorForm.pccEnd == '' ? setConPccEndErr(true) : setConPccEndErr(false);
-      conductorForm.pccStart == '' ? setConPccStartErr(true) : setConPccStartErr(false);
       conductorForm.prmtAddress == '' ? setPrmtAddressErr(true) : setPrmtAddressErr(false);
       conductorForm.conAadharNO == '' ? setConAdharNoErr(true) : setConAdharNoErr(false);
       conductorForm.covidVaccination == '' ? setCovidVErr(true) : setCovidVErr(false);
@@ -188,6 +189,7 @@ export const AddConductor = () => {
       conductorForm.conResume == '' ? setResumeErr(true) : setResumeErr(false);
       conductorForm.conBGV == '' ? setBGVErr(true) : setBGVErr(false);
       conductorForm.conFingerPrint == '' ? setFingerPrintErr(true) : setFingerPrintErr(false);
+      conductorForm.pccStart == '' ? setConPccStartErr(true) : setConPccStartErr(false);
     }
   };
 
@@ -227,7 +229,7 @@ export const AddConductor = () => {
             </FormControl>
           </div>
         </div>
-        {conductorForm.vendorId!='' && (
+        {conductorForm.vendorId != '' && (
           <>
             <div>
               <div className="grid grid-cols-2 max-lg:grid-cols-1 gap-6">
@@ -296,7 +298,7 @@ export const AddConductor = () => {
                     </p>
                   ) : (
                     <div className="flex justify-between">
-                      <img src={conductorForm.conPhoto} alt="photo" className="w-20 h-20 rounded-xl" />
+                      <img src={conductorForm.conPhoto} alt="" className="w-20 h-20 rounded-xl" />
                       <Button onClick={() => setConductorForm({ ...drPhoto, conPhoto: '' })} variant="outlined" color="error">
                         remove
                       </Button>
@@ -525,22 +527,23 @@ export const AddConductor = () => {
                     </div>
                     <div>
                       <p className="w-full border border-gray-400 rounded-xl px-2 py-1">
-                        <label htmlFor="pccStart" className="text-md w-full block">
-                          pcc start
+                        <label htmlFor="pccstart" className="text-md w-full block">
+                          pcc Start
                         </label>
                         <input
                           type="date"
                           className="outline-none border-none w-full"
-                          id="pccStart"
+                          id="pccstart"
                           value={conductorForm.pccStart}
                           onChange={(e) => setConductorForm({ ...conductorForm, pccStart: e.target.value })}
                         />
                       </p>
-                      {conPccStartErr && <p className="text-red-500  ml-2">Pcc start error</p>}
+                      {conPccStartErr && <p className="text-red-500  ml-2">PCC start error</p>}
                     </div>
+
                     <div>
                       <p className="w-full border border-gray-400 rounded-xl px-2 py-1">
-                        <label htmlFor="pccStart" className="text-md w-full block">
+                        <label htmlFor="pccEnd" className="text-md w-full block">
                           pcc end
                         </label>
                         <input

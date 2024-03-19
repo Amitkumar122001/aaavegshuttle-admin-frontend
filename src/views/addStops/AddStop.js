@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { TextField, Button, FormControl, Select, InputLabel, MenuItem } from '@mui/material';
 import axios from 'axios';
 import toast, { Toaster } from 'react-hot-toast';
+import { BackendUrl } from 'utils/config';
 export const AddStop = () => {
   const [route, setRoute] = useState([]);
   const [stopForm, setStopForm] = useState({
@@ -20,7 +21,7 @@ export const AddStop = () => {
   const [stopDistanceErr, setStopDistanceErr] = useState(false);
   useEffect(() => {
     axios
-      .get('http://13.200.168.251:3000/app/v1/route/getAllRoutes')
+      .get(`${BackendUrl}/app/v1/route/getAllRoutes`)
       .then((res) => setRoute(res?.data?.result))
       .catch((e) => console.log('Route API error', e));
   }, []);
@@ -62,9 +63,9 @@ export const AddStop = () => {
       };
       // console.log(body);
       axios
-        .post('https://c09d-125-19-80-210.ngrok-free.app/app/v1/stops/createstop', body, { headers: {} })
+        .post(`${BackendUrl}/app/v1/stops/createstop`, body, { headers: {} })
         .then((res) => {
-          console.log(res);
+          console.log(res.data);
           toast.success(`${res.data.result}`);
           clearRoute();
         })
@@ -86,7 +87,6 @@ export const AddStop = () => {
       stopForm.stopDistance == '' ? setStopDistanceErr(true) : setStopDistanceErr(false);
     }
   };
-  
 
   return (
     <div>

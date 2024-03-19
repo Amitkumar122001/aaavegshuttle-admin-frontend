@@ -4,6 +4,8 @@ import Modal from '@mui/material/Modal';
 import { IconPencil, IconX } from '@tabler/icons-react'; // IconArrowDownSquare
 import axios from 'axios';
 import { Toaster } from 'react-hot-toast';
+import { BackendUrl } from 'utils/config';
+
 export const AllStop = () => {
   const [route, setRoute] = useState([]);
   const [searchStopRoute, setSearchStopRoute] = useState('');
@@ -16,18 +18,19 @@ export const AllStop = () => {
   // const []=useState(false)
   useEffect(() => {
     axios
-      .get('http://13.200.168.251:3000/app/v1/route/getAllRoutes')
+      .get(`${BackendUrl}/app/v1/route/getAllRoutes`)
       .then((res) => setRoute(res?.data?.result))
       .catch((err) => console.log('API error', err));
   }, []);
   useEffect(() => {
     if (searchStopRoute) {
       axios
-        .post('http://13.200.168.251:3000/app/v1/stops/getSpecificRouteStops', { routeId: searchStopRoute })
+        .post('${BackendUrl}/app/v1/stops/getSpecificRouteStops', { routeId: searchStopRoute })
         .then((res) => setAllStop(res.data?.result))
         .catch((err) => console.log('API error ', err));
     }
   }, [searchStopRoute]);
+  // console.log(allStop);
   const [open, setOpen] = React.useState(false);
   const handleOpen = (value) => {
     setOpen(true);
@@ -53,7 +56,19 @@ export const AllStop = () => {
   };
   const updateStop = () => {
     if (updateObj.stopname != '' && updateObj.stoplat != '' && updateObj.stoplng != '' && updateObj.stopETA != '') {
-      console.log(updateObj);
+      const body = {
+        stopName: updateObj.stopname,
+        stopLat: updateObj.stoplat,
+        stopLng: updateObj.stoplng,
+        stopEta: updateObj.stopETA,
+        stopId: '',
+        routeId: '',
+        activeStatus: ''
+      };
+      axios
+        .patch(`${BackendUrl}/app/v1/stops/editStop`, body)
+        .then((res) => console.log(res.data))
+        .catch((err) => console.log('API error ', err));
     } else {
       updateObj.stopname == '' ? setStopNameErr(true) : setStopNameErr(false);
       updateObj.stoplat == '' ? setStoplatErr(true) : setStoplatErr(false);
@@ -92,27 +107,30 @@ export const AllStop = () => {
             </div>
           </div>
           <div className=" flex flex-1 flex-col gap-4 items-center w-full">
-           {allStop.length>0 && <div className="w-1/2 max-lg:w-2/3 max-md:w-full flex-1">
-              <p className="px-20 py-6 bg-green-600 text-white rounded-t-full text-xl text-center">Start</p>
-            </div>}
+            {allStop.length > 0 && (
+              <div className="w-1/2 max-lg:w-2/3 max-md:w-full flex-1">
+                <p className="px-20 py-6 bg-green-600 text-white rounded-t-full text-xl text-center">Start</p>
+              </div>
+            )}
             {allStop?.map((item, i) => (
-              <div className="w-1/2 max-lg:w-2/3 max-md:w-full flex-1" key={i} >
+              <div className="w-1/2 max-lg:w-2/3 max-md:w-full flex-1" key={i}>
                 <div className={` flex flex-col rounded-xl p-4 gap-4 relative bg-gray-100 `}>
                   <span className="absolute top-3 left-2 max-lg:h-1 max-lg:w-1 h-2 w-2 inline-block rounded-full bg-green-500"></span>{' '}
                   <div className="flex justify-between">
-                    <p className="text-2xl max-lg:text-xl text-red-700 font-semibold">{item.stopname}</p>
+                    <p className="text-2xl max-lg:text-xl text-red-700 font-semibold">{item.stopName}</p>
                     <button onClick={() => handleOpen(item)} className="hover:bg-gray-200 rounded-full p-2">
                       <IconPencil className="text-blue-600" />
                     </button>
                   </div>
                   <div className="flex text-lg max-lg:text-sm gap-20 max-lg:gap-10">
+                   
                     <div>
                       <p>Stop longitude</p>
-                      <p className="font-semibold">{item.stoplng}</p>
+                      <p className="font-semibold">{item.stopLng}</p>
                     </div>
                     <div>
                       <p>Stop latitude</p>
-                      <p className="font-semibold">{item.stoplat}</p>
+                      <p className="font-semibold">{item.stopLat}</p>
                     </div>
                   </div>
                   <div className="text-lg max-lg:text-sm">
@@ -130,7 +148,7 @@ export const AllStop = () => {
                       <div className="inline-block bg-gray-500 h-1 w-1 rounded-full"></div>
                     </div>
                     <div className="flex gap-3 max-lg:gap-2 -mt-2 max-lg:-mt-1">
-                        {/* transform: rotate(-45deg); */}
+                      {/* transform: rotate(-45deg); */}
                       <div className="inline-block bg-gray-500 w-0.5 h-5 max-lg:h-4 transform -rotate-45"></div>
                       <div className=" inline-block bg-gray-500 w-0.5 h-5 max-lg:h-4 transform rotate-45"></div>
                     </div>
@@ -138,9 +156,11 @@ export const AllStop = () => {
                 </div>
               </div>
             ))}
-           {allStop.length>0 && <div className="w-1/2 max-lg:w-2/3 max-md:w-full flex-1">
-              <p className="px-20 py-6 bg-red-700 text-white rounded-b-full text-xl text-center">End</p>
-            </div>}
+            {allStop.length > 0 && (
+              <div className="w-1/2 max-lg:w-2/3 max-md:w-full flex-1">
+                <p className="px-20 py-6 bg-red-700 text-white rounded-b-full text-xl text-center">End</p>
+              </div>
+            )}
           </div>
         </div>
       </div>
@@ -170,8 +190,8 @@ export const AllStop = () => {
                           type="text"
                           label="Stop Name"
                           variant="outlined"
-                          value={updateObj.stopname}
-                          onChange={(e) => setUpdateObj({ ...updateObj, stopname: e.target.value })}
+                          value={updateObj.stopName}
+                          onChange={(e) => setUpdateObj({ ...updateObj, stopName: e.target.value })}
                         />
                       </FormControl>
                       {stopNameErr && <p className="text-xs text-red-500 ml-2">Stop name error</p>}
@@ -184,8 +204,8 @@ export const AllStop = () => {
                           id="outlined-basi"
                           label="Stop Latitude"
                           variant="outlined"
-                          value={updateObj.stoplat}
-                          onChange={(e) => setUpdateObj({ ...updateObj, stoplat: e.target.value })}
+                          value={updateObj.stopLat}
+                          onChange={(e) => setUpdateObj({ ...updateObj, stopLat: e.target.value })}
                         />
                       </FormControl>
                       {stoplatErr && <p className="text-xs text-red-500 ml-2">Stop latitude error</p>}
@@ -198,8 +218,8 @@ export const AllStop = () => {
                           label="Stop Longitude"
                           type="text"
                           variant="outlined"
-                          value={updateObj.stoplng}
-                          onChange={(e) => setUpdateObj({ ...updateObj, stoplng: e.target.value })}
+                          value={updateObj.stopLng}
+                          onChange={(e) => setUpdateObj({ ...updateObj, stopLng: e.target.value })}
                         />
                       </FormControl>
                       {stoplngErr && <p className="text-xs text-red-500 ml-2">Stop longitude error</p>}
@@ -210,7 +230,7 @@ export const AllStop = () => {
                           value={updateObj.stopETA}
                           onChange={handleStopETAInput}
                           type="time"
-                          label="ETA"
+                          label="stopETA"
                           variant="outlined"
                           format="HH:mm:ss"
                           inputProps={{

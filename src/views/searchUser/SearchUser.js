@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { TextField, Button, TableContainer, Table, TableBody, TableRow, TableCell, Paper } from '@mui/material';
 import axios from 'axios';
 import toast, { Toaster } from 'react-hot-toast';
+import { BackendUrl } from 'utils/config';
 export const SearchUser = () => {
   const [phNo, setPhNO] = useState('');
   const [found, setFound] = useState(false);
@@ -10,7 +11,7 @@ export const SearchUser = () => {
   const handleSearch = () => {
     if (phNo != '' && phNo.length > 9) {
       axios
-        .get(`http://13.200.168.251:3000/app/v1/user/getUserByMobile/${phNo}`)
+        .get(`${BackendUrl}/app/v1/user/getUserByMobile/${phNo}`)
         .then((res) => {
           if (res?.data?.userExists) {
             setUserData(res.data.message[0]);

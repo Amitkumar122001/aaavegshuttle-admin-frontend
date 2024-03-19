@@ -3,6 +3,8 @@ import { TextField, Button, FormControl, InputLabel, Select, MenuItem } from '@m
 import axios from 'axios';
 import toast, { Toaster } from 'react-hot-toast';
 import Loader from '../../ui-component/LoaderCircular';
+import { BackendUrl, AwsBucketUrl } from 'utils/config';
+
 export const AddDriver = () => {
   const [driverForm, setDriverForm] = useState({
     drName: '',
@@ -26,12 +28,15 @@ export const AddDriver = () => {
     drFingerPrint: '',
     drResume: '',
     drLicenseNo: '',
-    dlImg: ''
+    dlImg: '',
+    dlExpiry: '',
+    dlStart: '',
+    pccEnd: ''
   });
   const [vendorData, setVendorData] = useState([]);
   useEffect(() => {
     axios
-      .get('http://192.168.1.230:3000/app/v1/vendor/getAllVendors')
+      .get(`${BackendUrl}/app/v1/vendor/getAllVendors`)
       .then((res) => setVendorData(res.data?.result))
       .catch((err) => console.log(err));
   }, []);
@@ -42,7 +47,7 @@ export const AddDriver = () => {
   const [drProfileErr, setDrProfileErr] = useState(false);
   const [drAdharNoErr, setDrAdharNoErr] = useState(false);
   const [drAdharFrontErr, setDrAdharFrontErr] = useState(false);
-
+  const [drPccEndErr, setDrPccEndErr] = useState(false);
   const [drAdharBackErr, setDrAdharBackErr] = useState(false);
   const [currAddressErr, setCurrAddressErr] = useState(false);
   const [currAddressProofErr, setCurrAddressProofErr] = useState(false);
@@ -56,7 +61,8 @@ export const AddDriver = () => {
   const [isLoading, setisLoading] = useState(false);
   const [drLicenseNoErr, setDrLicenseNoErr] = useState(false);
   const [drLicenseImgErr, setDrLicenseImgErr] = useState(false);
-
+  const [drLicenseExpiryErr, setDrLicenseExpiryErr] = useState(false);
+  const [drLicenseStartErr, setDrLicenseStartErr] = useState(false);
   const handleDocumentPhoto = async (event) => {
     const name = event.target.name;
     setisLoading(true);
@@ -78,14 +84,14 @@ export const AddDriver = () => {
     let config = {
       method: 'post',
       maxBodyLength: Infinity,
-      url: `http://13.200.168.251:3000/app/v1/aws/upload/driverimages`,
+      url: `${AwsBucketUrl}/app/v1/aws/upload/driverimages`,
       headers: {
         'Content-Type': 'multipart/form-data'
       },
       data: reader
     };
     let imageName = await imageUploadApi(config);
-    let totalUrl = `http://13.200.168.251:3000/app/v1/aws/getImage/driverimages/` + imageName;
+    let totalUrl = `${AwsBucketUrl}/app/v1/aws/getImage/driverimages/` + imageName;
     // console.log(totalUrl);
 
     return totalUrl;
@@ -111,10 +117,13 @@ export const AddDriver = () => {
       driverForm.drFingerPrint != '' &&
       driverForm.drResume != '' &&
       driverForm.drLicenseNo != '' &&
-      driverForm.dlImg != ''
+      driverForm.dlImg != '' &&
+      driverForm.dlExpiry != '' &&
+      driverForm.pccEnd != '' &&
+      driverForm.dlStart != ''
     ) {
-      if(driverForm.drmobile==driverForm.drAlternatemobile){
-        window.alert("modile number and Alternate mobile number same");
+      if (driverForm.drmobile == driverForm.drAlternatemobile) {
+        window.alert('modile number and Alternate mobile number same');
         return;
       }
       const document = {
@@ -130,7 +139,7 @@ export const AddDriver = () => {
         fingerprint: driverForm.drFingerPrint,
         resume: driverForm.drResume
       };
-
+      //  dlexpiry , pcc-Expiry
       const body = {
         driverName: driverForm.drName,
         currentAddress: driverForm.currAddress,
@@ -146,7 +155,7 @@ export const AddDriver = () => {
       };
       console.log(body);
       axios
-        .post('http://192.168.1.230:3000/app/v1/driver/createDriver', body)
+        .post(`${BackendUrl}/app/v1/driver/createDriver`, body)
         .then((res) => {
           toast.success(res.data.result || 'Driver Added SuccessFully');
           console.log(res);
@@ -184,6 +193,9 @@ export const AddDriver = () => {
       driverForm.drResume == '' ? setResumeErr(true) : setResumeErr(false);
       driverForm.drBGV == '' ? setBGVErr(true) : setBGVErr(false);
       driverForm.drFingerPrint == '' ? setFingerPrintErr(true) : setFingerPrintErr(false);
+      driverForm.dlExpiry == '' ? setDrLicenseExpiryErr(true) : setDrLicenseExpiryErr(false);
+      driverForm.dlStart == '' ? setDrLicenseStartErr(true) : setDrLicenseErr(false);
+      driverForm.pccEnd == '' ? setDrPccEndErr(true) : setDrPccEndErr(false);
     }
   };
   return (
@@ -290,7 +302,7 @@ export const AddDriver = () => {
                   </p>
                 ) : (
                   <div className="flex justify-between">
-                    <img src={driverForm.drPhoto} alt="photo" className="w-20 h-20 rounded-xl" />
+                    <img src={driverForm.drPhoto} alt="" className="w-20 h-20 rounded-xl" />
                     <Button onClick={() => setDriverForm({ ...drPhoto, drPhoto: '' })} variant="outlined" color="error">
                       remove
                     </Button>
@@ -468,6 +480,63 @@ export const AddDriver = () => {
                   </div>
                 </div>
 
+                <div>
+                  <div className="grid grid-cols-3 max-lg:grid-cols-2 max-md:grid-cols-1 gap-6 max-md:gap-3">
+                    <div>
+                      {driverForm.police_verification == '' ? (
+                        <>
+                          <InputLabel>police_verification</InputLabel>
+                          <FormControl fullWidth>
+                            <TextField type="file" variant="outlined" name="police_verification" onChange={(e) => handleDocumentPhoto(e)} />
+                          </FormControl>
+                        </>
+                      ) : (
+                        <div className="flex justify-between">
+                          <img src={driverForm.police_verification} alt="police_verification" className="w-20 h-20 rounded-xl" />
+                          <Button
+                            onClick={() => setDriverForm({ ...driverForm, police_verification: '' })}
+                            variant="outlined"
+                            color="error"
+                          >
+                            remove
+                          </Button>
+                        </div>
+                      )}
+                      {pccVerifyErr && <p className="text-red-500 text-xs ml-2">upload police Verification </p>}
+                    </div>
+                    <div>
+                      <label htmlFor="pccStart" className="text-md w-full block">
+                        pcc start
+                      </label>
+                      <p className="w-full border border-gray-400 rounded-xl px-2 py-3">
+                        <input
+                          type="date"
+                          className="outline-none border-none w-full"
+                          id="pccStart"
+                          value={driverForm.pccStart}
+                          onChange={(e) => setDriverForm({ ...driverForm, pccStart: e.target.value })}
+                        />
+                      </p>
+                      {drPccEndErr && <p className="text-red-500  ml-2">PCC end error</p>}
+                    </div>
+                    <div>
+                      <label htmlFor="pccEnd" className="text-md w-full block">
+                        pcc end
+                      </label>
+                      <p className="w-full border border-gray-400 rounded-xl px-2 py-3">
+                        <input
+                          type="date"
+                          className="outline-none border-none w-full"
+                          id="pccEnd"
+                          value={driverForm.pccEnd}
+                          onChange={(e) => setDriverForm({ ...driverForm, pccEnd: e.target.value })}
+                        />
+                      </p>
+                      {drPccEndErr && <p className="text-red-500  ml-2">PCC end error</p>}
+                    </div>
+                  </div>
+                </div>
+
                 <div className="grid grid-cols-2 max-md:grid-cols-1 gap-7 ">
                   <div>
                     <FormControl fullWidth>
@@ -487,9 +556,9 @@ export const AddDriver = () => {
                       <>
                         <p className="w-full flex justify-between border rounded-xl p-3  border-gray-400">
                           <label htmlFor="DL" className="w-full block max-lg:text-[12px] max-md:text-[10px]">
-                            Upload DL{' '}
-                          </label>{' '}
-                          <input type="file" id="Dl" name="dlImg" onChange={(e) => handleDocumentPhoto(e)} className="text-xs w-28" />
+                            Upload DL
+                          </label>
+                          <input type="file" id="DL" name="dlImg" onChange={(e) => handleDocumentPhoto(e)} className="text-xs w-28" />
                         </p>
                       </>
                     ) : (
@@ -502,29 +571,42 @@ export const AddDriver = () => {
                     )}
                     {drLicenseImgErr && <p className="text-red-500 text-xs ml-2">upload dlImg </p>}
                   </div>
+                  {/* dl start date */}
                   <div>
-                    {driverForm.police_verification == '' ? (
-                      <>
-                        <InputLabel>police_verification</InputLabel>
-                        <FormControl fullWidth>
-                          <TextField type="file" variant="outlined" name="police_verification" onChange={(e) => handleDocumentPhoto(e)} />
-                        </FormControl>
-                      </>
-                    ) : (
-                      <div className="flex justify-between">
-                        {' '}
-                        <img src={driverForm.police_verification} alt="police_verification" className="w-20 h-20 rounded-xl" />
-                        <Button onClick={() => setDriverForm({ ...driverForm, police_verification: '' })} variant="outlined" color="error">
-                          remove
-                        </Button>
-                      </div>
-                    )}
-                    {pccVerifyErr && <p className="text-red-500 text-xs ml-2">upload police Verification </p>}
+                    <p className="w-full border border-gray-400 rounded-xl px-2">
+                      <label htmlFor="dlStart" className="text-md w-full block">
+                        License start validity
+                      </label>
+                      <input
+                        type="date"
+                        className="outline-none border-none w-full"
+                        id="dlStart"
+                        value={driverForm.dlStart}
+                        onChange={(e) => setDriverForm({ ...driverForm, dlStart: e.target.value })}
+                      />
+                    </p>
+                    {drLicenseStartErr && <p className="text-red-500 text-xs ml-2">dl start error</p>}
                   </div>
+                  {/* dl end time */}
+                  <div>
+                    <p className="w-full border border-gray-400 rounded-xl px-2">
+                      <label htmlFor="dlExpiry" className="text-md w-full block">
+                        License Expiry validity
+                      </label>
+                      <input
+                        type="date"
+                        className="outline-none border-none w-full"
+                        id="dlExpiry"
+                        value={driverForm.dlExpiry}
+                        onChange={(e) => setDriverForm({ ...driverForm, dlExpiry: e.target.value })}
+                      />
+                    </p>
+                    {drLicenseExpiryErr && <p className="text-red-500 text-xs ml-2">Dl expiry error</p>}
+                  </div>
+
                   <div>
                     {driverForm.covidVaccination == '' ? (
                       <>
-                        {' '}
                         <InputLabel>Covid Vaccination</InputLabel>
                         <FormControl fullWidth>
                           <TextField type="file" variant="outlined" name="covidVaccination" onChange={(e) => handleDocumentPhoto(e)} />

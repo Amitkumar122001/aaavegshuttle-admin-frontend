@@ -3,6 +3,9 @@ import FilterListIcon from '@mui/icons-material/FilterList';
 import Box from '@mui/material/Box';
 import Modal from '@mui/material/Modal';
 import { IconX } from '@tabler/icons-react';
+import LoaderCircular from 'ui-component/LoaderCircular';
+import { BackendUrl, AwsBucketUrl } from 'utils/config';
+import axios from 'axios';
 import {
   Paper,
   Table,
@@ -20,7 +23,6 @@ import {
 } from '@mui/material';
 import toast, { Toaster } from 'react-hot-toast';
 const columns = [
-  { id: 'bus_id', label: 'Bus Id', align: 'center', minWidth: 100 },
   { id: 'bus_number', label: 'Bus Number', align: 'center', minWidth: 150 },
   {
     id: 'capacity',
@@ -30,9 +32,23 @@ const columns = [
     format: (value) => value.toLocaleString('en-US')
   },
   {
-    id: 'driver_id',
-    label: 'Driver Id',
+    id: 'vendor_name',
+    label: 'Vendor Name',
     minWidth: 170,
+    align: 'center',
+    format: (value) => value.toLocaleString('en-US')
+  },
+  {
+    id: 'driver_name',
+    label: 'Driver Name',
+    minWidth: 170,
+    align: 'center',
+    format: (value) => value.toLocaleString('en-US')
+  },
+  {
+    id: 'conductor_name',
+    label: 'Conductor Name',
+    minWidth: 150,
     align: 'center',
     format: (value) => value.toLocaleString('en-US')
   },
@@ -43,13 +59,7 @@ const columns = [
     align: 'center',
     format: (value) => value.toLocaleString('en-US')
   },
-  {
-    id: 'conductor_id',
-    label: 'Conductor Id',
-    minWidth: 100,
-    align: 'center',
-    format: (value) => value.toLocaleString('en-US')
-  },
+
   {
     id: 'fuel_type',
     label: 'Fuel Type',
@@ -89,20 +99,24 @@ export const AllBus = () => {
 
   const [filterData, setFilterData] = useState([]);
   const [updateOpen, setUpdateOpen] = useState(false);
-
+  // for refresh the page
+  const [refreshPage, setRefreshPage] = useState(false);
   const handleOpen = (item) => {
+    //console.log(item);
     setUpdateObj(item);
     setUpdateOpen(true);
   };
   const handleClose = () => setUpdateOpen(false);
   useEffect(() => {
-    fetch('http://192.168.1.230:3000/app/v1/bus/getAllBuses')
+    setRefreshPage(false);
+    fetch(`${BackendUrl}/app/v1/bus/getAllActiveInactiveBus`)
       .then((res) => res.json())
       .then((data) => {
+        //console.log(data);
         setBusData(data.buses);
       })
       .catch((e) => console.log('Api fail ', e));
-  }, []);
+  }, [refreshPage]);
   useEffect(() => {
     if (value.length > 0) {
       let res;
@@ -145,37 +159,172 @@ export const AllBus = () => {
     setSearchBool(false);
   };
 
-  const [errBusNO, setErrBusNo] = useState(false);
-  const [errCategory, setErrCategory] = useState(false);
-  const [errFuelType, setErrFuelType] = useState(false);
-  const [errTabletImei, setErrTabletImei] = useState(false);
-  const [errCapacity, setErrCapacity] = useState(false);
+  const [busNoErr, setBusNoErr] = useState(false);
+  const [categoryErr, setCategoryErr] = useState(false);
+  const [fuelTypeErr, setFuelTypeErr] = useState(false);
+  const [tabletImeiErr, setTabletImeiErr] = useState(false);
+  const [capacityErr, setCapacityErr] = useState(false);
+  const [makeDateErr, setMakeDateErr] = useState(false);
+  const [tourImgErr, setTourImgErr] = useState(false);
+  const [regCertErr, setRegCertErr] = useState(false);
 
+  const [insurImgErr, setInsurErr] = useState(false);
+  const [pollutionImgErr, setPollutionImgErr] = useState(false);
+  const [regDateErr, setRegDateErr] = useState(false);
+  const [carriageImgErr, setCarriageImgErr] = useState(false);
+  const [fitnessImgErr, setFitnessImgErr] = useState(false);
+  const [isLoading, setisLoading] = useState(false);
   //updatebus
   const updateBus = () => {
-    if (updateObj.bus_number != '') {
-      toast.success('update successfully');
-      console.log('right');
-      setErrBusNo(false);
-      setErrCapacity(false);
-      setErrCategory(false);
-      setErrFuelType(false);
-      setErrTabletImei(false);
+    if (
+      updateObj.bus_number != undefined &&
+      updateObj.category != undefined &&
+      updateObj.fuel_type != undefined &&
+      updateObj.capacity != undefined &&
+      updateObj.tablet_imei != undefined &&
+      updateObj.bus_document.fitnessCert != undefined &&
+      updateObj.bus_document.carriagePermitCert != undefined &&
+      updateObj.bus_document.touriestPermitCert !== undefined &&
+      updateObj.bus_document.pollutionCert != undefined &&
+      updateObj.bus_document.insuranceCert != undefined &&
+      updateObj.bus_document.regCert != undefined &&
+      updateObj.registration_date != undefined &&
+      updateObj.make_date != undefined
+    ) {
+      const document = {
+        pollutionCert: updateObj.bus_document?.pollutionCert,
+        touriestPermitCert: updateObj.bus_document?.touriestPermitCert,
+        fitnessCert: updateObj.bus_document?.fitnessCert,
+        carriagePermitCert: updateObj.bus_document?.carriagePermitCert,
+        insuranceCert: updateObj.bus_document?.insuranceCert,
+        regCert: updateObj.bus_document?.regCert
+      };
+      const body = {
+        busid: updateObj.bus_id,
+        busNumber: updateObj.bus_number,
+        busCapacity: updateObj.capacity,
+        busCategory: updateObj.category,
+        busFuelType: updateObj.fuel_type,
+        busTabletImei: updateObj.tablet_imei,
+        femaleBus: Boolean(updateObj.female_bus),
+        activeStatus: Boolean(updateObj.isActive),
+        makeDate: updateObj.make_date,
+        registrationDate: updateObj.registration_date,
+        isBusAC: Boolean(updateObj.isAC),
+        busDocuments: document
+      };
+      console.log(body);
+      axios
+        .patch(`${BackendUrl}/app/v1/bus/editBus`, body, { headers: {} })
+        .then((res) => {
+          if (res.data.busUpdated) {
+            toast.success(res.data.message);
+          } else {
+            toast.error(res.data.message);
+          }
+          // console.log(res);
+          // toast.success('Bus updated SuccessFully');
+        })
+        .catch((e) => {
+          console.log('api Failed ', e);
+          toast.error('Error');
+        });
     } else {
-      updateObj.bus_number == '' ? setErrBusNo(true) : setErrBusNo(false);
-      updateObj.category == '' ? true : setErrCategory(false);
-      updateObj.tablet_imei == '' ? setErrTabletImei(true) : setErrTabletImei(false);
-      updateObj.fuel_type == '' ? setErrFuelType(true) : setErrFuelType(false);
-      updateObj.capacity == '' ? setErrCapacity(true) : setErrCapacity(false);
+      updateObj.bus_number == undefined ? setBusNoErr(true) : setBusNoErr(false);
+      updateObj.category == undefined ? setCategoryErr(true) : setCategoryErr(false);
+      updateObj.fuel_type == undefined ? setFuelTypeErr(true) : setFuelTypeErr(false);
+      updateObj.capacity == undefined ? setCapacityErr(true) : setCapacityErr(false);
+      updateObj.tablet_imei == undefined ? setTabletImeiErr(true) : setTabletImeiErr(false);
+      updateObj.bus_document?.fitnessCert == undefined ? setFitnessImgErr(true) : setFitnessImgErr(false);
+      updateObj.bus_document?.carriagePermitCert == undefined ? setCarriageImgErr(true) : setCarriageImgErr(false);
+      updateObj.bus_document?.touriestPermitCert == undefined ? setTourImgErr(true) : setTourImgErr(false);
+      updateObj.bus_document?.pollutionCert == undefined ? setPollutionImgErr(true) : setPollutionImgErr(false);
+      updateObj.bus_document?.insuranceCert == undefined ? setInsurErr(true) : setInsurErr(false);
+      updateObj.bus_document?.regCert == undefined ? setRegCertErr(true) : setRegCertErr(false);
+      updateObj.registration_date == undefined ? setRegDateErr(true) : setRegDateErr(false);
+      updateObj.make_date == undefined ? setMakeDateErr(true) : setMakeDateErr(false);
+    }
+    setRefreshPage(true);
+  };
+
+  // handle document upload
+  const handleDocumentPhoto = async (event) => {
+    const name = event.target.name;
+    // console.log(event, field);
+    setisLoading(true);
+    const link = await UploadDocumenttos3Bucket(event);
+    setUpdateObj({ ...updateObj, bus_document: { ...updateObj.bus_document, [name]: link } });
+    setisLoading(false);
+  };
+  const imageUploadApi = async (value) => {
+    let result = await axios.request(value);
+    // console.log(result.data.name);
+    let imageName = result.data.name;
+    return imageName;
+  };
+
+  const UploadDocumenttos3Bucket = async (e) => {
+    const reader = new FormData();
+    reader.append('file', e.target.files[0]);
+    let config = {
+      method: 'post',
+      maxBodyLength: Infinity,
+      url: `${AwsBucketUrl}/app/v1/aws/upload/driverimages`,
+      headers: {
+        'Content-Type': 'multipart/form-data'
+      },
+      data: reader
+    };
+    let imageName = await imageUploadApi(config);
+    let totalUrl = `${AwsBucketUrl}/app/v1/aws/getImage/driverimages/` + imageName;
+    return totalUrl;
+  };
+
+  // pagenation
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 6;
+  const totalPages = Math.ceil(filterData.length / itemsPerPage);
+
+  const displayItems = () => {
+    const startIndex = (currentPage - 1) * itemsPerPage;
+    const endIndex = startIndex + itemsPerPage;
+    return filterData.slice(startIndex, endIndex);
+  };
+  const handlePrev = () => {
+    if (currentPage <= 1) {
+      setCurrentPage(totalPages);
+    } else {
+      setCurrentPage((page) => page - 1);
+    }
+  };
+  const handleNext = () => {
+    if (currentPage >= totalPages) {
+      setCurrentPage(1);
+    } else {
+      setCurrentPage((page) => page + 1);
     }
   };
   const style = {
     position: 'absolute',
-    top: '40%',
+    top: '50%',
     left: '50%',
-    transform: 'translate(-50%, -40%)',
+    transform: 'translate(-50%, -50%)',
     p: 4
   };
+
+  // child modal setstate
+
+  const [activeState, setActiveState] = useState(false);
+  const [isactive, setisactive] = useState(null);
+  const [textData, setTextData] = useState('');
+  const handleActiveStatus = (value) => {
+    setTextData(value);
+    setActiveState(true);
+  };
+  useEffect(() => {
+    setUpdateObj({ ...updateObj, isActive: isactive });
+  }, [isactive]);
+  // console.log(updateObj);
   return (
     <div className="">
       <div className="">
@@ -229,15 +378,16 @@ export const AllBus = () => {
                       </TableRow>
                     </TableHead>
                     <TableBody>
-                      {filterData?.map((item, i) => {
+                      {displayItems()?.map((item, i) => {
+                        // console.log(item)
                         return (
                           <TableRow key={i} hover>
-                            <TableCell align="center">{item.bus_id}</TableCell>
                             <TableCell align="center">{item.bus_number}</TableCell>
                             <TableCell align="center">{item.capacity}</TableCell>
-                            <TableCell align="center">{item.driver_id}</TableCell>
+                            <TableCell align="center">{item.vendor_name}</TableCell>
+                            <TableCell align="center">{item.driver_name}</TableCell>
+                            <TableCell align="center">{item.conductor_name}</TableCell>
                             <TableCell align="center">{item.category}</TableCell>
-                            <TableCell align="center">{item.conductor_id}</TableCell>
                             <TableCell align="center">{item.fuel_type}</TableCell>
                             <TableCell align="center">{item.tablet_imei}</TableCell>
                             <TableCell align="center">{item.female_bus ? 'Yes' : 'No'}</TableCell>
@@ -253,16 +403,61 @@ export const AllBus = () => {
                   </Table>
                 </TableContainer>
               </Paper>
+              {totalPages > 0 && (
+                <div className="mt-2">
+                  <div className="flex justify-center gap-4">
+                    <button className="font-bold bg-blue-600 px-3 text-white rounded" onClick={() => handlePrev()}>
+                      {'<<'}
+                    </button>
+
+                    {Array.from({ length: totalPages }, (_, i) => i + 1).map((pageNumber) => (
+                      <button
+                        key={pageNumber}
+                        onClick={() => setCurrentPage(pageNumber)}
+                        className={`flex justify-center items-center bg-blue-500 px-2 py-1 rounded-full ${
+                          currentPage == pageNumber ? 'text-white bg-red-500' : 'text-black'
+                        }`}
+                      >
+                        {pageNumber}
+                      </button>
+                    ))}
+
+                    <button className="font-bold bg-blue-600 px-3 text-white rounded" onClick={() => handleNext()}>
+                      {'>>'}
+                    </button>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         </div>
       </div>
-
-      <Modal open={updateOpen} onClose={handleClose} aria-labelledby="modal-modal-title" aria-describedby="modal-modal-description">
-        <Box sx={style} className=" w-full max-lg:h-screen max-lg:w-screen p-4 ">
+      <Modal
+        open={updateOpen}
+        onClose={handleClose}
+        aria-labelledby="modal-modal-title"
+        aria-describedby="modal-modal-description"
+        className="overflow-y-scroll h-screen"
+      >
+        <Box sx={style} className="w-full h-screen p-4">
           <div>
             <Toaster />
           </div>
+          {isLoading && (
+            <div>
+              <LoaderCircular />
+            </div>
+          )}
+          {/* child modal */}
+          {/* {activeState && (
+            <div className="fixed w-[100%] h-[100%] bg-gray-200 shadow-lg z-50  ">
+              <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-400  shadow-lg pt-8  z-50 px-16 pb-12">
+                {' '}
+                <button onClick={() => setActiveState(false)}> close</button> hello{' '}
+              </div>
+            </div>
+          )} */}
+
           <div className=" max-lg:w-full flex flex-col gap-1 bg-white my-4 p-4 rounded-xl">
             <div className="flex justify-between pb-5">
               <p className="text-xl font-bold">Update Bus</p>
@@ -271,8 +466,8 @@ export const AllBus = () => {
               </button>
             </div>
             <>
-              <div>
-                <div className="grid grid-cols-4 max-lg:grid-cols-2 max-lg:gap-5 max-sm:grid-cols-1 max-sm:gap-3 gap-5">
+              <div className="flex flex-col gap-5">
+                <div className="grid grid-cols-3 max-lg:grid-cols-2 max-lg:gap-5 max-sm:grid-cols-1 max-sm:gap-3 gap-5">
                   {/* bus ID*/}
                   <div className="w-full">
                     <FormControl fullWidth>
@@ -282,7 +477,7 @@ export const AllBus = () => {
                   {/* vender Id */}
                   <div className="w-full">
                     <FormControl fullWidth>
-                      <TextField id="demo-simple-seect" label="vendor Id" disabled={true} />
+                      <TextField id="demo-simple-seect" label="vendor Id" disabled={true} value={updateObj.vendor_id} />
                     </FormControl>
                   </div>
                   {/* Driver Id*/}
@@ -307,13 +502,12 @@ export const AllBus = () => {
                         onChange={(e) => setUpdateObj({ ...updateObj, bus_number: e.target.value })}
                       />
                     </FormControl>
-                    {errBusNO && <p className="text-red-500 ml-2 text-xs">bus no error</p>}
+                    {busNoErr && <p className="text-red-500 ml-2 text-xs">bus no error</p>}
                   </div>
                   {/* Bus Capacity */}
                   <div className="w-full">
                     <FormControl fullWidth>
                       <TextField
-                        fullWidth
                         id="outlined-basi"
                         label="Capacity"
                         variant="outlined"
@@ -322,28 +516,21 @@ export const AllBus = () => {
                         onChange={(e) => setUpdateObj({ ...updateObj, capacity: e.target.value })}
                       />
                     </FormControl>
-                    {errCapacity && <p className="text-red-500 ml-2 text-xs">Capacity error</p>}
+                    {capacityErr && <p className="text-red-500 ml-2 text-xs">Capacity error</p>}
                   </div>
-
                   {/* Category */}
                   <div className="w-full">
                     <FormControl fullWidth>
-                      <InputLabel id="category">Category</InputLabel>
-                      <Select
-                        labelId="category"
-                        id="demo-simle-select"
+                      <TextField
+                        id="outlined-basi"
                         label="Category"
+                        variant="outlined"
                         value={updateObj.category}
                         onChange={(e) => setUpdateObj({ ...updateObj, category: e.target.value })}
-                      >
-                        <MenuItem value={'1'}>Small</MenuItem>
-                        <MenuItem value={'2'}>Medium</MenuItem>
-                        <MenuItem value={'3'}>Large</MenuItem>
-                      </Select>
-                      {errCategory && <p className="text-red-500 ml-2 text-xs">category error</p>}
+                      />
                     </FormControl>
+                    {categoryErr && <p className="text-red-500 ml-2 text-xs">category error</p>}
                   </div>
-
                   {/* Fuel Type */}
                   <div className="w-full">
                     <FormControl fullWidth>
@@ -352,7 +539,7 @@ export const AllBus = () => {
                         labelId="fuel_type"
                         id="demo-imple-select"
                         label="Fuel Type"
-                        value={updateObj.fuel_type}
+                        value={updateObj.fuel_type || 'Na'}
                         onChange={(e) => setUpdateObj({ ...updateObj, fuel_type: e.target.value })}
                       >
                         <MenuItem value="Petrol">Petrol</MenuItem>
@@ -360,9 +547,8 @@ export const AllBus = () => {
                         <MenuItem value="CNG">CNG</MenuItem>
                       </Select>
                     </FormControl>
-                    {errFuelType && <p className="text-red-500 ml-2 text-xs">Category Error</p>}
+                    {fuelTypeErr && <p className="text-red-500 ml-2 text-xs">Category Error</p>}
                   </div>
-
                   {/* Passenger Type */}
                   <div className="w-full">
                     <FormControl fullWidth>
@@ -371,7 +557,7 @@ export const AllBus = () => {
                         labelId="female_bus"
                         id="demo-sple-select"
                         label="Female bus"
-                        value={updateObj.female_bus}
+                        value={Boolean(updateObj.female_bus)}
                         onChange={(e) => setUpdateObj({ ...updateObj, female_bus: e.target.value })}
                       >
                         <MenuItem value={true}>Yes</MenuItem>
@@ -392,10 +578,228 @@ export const AllBus = () => {
                         onChange={(e) => setUpdateObj({ ...updateObj, tablet_imei: e.target.value })}
                       />
                     </FormControl>
-                    {errTabletImei && <p className="text-red-500 ml-2 text-xs">tablet imei err</p>}
+                    {tabletImeiErr && <p className="text-red-500 ml-2 text-xs">tablet imei err</p>}
+                  </div>{' '}
+                  <div className="w-full">
+                    <FormControl fullWidth>
+                      <InputLabel id="busAc">Bus AC/Non-Ac</InputLabel>
+                      <Select
+                        labelId="busAc"
+                        id="demo-simpl-select"
+                        label="Bus AC/Non-Ac"
+                        value={Boolean(updateObj.isAC)}
+                        onChange={(e) => setUpdateObj({ ...updateObj, isAC: e.target.value })}
+                      >
+                        <MenuItem value={true}>Yes</MenuItem>
+                        <MenuItem value={false}>No</MenuItem>
+                      </Select>
+                    </FormControl>
+                  </div>
+                </div>
+                <div>
+                  {/* sldfj */}
+                  <div className="grid grid-cols-3 max-md:grid-cols-1 gap-8 max-lg:gap-6 max-md:gap-4">
+                    <div className="w-full">
+                      <InputLabel>Make Date</InputLabel>
+                      <FormControl fullWidth>
+                        <TextField
+                          type="date"
+                          id="demo-simple-seect"
+                          label=""
+                          value={updateObj.make_date}
+                          onChange={(e) => setUpdateObj({ ...updateObj, make_date: e.target.value })}
+                        ></TextField>
+                      </FormControl>
+                      {makeDateErr && <p className="text-xs text-red-500 ml-2">make Date Error</p>}
+                    </div>
+
+                    <div className="w-full">
+                      <InputLabel>Reg Date</InputLabel>
+                      <FormControl fullWidth>
+                        <TextField
+                          type="date"
+                          id="demo-simple-seect"
+                          label=""
+                          value={updateObj.registration_date}
+                          onChange={(e) => setUpdateObj({ ...updateObj, registration_date: e.target.value })}
+                        ></TextField>
+                      </FormControl>
+                      {regDateErr && <p className="text-xs text-red-500 ml-2">Reg date Error</p>}
+                    </div>
+                    <div className="w-full">
+                      {updateObj.bus_document?.regCert == undefined ? (
+                        <>
+                          <InputLabel className="capitalize">regCert</InputLabel>
+                          <FormControl fullWidth>
+                            <TextField type="file" variant="outlined" name="regCert" onChange={(e) => handleDocumentPhoto(e)} />
+                          </FormControl>
+                        </>
+                      ) : (
+                        <div className="flex justify-between">
+                          <img src={updateObj.bus_document.regCert} alt="regCert" className="w-20 h-20 rounded-xl" />
+                          <Button
+                            onClick={() => setUpdateObj({ ...updateObj, bus_document: { ...updateObj.bus_document, regCert: undefined } })}
+                            variant="outlined"
+                            color="error"
+                          >
+                            remove
+                          </Button>
+                        </div>
+                      )}
+                      {regCertErr && <p className="text-xs text-red-500 ml-2">Bus reg cert Error</p>}
+                    </div>
+
+                    <div>
+                      {updateObj.bus_document?.insuranceCert == undefined ? (
+                        <>
+                          <InputLabel className="capitalize">insuranceCert</InputLabel>
+                          <FormControl fullWidth>
+                            <TextField type="file" variant="outlined" name="insuranceCert" onChange={(e) => handleDocumentPhoto(e)} />
+                          </FormControl>
+                        </>
+                      ) : (
+                        <div className="flex justify-between">
+                          <img src={updateObj.bus_document?.insuranceCert} alt="insuranceCert" className="w-20 h-20 rounded-xl" />
+                          <Button
+                            onClick={() =>
+                              setUpdateObj({ ...updateObj, bus_document: { ...updateObj.bus_document, insuranceCert: undefined } })
+                            }
+                            variant="outlined"
+                            color="error"
+                          >
+                            remove
+                          </Button>
+                        </div>
+                      )}
+                      {insurImgErr && <p className="text-red-500 text-xs ml-2">insuranceImg error</p>}
+                    </div>
+
+                    <div>
+                      {updateObj.bus_document?.pollutionCert == undefined ? (
+                        <>
+                          <InputLabel className="capitalize">pollutionCert</InputLabel>
+                          <FormControl fullWidth>
+                            <TextField type="file" variant="outlined" name="pollutionCert" onChange={(e) => handleDocumentPhoto(e)} />
+                          </FormControl>
+                        </>
+                      ) : (
+                        <div className="flex justify-between">
+                          <img src={updateObj.bus_document.pollutionCert} alt="pollutionCert" className="w-20 h-20 rounded-xl" />
+                          <Button
+                            onClick={() =>
+                              setUpdateObj({ ...updateObj, bus_document: { ...updateObj.bus_document, pollutionCert: undefined } })
+                            }
+                            variant="outlined"
+                            color="error"
+                          >
+                            remove
+                          </Button>
+                        </div>
+                      )}
+                      {pollutionImgErr && <p className="text-red-500 text-xs ml-2">pollutionCert error</p>}
+                    </div>
+
+                    <div>
+                      {updateObj.bus_document?.touriestPermitCert == undefined ? (
+                        <>
+                          <InputLabel className="capitalize">touriestPermitCert</InputLabel>
+                          <FormControl fullWidth>
+                            <TextField type="file" variant="outlined" name="touriestPermitCert" onChange={(e) => handleDocumentPhoto(e)} />
+                          </FormControl>
+                        </>
+                      ) : (
+                        <div className="flex justify-between">
+                          <img src={updateObj.bus_document.touriestPermitCert} alt="touriestPermitCert" className="w-20 h-20 rounded-xl" />
+                          <Button
+                            onClick={() =>
+                              setUpdateObj({
+                                ...updateObj,
+                                bus_document: {
+                                  ...updateObj.bus_document,
+                                  touriestPermitCert: undefined
+                                }
+                              })
+                            }
+                            variant="outlined"
+                            color="error"
+                          >
+                            remove
+                          </Button>
+                        </div>
+                      )}
+                      {tourImgErr && <p className="text-red-500 text-xs ml-2">touriestPermitCert error</p>}
+                    </div>
+
+                    <div>
+                      {updateObj.bus_document?.carriagePermitCert == undefined ? (
+                        <>
+                          <InputLabel className="capitalize">carriagePermitCert</InputLabel>
+                          <FormControl fullWidth>
+                            <TextField type="file" variant="outlined" name="carriagePermitCert" onChange={(e) => handleDocumentPhoto(e)} />
+                          </FormControl>
+                        </>
+                      ) : (
+                        <div className="flex justify-between">
+                          <img src={updateObj.bus_document?.carriagePermitCert} alt="carriagePermitCert" className="w-20 h-20 rounded-xl" />
+                          <Button
+                            onClick={() =>
+                              setUpdateObj({ ...updateObj, bus_document: { ...updateObj.bus_document, carriagePermitCert: undefined } })
+                            }
+                            variant="outlined"
+                            color="error"
+                          >
+                            remove
+                          </Button>
+                        </div>
+                      )}
+                      {carriageImgErr && <p className="text-red-500 text-xs ml-2">carriagePermitCert error</p>}
+                    </div>
+
+                    <div>
+                      {updateObj.bus_document?.fitnessCert == undefined ? (
+                        <>
+                          <InputLabel className="capitalize">fitnessCert</InputLabel>
+                          <FormControl fullWidth>
+                            <TextField type="file" variant="outlined" name="fitnessCert" onChange={(e) => handleDocumentPhoto(e)} />
+                          </FormControl>
+                        </>
+                      ) : (
+                        <div className="flex justify-between">
+                          <img src={updateObj.bus_document?.fitnessCert} alt="fitnessCert" className="w-20 h-20 rounded-xl" />
+                          <Button
+                            onClick={() =>
+                              setUpdateObj({ ...updateObj, bus_document: { ...updateObj.bus_document, fitnessCert: undefined } })
+                            }
+                            variant="outlined"
+                            color="error"
+                          >
+                            remove
+                          </Button>
+                        </div>
+                      )}
+                      {fitnessImgErr && <p className="text-red-500 text-xs ml-2">fitnessCert error</p>}
+                    </div>
                   </div>
                 </div>
               </div>
+              <div className="mt-2">
+                {updateObj.isActive == 1 ? (
+                  <Button onClick={() => handleActiveStatus('Deactivate')} className="bg-green-500 text-white">
+                    Activated
+                  </Button>
+                ) : (
+                  <Button onClick={() => handleActiveStatus('Activate')} className="bg-red-600 text-white">
+                    Deactivated
+                  </Button>
+                )}
+              </div>
+              <ActiveStatusModal
+                setisactive={setisactive}
+                updateObj={updateObj}
+                textData={textData}
+                activeState={activeState}
+                setActiveState={setActiveState}
+              />
 
               <div>
                 <div className="flex gap-10 justify-between mb-3">
@@ -416,3 +820,53 @@ export const AllBus = () => {
     </div>
   );
 };
+const style = {
+  position: 'absolute',
+  top: '50%',
+  left: '50%',
+  transform: 'translate(-50%, -50%)',
+  width: 400,
+  bgcolor: 'background.paper',
+  //border: '0px solid #000',
+  boxShadow: 24,
+  p: 3
+  // pt: 2,
+  // px: 4,
+  // pb: 3
+};
+
+function ActiveStatusModal({ setisactive, textData, activeState, setActiveState }) {
+  const handleClose = () => {
+    setActiveState(false);
+  };
+  const handleActiveStatusChange = () => {
+    textData == 'Deactivate' ? setisactive(false) : setisactive(true);
+    handleClose();
+  };
+  return (
+    <>
+      <Modal open={activeState} onClose={handleClose} aria-labelledby="child-modal-title" aria-describedby="child-modal-description">
+        <Box sx={{ ...style, width: 320 }} className="rounded">
+          <h2 id="child-modal-title" className="font-semibold text-lg mb-4">
+            Do you want to {textData} the Bus ?
+          </h2>
+
+          <div className="flex justify-between">
+            {
+              <Button
+                onClick={() => handleActiveStatusChange()}
+                className={textData == 'Deactivate' ? 'bg-red-700 text-white' : 'bg-green-700 text-white hover:bg-green-500'}
+              >
+                {textData}
+              </Button>
+            }
+
+            <Button onClick={handleClose} variant="outlined" color="error">
+              Cancel
+            </Button>
+          </div>
+        </Box>
+      </Modal>
+    </>
+  );
+}
