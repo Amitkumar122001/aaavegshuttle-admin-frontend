@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 import { TextField, Button, FormControl, Checkbox, FormControlLabel } from '@mui/material';
-import { Toaster } from 'react-hot-toast';
-// import axios from 'axios';
-// import { BackendUrl } from 'utils/config';
+import toast, { Toaster } from 'react-hot-toast';
+import axios from 'axios';
+import { BackendUrl } from 'utils/config';
 // perkmrate
 export const AddRoute = () => {
   const [routeForm, setRouteForm] = useState({
@@ -84,16 +84,16 @@ export const AddRoute = () => {
         userMaxRouteFare: routeForm.maxRouteFare
       };
       console.log(body);
-      // axios
-      //   .post(`${BackendUrl}/app/v1/route/createRoute`, body, { headers: {} })
-      //   .then((res) => {
-      //     console.log(res.data);
-      //     toast.success('Route Add Successfully');
-      //   })
-      //   .catch((e) => {
-      //     console.log('Api Failed : ', e);
-      //     toast.error('Error');
-      //   });
+      axios
+        .post(`${BackendUrl}/app/v1/route/createRoute`, body, { headers: {} })
+        .then((res) => {
+          console.log(res.data);
+          toast.success('Route Add Successfully');
+        })
+        .catch((e) => {
+          console.log('Api Failed : ', e);
+          toast.error('Error');
+        });
       setRouteEndTimeErr(false);
       setRouteStartTimeErr(false);
       setStartPointNameErr(false);
@@ -141,9 +141,28 @@ export const AddRoute = () => {
       routeForm.routeBasePriceAdhoc == '' ? setRouteBaseAdhocErr(true) : setRouteBaseAdhocErr(false);
       // per km rate
       routeForm.perKmRate == '' ? setPerKmRateErr(true) : setPerKmRateErr(false);
+      toast.error('Some Field are Missing');
     }
   };
   const handleClear = () => {
+    setRouteForm({
+      startpointname: '',
+      startlat: '',
+      startlng: '',
+      endpointname: '',
+      endlat: '',
+      endlng: '',
+      totalroutedistance: '',
+      routestarttime: '00:00:00',
+      routeendtime: '00:00:00',
+      routeNo: '',
+      fixedRate: '',
+      isFixedRate: true,
+      baseRate: '',
+      perKmRate: '',
+      routeBasePriceAdhoc: '',
+      maxRouteFare: ''
+    });
     console.log('error');
   };
   return (

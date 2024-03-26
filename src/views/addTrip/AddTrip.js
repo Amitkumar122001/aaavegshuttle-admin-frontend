@@ -109,9 +109,9 @@ export const AddTrip = () => {
         endTime: addTripForm.endTime,
         runningDays: JSON.stringify(running)
       };
-
+      console.log(body);
       axios
-        .post('https://4c82-125-19-80-210.ngrok-free.app/app/v1/trip/addtrip', body, { headers: {} })
+        .post(`${BackendUrl}/app/v1/trip/addtrip`, body, { headers: {} })
         .then((res) => {
           console.log(res);
           toast.success('Trip Added SuccessFully');

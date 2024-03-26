@@ -32,7 +32,7 @@ const columns = [
   {
     id: 'driver_phonenumber',
     label: 'Phone Number',
-    minWidth: 25,
+    minWidth: 130,
     align: 'center',
     format: (value) => value.toLocaleString('en-US')
   },
@@ -40,7 +40,7 @@ const columns = [
   {
     id: 'vendor_name',
     label: 'Vendor Name',
-    minWidth: 25,
+    minWidth: 150,
     align: 'center',
     format: (value) => value.toLocaleString('en-US')
   },
@@ -169,7 +169,7 @@ export const AllDriver = () => {
         vendorId: updateObj.vendor_id,
         activeStatus: Boolean(updateObj.activeStatus)
       };
-      // console.log(body);
+      console.log(body);
 
       axios
         .patch(`${BackendUrl}/app/v1/driver/updateDriver`, body)
@@ -231,6 +231,7 @@ export const AllDriver = () => {
   // for pagination
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 6;
+  // const [itemsPerPage,setItemPerPAge]=useState(5);
   const totalPages = Math.ceil(filterData.length / itemsPerPage);
 
   const displayItems = () => {
@@ -317,7 +318,7 @@ export const AllDriver = () => {
         <div>
           <div>
             <Paper sx={{ width: '100%', overflow: 'hidden' }}>
-              <TableContainer sx={{ maxHeight: 440 }}>
+              <TableContainer >
                 <Table stickyHeader aria-label="sticky table">
                   <TableHead className="bg-gray-300">
                     <TableRow>
@@ -330,6 +331,7 @@ export const AllDriver = () => {
                   </TableHead>
                   <TableBody>
                     {displayItems()?.map((item, i) => {
+                      // console.log(item)
                       return (
                         <TableRow key={i} hover>
                           <TableCell align="center">{item.driver_name}</TableCell>

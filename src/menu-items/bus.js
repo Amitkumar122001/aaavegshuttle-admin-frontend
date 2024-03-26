@@ -132,6 +132,23 @@ const buses = {
       ]
     },
     {
+      id: 'pairbusdriver',
+      title: 'Pair Bus Driver',
+      type: 'collapse',
+      icon: icons.Icon360,
+      children: [
+        {
+          id: 'busdriver',
+          title: 'Pair Bus Diver',
+          type: 'item',
+          url: '/pairBusDriver',
+          icon: icons.IconPlus,
+          breadcrumbs: false,
+          target: false
+        } 
+      ]
+    },
+    {
       id: 'trip',
       title: 'Trip',
       type: 'collapse',
@@ -164,27 +181,11 @@ const buses = {
           breadcrumbs: false,
           target: false
         },
-        {
-          id: 'add booking',
-          title: 'Add Booking',
-          type: 'item',
-          url: '/add_booking',
-          icon: icons.IconArrowRightRhombus,
-          breadcrumbs: false
-        },
-        {
+       {
           id: 'all booking',
           title: 'All Booking',
           type: 'item',
           url: '/all_booking',
-          icon: icons.IconArrowRightRhombus,
-          breadcrumbs: false
-        },
-        {
-          id: 'update booking',
-          title: 'Update Booking',
-          type: 'item',
-          url: '/update_booking',
           icon: icons.IconArrowRightRhombus,
           breadcrumbs: false
         }

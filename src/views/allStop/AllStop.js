@@ -19,13 +19,15 @@ export const AllStop = () => {
   useEffect(() => {
     axios
       .get(`${BackendUrl}/app/v1/route/getAllRoutes`)
-      .then((res) => setRoute(res?.data?.result))
+      .then((res) => {
+        setRoute(res?.data?.result);
+      })
       .catch((err) => console.log('API error', err));
   }, []);
   useEffect(() => {
     if (searchStopRoute) {
       axios
-        .post('${BackendUrl}/app/v1/stops/getSpecificRouteStops', { routeId: searchStopRoute })
+        .post(`${BackendUrl}/app/v1/stops/getSpecificRouteStops`, { routeId: searchStopRoute })
         .then((res) => setAllStop(res.data?.result))
         .catch((err) => console.log('API error ', err));
     }
@@ -123,14 +125,13 @@ export const AllStop = () => {
                     </button>
                   </div>
                   <div className="flex text-lg max-lg:text-sm gap-20 max-lg:gap-10">
-                   
                     <div>
                       <p>Stop longitude</p>
-                      <p className="font-semibold">{item.stopLng}</p>
+                      <p className="font-semibold">{String(item.stopLng).slice(0, 18)}</p>
                     </div>
                     <div>
                       <p>Stop latitude</p>
-                      <p className="font-semibold">{item.stopLat}</p>
+                      <p className="font-semibold">{String(item.stopLat).slice(0, 20)}</p>
                     </div>
                   </div>
                   <div className="text-lg max-lg:text-sm">
@@ -148,7 +149,6 @@ export const AllStop = () => {
                       <div className="inline-block bg-gray-500 h-1 w-1 rounded-full"></div>
                     </div>
                     <div className="flex gap-3 max-lg:gap-2 -mt-2 max-lg:-mt-1">
-                      {/* transform: rotate(-45deg); */}
                       <div className="inline-block bg-gray-500 w-0.5 h-5 max-lg:h-4 transform -rotate-45"></div>
                       <div className=" inline-block bg-gray-500 w-0.5 h-5 max-lg:h-4 transform rotate-45"></div>
                     </div>

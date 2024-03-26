@@ -39,8 +39,6 @@ import { AllUser } from 'views/allUser/AllUser';
 import { SearchUser } from 'views/searchUser/SearchUser';
 
 import { AllBooking } from 'views/allBooking/AllBooking';
-import { AddBooking } from 'views/addBooking/AddBooking';
-import { UpdateBooking } from 'views/updateBooking/UpdateBooking';
 // Vendor
 import { AllVendor } from 'views/allVendor/AllVendor';
 import { AddVendor } from 'views/addVendor/AddVendor';
@@ -49,6 +47,9 @@ import { SearchVendor } from 'views/searchVendor/SearchVendor';
 import { AddStop } from 'views/addStops/AddStop';
 import { AllStop } from 'views/allStop/AllStop';
 import { AllTrip } from 'views/allTrip/AllTrip';
+
+// Pair Bus Driver
+import { PairBusDriver } from 'views/pairBusDriver/PairBusDriver';
 
 // ==============================|| MAIN ROUTING ||============================== //
 
@@ -174,22 +175,13 @@ const MainRoutes = {
       path: 'all_user',
       element: <AllUser />
     },
-
     {
       path: 'all_booking',
       element: <AllBooking />
     },
     {
-      path: 'add_booking',
-      element: <AddBooking />
-    },
-    {
       path: 'all_stop',
       element: <AllStop />
-    },
-    {
-      path: 'update_booking',
-      element: <UpdateBooking />
     },
     {
       path: 'all_vendor',
@@ -206,6 +198,10 @@ const MainRoutes = {
     {
       path: 'all_trip',
       element: <AllTrip />
+    },
+    {
+      path: 'pairBusDriver',
+      element: <PairBusDriver />
     }
   ]
 };

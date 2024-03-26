@@ -3,6 +3,7 @@ import { TextField, Button, FormControl, Select, InputLabel, MenuItem } from '@m
 import axios from 'axios';
 import toast, { Toaster } from 'react-hot-toast';
 import { BackendUrl } from 'utils/config';
+import { IconCirclePlus } from '@tabler/icons-react';
 export const AddStop = () => {
   const [route, setRoute] = useState([]);
   const [stopForm, setStopForm] = useState({
@@ -61,7 +62,7 @@ export const AddStop = () => {
         stopEta: stopForm.stopETA,
         stopDistanceFromStart: stopForm.stopDistance
       };
-      // console.log(body);
+      console.log(body);
       axios
         .post(`${BackendUrl}/app/v1/stops/createstop`, body, { headers: {} })
         .then((res) => {
@@ -76,7 +77,7 @@ export const AddStop = () => {
       setStopLongitudeErr(false);
       setStopETAErr(false);
       setStopNameErr(false);
-      setStopLatitudeErr(false);
+      setStopLatitudeErr(false); 
       setRouteIdErr(false);
     } else {
       stopForm.routeId == '' ? setRouteIdErr(true) : setRouteIdErr(false);
@@ -95,9 +96,14 @@ export const AddStop = () => {
       </div>
       <div className=" flex flex-col gap-6 bg-white p-4 rounded-xl">
         {/* heading */}
-        <div>
+        <div className="relative">
           <p className="text-3xl text-gray-600 text-center">Add Stop Details</p>
           <p className=" border border-gray-300 mt-5"></p>
+          <p className="absolute top-2 right-2 max-md:right-0">
+            <button>
+              <IconCirclePlus />
+            </button>
+          </p>
         </div>
         <div>
           <div>

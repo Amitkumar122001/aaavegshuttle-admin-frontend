@@ -112,7 +112,7 @@ export const AllBus = () => {
     fetch(`${BackendUrl}/app/v1/bus/getAllActiveInactiveBus`)
       .then((res) => res.json())
       .then((data) => {
-        //console.log(data);
+        console.log(data);
         setBusData(data.buses);
       })
       .catch((e) => console.log('Api fail ', e));
@@ -280,9 +280,10 @@ export const AllBus = () => {
     return totalUrl;
   };
 
-  // pagenation
+  // pagination
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 6;
+  // const [itemsPerPage,setItemPerPAge]=useState(5);
   const totalPages = Math.ceil(filterData.length / itemsPerPage);
 
   const displayItems = () => {
