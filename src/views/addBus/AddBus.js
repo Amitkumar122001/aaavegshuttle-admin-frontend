@@ -171,7 +171,18 @@ export const AddBus = () => {
         busDocuments: document,
         makeDate: addBusForm.makeDate,
         registrationDate: addBusForm.regDate,
-        isBusAC: addBusForm.busAC
+        isBusAC: addBusForm.busAC,
+        insuranceStart: addBusForm.insuranceStart,
+        insuranceEnd: addBusForm.insuranceExpiry,
+        pollutionStart: addBusForm.pollutionStart,
+        pollutionEnd: addBusForm.pollutionExpiry,
+        touristPermitStart: addBusForm.tourPermitStart,
+        touristPermitEnd: addBusForm.tourPermitExpiry,
+        contractCarriageStart: addBusForm.carriagePermitStart,
+        contractCarriageEnd: addBusForm.carriagePermitExpiry,
+        fitnessCertificateStart: addBusForm.fitnessStart,
+        fitnessCertificateEnd: addBusForm.fitnessExpiry,
+        registrationEnd: addBusForm.regEndDate
       };
       console.log(body);
 

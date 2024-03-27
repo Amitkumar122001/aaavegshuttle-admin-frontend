@@ -1,5 +1,5 @@
 // aftab sir [ Development ]
-export const BackendUrl = 'http://192.168.1.167:3000';
+export const BackendUrl = 'http://43.205.164.21:3000';
 
 // neel sir [ main ]
 // export const BackendUrl = 'http://13.200.168.251:3000';
