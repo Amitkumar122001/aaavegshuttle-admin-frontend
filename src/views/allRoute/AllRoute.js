@@ -239,9 +239,10 @@ export const AllRoute = () => {
         onClose={handleClose}
         aria-labelledby="modal-modal-title"
         aria-describedby="modal-modal-description"
-        className=""
+        className="overflow-y-scroll"
       >
-        <Box sx={style} className=" w-full max-lg:h-screen max-lg:w-screen p-4 overflow-x-hidden overflow-y-scroll">
+        <Box sx={style} className=" w-full h-screen p-4 ">
+          {' '}
           <div className=" max-lg:w-full flex flex-col gap-1 bg-white my-4 p-4 rounded-xl relative">
             <div className="absolute top-5 left-1/2 ">
               <Toaster />

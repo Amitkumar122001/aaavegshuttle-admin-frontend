@@ -449,16 +449,6 @@ export const AllBus = () => {
               <LoaderCircular />
             </div>
           )}
-          {/* child modal */}
-          {/* {activeState && (
-            <div className="fixed w-[100%] h-[100%] bg-gray-200 shadow-lg z-50  ">
-              <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-400  shadow-lg pt-8  z-50 px-16 pb-12">
-                {' '}
-                <button onClick={() => setActiveState(false)}> close</button> hello{' '}
-              </div>
-            </div>
-          )} */}
-
           <div className=" max-lg:w-full flex flex-col gap-1 bg-white my-4 p-4 rounded-xl">
             <div className="flex justify-between pb-5">
               <p className="text-xl font-bold">Update Bus</p>

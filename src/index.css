@@ -7,3 +7,10 @@ input[type='file'] {
   white-space: nowrap;
   text-overflow: ellipsis;
 }
+
+.tailwind-ellipsis {
+  overflow: visible !important;
+  color: #333 !important;
+  white-space: nowrap !important;
+  text-overflow: ellipsis !important;
+}
