@@ -25,7 +25,7 @@ const pages = {
           id: 'login3',
           title: 'Login',
           type: 'item',
-          url: '/add_bus',
+          url: '/login',
           breadcrumbs: false,
           target: false
         },

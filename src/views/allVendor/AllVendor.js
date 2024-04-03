@@ -120,11 +120,12 @@ export const AllVendor = () => {
   useEffect(() => {
     if (value.length > 0) {
       let res = vendorData?.filter((item) => item[field]?.includes(value));
+      console.log(res);
       setFilterData(res);
     } else {
       setFilterData(vendorData);
     }
-  }, [value, vendorData]);
+  }, [value, vendorData, field]);
   const handleSearchField = (inputField) => {
     switch (inputField) {
       case 'vendorMobile': {
@@ -232,13 +233,13 @@ export const AllVendor = () => {
         panNumber: updateObj.panNumber,
         gstNumber: updateObj.gstNumber
       };
-      // console.log(body);
+      console.log(body);
       axios
         .patch(`${BackendUrl}/app/v1/vendor/updateVendors`, body)
         .then((res) => {
-          console.log(res.data);
+          window.alert(`${res.data.result}`);
+          // console.log(res.data);
           setLoader(true);
-          toast.success('update successfully');
           clearAllField();
         })
         .catch((err) => {
@@ -246,7 +247,6 @@ export const AllVendor = () => {
           toast.error('Api Error');
         });
     } else {
-      window.alert('error');
       updateObj.vendorName == '' ? setVendorNameErr(true) : setVendorNameErr(false);
       validateEmail(updateObj.vendorEmail) ? setVendorEmailErr(false) : setVendorEmailErr(true);
       updateObj.vendorMobile == '' ? setVendorMobileErr(true) : setVendorMobileErr(false);
@@ -272,6 +272,7 @@ export const AllVendor = () => {
     }
   };
   const clearAllField = () => {
+    setLoader(false);
     setUpdateOpen(false);
     setVendorNameErr(false);
     setVendorEmailErr(false);
@@ -421,20 +422,20 @@ export const AllVendor = () => {
         onClose={handleClose}
         aria-labelledby="modal-modal-title"
         aria-describedby="modal-modal-description"
-        className="overflow-scroll"
+        className="flex items-center justify-center"
       >
-        <Box sx={style} className=" w-full h-screen  p-4">
+        <Box sx={style} className=" w-full h-full  p-4 overflow-hidden">
           <div>
             <Toaster />
           </div>
-          <div className=" max-lg:w-full flex flex-col gap-1 bg-white my-4 p-4 rounded-xl ">
-            <div className="flex justify-between pb-5">
+          <div className=" max-lg:w-full flex flex-col gap-1 bg-white p-4 rounded-xl ">
+            <div className="flex justify-between pb-3">
               <p className="text-xl font-bold">Update Vendor</p>
               <button onClick={handleClose} className="">
                 <IconX />
               </button>
             </div>
-            <>
+            <div className="overflow-y-scroll h-[480px] max-md:h-[640px] py-3">
               <div className="">
                 <div className="grid grid-cols-4 max-lg:grid-cols-2 max-lg:gap-5 max-sm:grid-cols-1 max-sm:gap-3 gap-5">
                   {/* vendor ID*/}
@@ -639,6 +640,7 @@ export const AllVendor = () => {
                             <img src={updateObj?.vendorDocument?.aadharFront} alt="aadharFront" className="w-20 h-20 rounded-xl" />
                           </a>{' '}
                           <Button
+                            className=""
                             onClick={() =>
                               setUpdateObj({ ...updateObj, vendorDocument: { ...updateObj.vendorDocument, aadharFront: undefined } })
                             }
@@ -959,7 +961,7 @@ export const AllVendor = () => {
                   </Button>
                 </div>
               </div>
-            </>
+            </div>
           </div>
         </Box>
       </Modal>

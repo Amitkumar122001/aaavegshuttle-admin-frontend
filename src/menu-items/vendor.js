@@ -31,7 +31,7 @@ const icons = {
 // ==============================|| EXTRA PAGES MENU ITEMS ||============================== //
 // inside children object key target=true route on new page
 const vendor = {
-  id: 'vendors',
+  id: 'vendor',
   title: 'Vendor',
   // caption: 'User Caption',
   type: 'group',

@@ -35,7 +35,7 @@ const icons = {
 const buses = {
   id: 'buses',
   title: 'BUS',
-  // caption: 'Bus Caption',
+  caption: 'Bus & Trip manangement',
   type: 'group',
   children: [
     {
@@ -145,7 +145,7 @@ const buses = {
           icon: icons.IconPlus,
           breadcrumbs: false,
           target: false
-        } 
+        }
       ]
     },
     {
@@ -181,13 +181,30 @@ const buses = {
           breadcrumbs: false,
           target: false
         },
-       {
+        {
           id: 'all booking',
           title: 'All Booking',
           type: 'item',
           url: '/all_booking',
           icon: icons.IconArrowRightRhombus,
           breadcrumbs: false
+        }
+      ]
+    },
+    {
+      id: 'tripmanagement',
+      title: 'Trip Management',
+      type: 'collapse',
+      icon: icons.Icon360,
+      children: [
+        {
+          id: 'tripmanage',
+          title: 'Trip Management',
+          type: 'item',
+          url: '/tripmanagement',
+          icon: icons.IconPlus,
+          breadcrumbs: false,
+          target: false
         }
       ]
     }

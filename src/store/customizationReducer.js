@@ -9,7 +9,10 @@ export const initialState = {
   defaultId: 'default',
   fontFamily: config.fontFamily,
   borderRadius: config.borderRadius,
-  opened: true
+  opened: true,
+  id: '',
+  accessToken: '',
+  role: ''
 };
 
 // ==============================|| CUSTOMIZATION REDUCER ||============================== //

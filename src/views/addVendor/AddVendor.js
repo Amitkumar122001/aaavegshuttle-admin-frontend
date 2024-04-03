@@ -686,7 +686,7 @@ export const AddVendor = () => {
         <div>
           <div className="flex justify-between">
             <Button variant="contained" className="bg-blue-700" onClick={handleAddVendor}>
-              Add Driver
+              Add Vendor
             </Button>
             <Button variant="outlined" color="error">
               Cancel

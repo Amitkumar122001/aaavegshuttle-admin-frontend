@@ -15,7 +15,7 @@ const UtilsMaterialIcons = Loadable(lazy(() => import('views/utilities/MaterialI
 const UtilsTablerIcons = Loadable(lazy(() => import('views/utilities/TablerIcons')));
 
 // sample page routing
-const SamplePage = Loadable(lazy(() => import('views/sample-page')));
+// const SamplePage = Loadable(lazy(() => import('views/sample-page')));
 
 // bus
 import { AddBus } from 'views/addBus/AddBus';
@@ -44,12 +44,15 @@ import { AllVendor } from 'views/allVendor/AllVendor';
 import { AddVendor } from 'views/addVendor/AddVendor';
 import { SearchVendor } from 'views/searchVendor/SearchVendor';
 // stop
-import { AddStop } from 'views/addStops/AddStop';
+import { AddStop } from 'views/addStop/AddStop';
 import { AllStop } from 'views/allStop/AllStop';
 import { AllTrip } from 'views/allTrip/AllTrip';
 
 // Pair Bus Driver
 import { PairBusDriver } from 'views/pairBusDriver/PairBusDriver';
+
+// trip management
+import { TripManagement } from 'views/tripManagement/TripManagement';
 
 // ==============================|| MAIN ROUTING ||============================== //
 
@@ -114,10 +117,6 @@ const MainRoutes = {
           element: <UtilsMaterialIcons />
         }
       ]
-    },
-    {
-      path: 'sample-page',
-      element: <SamplePage />
     },
     {
       path: 'add_route',
@@ -202,6 +201,10 @@ const MainRoutes = {
     {
       path: 'pairBusDriver',
       element: <PairBusDriver />
+    },
+    {
+      path: 'tripmanagement',
+      element: <TripManagement />
     }
   ]
 };

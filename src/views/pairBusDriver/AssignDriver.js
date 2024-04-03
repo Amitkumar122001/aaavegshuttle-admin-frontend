@@ -8,6 +8,7 @@ export const AssignDriver = () => {
   const [assignedData, setAssignData] = useState({});
   const [busId, setBusId] = useState('');
   const [allUnAssignDriver, setAllUnAssignDriver] = useState([]);
+  // console.log(allUnAssignDriver);
   const [driverId, setDriverId] = useState(0);
   // page refresh
   const [refreshPage, setRefreshPage] = useState(false);
@@ -103,15 +104,19 @@ export const AssignDriver = () => {
         {allUnAssignDriver.length > 0 && (
           <div className="flex flex-col gap-5">
             <p className="text-center text-xl mb-3 font-semibold underline">All UnAssigned Driver</p>
-            <div className="flex flex-wrap gap-5">
+            <div className="flex flex-wrap gap-5 justify-center">
               {allUnAssignDriver.map((item, i) => (
                 <button key={i} onClick={() => handleUnAssignedDriver(item.driver_id)}>
-                  <div className={`p-4 w-56 rounded-lg ${driverId == item.driver_id ? 'bg-green-600 text-white' : 'bg-blue-300'}`}>
+                  <div
+                    className={`p-4 max-md:p-2 w-56 max-md:w-48 max-sm:w-36 rounded-lg  ${
+                      driverId == item.driver_id ? 'bg-green-600 text-white' : 'bg-blue-300'
+                    }`}
+                  >
                     <p>
-                      Name : <span className="text-lg">{item.driver_name}</span>
+                      Name : <span className="text-lg max-md:text-sm">{item.driver_name}</span>
                     </p>
                     <p>
-                      Ph no. <span className="text-lg">{item.primary_contact}</span>
+                      Ph no. <span className="text-lg max-md:text-sm">{item.primary_contact}</span>
                     </p>
                     <p></p>
                   </div>

@@ -116,7 +116,7 @@ export const AllTrip = () => {
     } else {
       setFilterData(busData);
     }
-  }, [value, busData]);
+  }, [value, busData, field]);
   // handle input field
   const handleSearchField = (inputField) => {
     switch (inputField) {

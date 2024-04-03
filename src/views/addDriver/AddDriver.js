@@ -4,14 +4,12 @@ import axios from 'axios';
 import toast, { Toaster } from 'react-hot-toast';
 import Loader from '../../ui-component/LoaderCircular';
 import { BackendUrl, AwsBucketUrl } from 'utils/config';
-
+//
 export const AddDriver = () => {
   const [driverForm, setDriverForm] = useState({
     drName: '',
     drmobile: '',
-    drAddress: '',
     vendorId: '',
-    drProfile: '',
     drAadharNO: '',
     drAadharFront: '',
     drAadharBack: '',
@@ -21,17 +19,15 @@ export const AddDriver = () => {
     currAddressProof: '',
     prmtAddress: '',
     prmtAddressProof: '',
-    drBGV: '',
-    police_verification: '',
     IMEI_No: '',
-    covidVaccination: '',
-    drFingerPrint: '',
     drResume: '',
     drLicenseNo: '',
     dlImg: '',
     dlExpiry: '',
     dlStart: '',
-    pccEnd: ''
+    police_verification: '',
+    pccEnd: '',
+    pccStart: ''
   });
   const [vendorData, setVendorData] = useState([]);
   useEffect(() => {
@@ -53,10 +49,7 @@ export const AddDriver = () => {
   const [currAddressProofErr, setCurrAddressProofErr] = useState(false);
   const [prmtAddressErr, setPrmtAddressErr] = useState(false);
   const [prmtAddressProofErr, setPrmtAddressProofErr] = useState(false);
-  const [covidVErr, setCovidVErr] = useState(false);
   const [pccVerifyErr, setPccVerifyErr] = useState(false);
-  const [BGVErr, setBGVErr] = useState(false);
-  const [fingerPrintErr, setFingerPrintErr] = useState(false);
   const [resumeErr, setResumeErr] = useState(false);
   const [isLoading, setisLoading] = useState(false);
   const [drLicenseNoErr, setDrLicenseNoErr] = useState(false);
@@ -97,6 +90,22 @@ export const AddDriver = () => {
     return totalUrl;
   };
   const handleDriver = () => {
+    {
+      /* driverName ||
+      currentAddress ||
+      !data.permanentAddress ||
+      !data.primaryContact ||
+      !data.emergencyContact ||
+      !data.adhaarNumber ||
+      !data.dlNumber ||
+      !data.imeiNumber ||
+      !data.driverDocument ||
+      !data.vendorId ||
+      !data.policeVerificationStart ||
+      !data.policeVerificationEnd ||
+      !drivingLicenseStart ||
+      !drivingLicenseEnd */
+    }
     if (
       driverForm.drName != '' &&
       driverForm.drmobile != '' &&
@@ -110,15 +119,13 @@ export const AddDriver = () => {
       driverForm.currAddressProof != '' &&
       driverForm.prmtAddress != '' &&
       driverForm.prmtAddressProof != '' &&
-      driverForm.drBGV != '' &&
       driverForm.police_verification != '' &&
       driverForm.IMEI_No != '' &&
-      driverForm.covidVaccination != '' &&
-      driverForm.drFingerPrint != '' &&
       driverForm.drResume != '' &&
       driverForm.drLicenseNo != '' &&
       driverForm.dlImg != '' &&
       driverForm.dlExpiry != '' &&
+      driverForm.pccStart != '' &&
       driverForm.pccEnd != '' &&
       driverForm.dlStart != ''
     ) {
@@ -128,18 +135,15 @@ export const AddDriver = () => {
       }
       const document = {
         profile: driverForm.drPhoto,
-        covidVaccination: driverForm.covidVaccination,
         aadharfront: driverForm.drAadharFront,
         aadharBack: driverForm.drAadharBack,
         dl: driverForm.dlImg,
         pcc: driverForm.police_verification,
         curr_address: driverForm.currAddressProof,
         permanent_address: driverForm.prmtAddressProof,
-        bgv: driverForm.drBGV,
-        fingerprint: driverForm.drFingerPrint,
         resume: driverForm.drResume
       };
-      //  dlexpiry , pcc-Expiry
+
       const body = {
         driverName: driverForm.drName,
         currentAddress: driverForm.currAddress,
@@ -151,11 +155,15 @@ export const AddDriver = () => {
         imeiNumber: driverForm.IMEI_No,
         driverDocument: document,
         vendorId: driverForm.vendorId,
+        policeVerificationStart: driverForm.pccStart,
+        policeVerificationEnd: driverForm.pccEnd,
+        drivingLicenseStart: driverForm.dlStart,
+        drivingLicenseEnd: driverForm.dlExpiry,
         rating: 5
       };
-      console.log(body);
+      // console.log(body);
       axios
-        .post(`${BackendUrl}/app/v1/driver/createDriver`, body)
+        .post(`https://3ff8-125-19-80-210.ngrok-free.app/app/v1/driver/createDriver`, body)
         .then((res) => {
           toast.success(res.data.result || 'Driver Added SuccessFully');
           console.log(res);
@@ -187,12 +195,9 @@ export const AddDriver = () => {
 
       driverForm.prmtAddress == '' ? setPrmtAddressErr(true) : setPrmtAddressErr(false);
 
-      driverForm.covidVaccination == '' ? setCovidVErr(true) : setCovidVErr(false);
       driverForm.police_verification == '' ? setPccVerifyErr(true) : setPccVerifyErr(false);
 
       driverForm.drResume == '' ? setResumeErr(true) : setResumeErr(false);
-      driverForm.drBGV == '' ? setBGVErr(true) : setBGVErr(false);
-      driverForm.drFingerPrint == '' ? setFingerPrintErr(true) : setFingerPrintErr(false);
       driverForm.dlExpiry == '' ? setDrLicenseExpiryErr(true) : setDrLicenseExpiryErr(false);
       driverForm.dlStart == '' ? setDrLicenseStartErr(true) : setDrLicenseErr(false);
       driverForm.pccEnd == '' ? setDrPccEndErr(true) : setDrPccEndErr(false);
@@ -604,62 +609,6 @@ export const AddDriver = () => {
                     {drLicenseExpiryErr && <p className="text-red-500 text-xs ml-2">Dl expiry error</p>}
                   </div>
 
-                  <div>
-                    {driverForm.covidVaccination == '' ? (
-                      <>
-                        <InputLabel>Covid Vaccination</InputLabel>
-                        <FormControl fullWidth>
-                          <TextField type="file" variant="outlined" name="covidVaccination" onChange={(e) => handleDocumentPhoto(e)} />
-                        </FormControl>
-                      </>
-                    ) : (
-                      <div className="flex justify-between">
-                        <img src={driverForm.covidVaccination} alt="covidVaccination" className="w-20 h-20 rounded-xl" />
-                        <Button onClick={() => setDriverForm({ ...driverForm, covidVaccination: '' })} variant="outlined" color="error">
-                          remove
-                        </Button>
-                      </div>
-                    )}
-                    {covidVErr && <p className="text-red-500 text-xs ml-2">upload covidVaccination </p>}
-                  </div>
-                  <div>
-                    {driverForm.drFingerPrint == '' ? (
-                      <>
-                        {' '}
-                        <InputLabel>FingerPrints</InputLabel>
-                        <FormControl fullWidth>
-                          <TextField type="file" variant="outlined" name="drFingerPrint" onChange={(e) => handleDocumentPhoto(e)} />
-                        </FormControl>
-                      </>
-                    ) : (
-                      <div className="flex justify-between">
-                        <img src={driverForm.drFingerPrint} alt="drFingerPrint" className="w-20 h-20 rounded-xl" />
-                        <Button onClick={() => setDriverForm({ ...driverForm, drFingerPrint: '' })} variant="outlined" color="error">
-                          remove
-                        </Button>
-                      </div>
-                    )}
-                    {fingerPrintErr && <p className="text-red-500 text-xs ml-2">upload drFingerPrint </p>}
-                  </div>
-                  <div>
-                    {driverForm.drBGV == '' ? (
-                      <>
-                        {' '}
-                        <InputLabel>drBGV</InputLabel>
-                        <FormControl fullWidth>
-                          <TextField type="file" variant="outlined" name="drBGV" onChange={(e) => handleDocumentPhoto(e)} />
-                        </FormControl>
-                      </>
-                    ) : (
-                      <div className="flex justify-between">
-                        <img src={driverForm.drBGV} alt="drBGV" className="w-20 h-20 rounded-xl" />
-                        <Button onClick={() => setDriverForm({ ...driverForm, drBGV: '' })} variant="outlined" color="error">
-                          remove
-                        </Button>
-                      </div>
-                    )}
-                    {BGVErr && <p className="text-red-500 text-xs ml-2">upload drBGV </p>}
-                  </div>
                   <div>
                     {driverForm.drResume == '' ? (
                       <>

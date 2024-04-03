@@ -10,21 +10,18 @@ export const AddConductor = () => {
     conMobile: '',
     vendorId: '',
     conPhoto: '',
-    covidVaccination: '',
     conAadharNO: '',
     conAadharFront: '',
     conAadharBack: '',
     conAlternatemobile: '',
-    police_verification: '',
+    pccImg: '',
     pccEnd: '',
     pccStart: '',
     currAddress: '',
     currAddressProof: '',
     prmtAddress: '',
     prmtAddressProof: '',
-    conBGV: '',
     IMEI_No: '',
-    conFingerPrint: '',
     conResume: ''
   });
   const [vendorData, setVendorData] = useState([]);
@@ -48,10 +45,7 @@ export const AddConductor = () => {
   const [currAddressProofErr, setCurrAddressProofErr] = useState(false);
   const [prmtAddressErr, setPrmtAddressErr] = useState(false);
   const [prmtAddressProofErr, setPrmtAddressProofErr] = useState(false);
-  const [covidVErr, setCovidVErr] = useState(false);
   const [pccVerifyErr, setPccVerifyErr] = useState(false);
-  const [BGVErr, setBGVErr] = useState(false);
-  const [fingerPrintErr, setFingerPrintErr] = useState(false);
   const [resumeErr, setResumeErr] = useState(false);
 
   const [isLoading, setisLoading] = useState(false);
@@ -108,20 +102,17 @@ export const AddConductor = () => {
       conductorForm.conMobile != '' &&
       conductorForm.vendorId != '' &&
       conductorForm.conPhoto != '' &&
-      conductorForm.covidVaccination != '' &&
       conductorForm.conAadharNO != '' &&
       conductorForm.conAadharFront != '' &&
       conductorForm.conAadharBack != '' &&
       conductorForm.conAlternatemobile != '' &&
-      conductorForm.police_verification != '' &&
+      conductorForm.pccImg != '' &&
       conductorForm.pccEnd != '' &&
       conductorForm.currAddress != '' &&
       conductorForm.currAddressProof != '' &&
       conductorForm.prmtAddress != '' &&
       conductorForm.prmtAddressProof != '' &&
-      conductorForm.conBGV != '' &&
       conductorForm.IMEI_No != '' &&
-      conductorForm.conFingerPrint != '' &&
       conductorForm.conResume != '' &&
       conductorForm.pccStart != ''
     ) {
@@ -131,14 +122,11 @@ export const AddConductor = () => {
       }
       const document = {
         profile: conductorForm.conPhoto,
-        covidVaccination: conductorForm.covidVaccination,
         aadharfront: conductorForm.conAadharFront,
         aadharBack: conductorForm.conAadharBack,
-        pcc: conductorForm.police_verification,
+        pcc: conductorForm.pccImg,
         curr_address: conductorForm.currAddressProof,
         permanent_address: conductorForm.prmtAddressProof,
-        bgv: conductorForm.conBGV,
-        fingerprint: conductorForm.conFingerPrint,
         resume: conductorForm.conResume
       };
       // pcc end & start
@@ -559,67 +547,6 @@ export const AddConductor = () => {
                   </div>
                 </div>
                 <div className="grid grid-cols-2 max-md:grid-cols-1 max-lg:gap-7 gap-5">
-                  <div>
-                    {conductorForm.covidVaccination == '' ? (
-                      <>
-                        {' '}
-                        <InputLabel>Covid Vaccination</InputLabel>
-                        <FormControl fullWidth>
-                          <TextField type="file" variant="outlined" name="covidVaccination" onChange={(e) => handleDocumentPhoto(e)} />
-                        </FormControl>
-                      </>
-                    ) : (
-                      <div className="flex justify-between">
-                        <img src={conductorForm.covidVaccination} alt="covidVaccination" className="w-20 h-20 rounded-xl" />
-                        <Button
-                          onClick={() => setConductorForm({ ...conductorForm, covidVaccination: '' })}
-                          variant="outlined"
-                          color="error"
-                        >
-                          remove
-                        </Button>
-                      </div>
-                    )}
-                    {covidVErr && <p className="text-red-500 text-xs ml-2">upload covidVaccination </p>}
-                  </div>
-                  <div>
-                    {conductorForm.conFingerPrint == '' ? (
-                      <>
-                        {' '}
-                        <InputLabel>FingerPrints</InputLabel>
-                        <FormControl fullWidth>
-                          <TextField type="file" variant="outlined" name="conFingerPrint" onChange={(e) => handleDocumentPhoto(e)} />
-                        </FormControl>
-                      </>
-                    ) : (
-                      <div className="flex justify-between">
-                        <img src={conductorForm.conFingerPrint} alt="conFingerPrint" className="w-20 h-20 rounded-xl" />
-                        <Button onClick={() => setConductorForm({ ...conductorForm, conFingerPrint: '' })} variant="outlined" color="error">
-                          remove
-                        </Button>
-                      </div>
-                    )}
-                    {fingerPrintErr && <p className="text-red-500 text-xs ml-2">upload conFingerPrint </p>}
-                  </div>
-                  <div>
-                    {conductorForm.conBGV == '' ? (
-                      <>
-                        {' '}
-                        <InputLabel>conBGV</InputLabel>
-                        <FormControl fullWidth>
-                          <TextField type="file" variant="outlined" name="conBGV" onChange={(e) => handleDocumentPhoto(e)} />
-                        </FormControl>
-                      </>
-                    ) : (
-                      <div className="flex justify-between">
-                        <img src={conductorForm.conBGV} alt="conBGV" className="w-20 h-20 rounded-xl" />
-                        <Button onClick={() => setConductorForm({ ...conductorForm, conBGV: '' })} variant="outlined" color="error">
-                          remove
-                        </Button>
-                      </div>
-                    )}
-                    {BGVErr && <p className="text-red-500 text-xs ml-2">upload BGV </p>}
-                  </div>
                   <div>
                     {conductorForm.conResume == '' ? (
                       <>

@@ -77,7 +77,7 @@ export const AllConductor = () => {
     } else {
       setFilterData(conductorData);
     }
-  }, [value, conductorData]);
+  }, [value, conductorData, field]);
 
   const [conductorNameErr, setConductorNameErr] = useState(false);
   const [primaryNoErr, setPrimaryNoErr] = useState(false);
@@ -535,36 +535,36 @@ export const AllConductor = () => {
                     {imeiNoErr && <p className="text-red-500 ml-2 text-xs">imei_number Error</p>}
                   </div>
                   <div>
-                      <p className="w-full border border-gray-400 rounded-xl px-2 py-1">
-                        <label htmlFor="pccstart" className="text-md w-full block">
-                          pcc Start
-                        </label>
-                        <input
-                          type="date"
-                          className="outline-none border-none w-full"
-                          id="pccstart"
-                          // value={conductorForm.pccStart}
-                          // onChange={(e) => setConductorForm({ ...conductorForm, pccStart: e.target.value })}
-                        />
-                      </p>
-                      {true && <p className="text-red-500  ml-2">PCC start error</p>}
-                    </div>
+                    <p className="w-full border border-gray-400 rounded-xl px-2 py-1">
+                      <label htmlFor="pccstart" className="text-md w-full block">
+                        pcc Start
+                      </label>
+                      <input
+                        type="date"
+                        className="outline-none border-none w-full"
+                        id="pccstart"
+                        // value={conductorForm.pccStart}
+                        // onChange={(e) => setConductorForm({ ...conductorForm, pccStart: e.target.value })}
+                      />
+                    </p>
+                    {true && <p className="text-red-500  ml-2">PCC start error</p>}
+                  </div>
 
-                    <div>
-                      <p className="w-full border border-gray-400 rounded-xl px-2 py-1">
-                        <label htmlFor="pccEnd" className="text-md w-full block">
-                          pcc end
-                        </label>
-                        <input
-                          type="date"
-                          className="outline-none border-none w-full"
-                          id="pccEnd"
-                          // value={conductorForm.pccEnd}
-                          // onChange={(e) => setConductorForm({ ...conductorForm, pccEnd: e.target.value })}
-                        />
-                      </p>
-                      {true && <p className="text-red-500  ml-2">PCC end error</p>}
-                    </div>
+                  <div>
+                    <p className="w-full border border-gray-400 rounded-xl px-2 py-1">
+                      <label htmlFor="pccEnd" className="text-md w-full block">
+                        pcc end
+                      </label>
+                      <input
+                        type="date"
+                        className="outline-none border-none w-full"
+                        id="pccEnd"
+                        // value={conductorForm.pccEnd}
+                        // onChange={(e) => setConductorForm({ ...conductorForm, pccEnd: e.target.value })}
+                      />
+                    </p>
+                    {true && <p className="text-red-500  ml-2">PCC end error</p>}
+                  </div>
                 </div>{' '}
                 <div className=" grid grid-cols-3 gap-6 mt-4 max-lg:grid-cols-2 max-lg:gap-4  max-md:grid-cols-1">
                   <div>

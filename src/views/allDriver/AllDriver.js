@@ -75,11 +75,12 @@ export const AllDriver = () => {
   useEffect(() => {
     if (value.length > 0) {
       let res = driverData?.filter((item) => item[field]?.includes(value));
+      // console.log(res)
       setFilterData(res);
     } else {
       setFilterData(driverData);
     }
-  }, [value, driverData]);
+  }, [value, driverData, field]);
   // update error
   const [dlNoErr, setDlNoErr] = useState(false);
   const [driverNameErr, setDriverNameErr] = useState(false);
@@ -95,10 +96,11 @@ export const AllDriver = () => {
   const [aadharBackErr, setAdharBackErr] = useState(false);
   const [photoErr, setPhotoErr] = useState(false);
   const [pccErr, setPccErr] = useState(false);
-  const [covidVErr, setCovidVErr] = useState(false);
-  const [BGVErr, setBGVErr] = useState(false);
-  const [fingerPrintErr, setFingerPrintErr] = useState(false);
   const [resumeErr, setResumeErr] = useState(false);
+  const [pccStartErr, setPccStartErr] = useState(false);
+  const [pccEndErr, setPccEndErr] = useState(false);
+  const [dlStartErr, setDlStartErr] = useState(false);
+  const [dlEndErr, setDlEndErr] = useState(false);
 
   const handleSearchField = (inputField) => {
     switch (inputField) {
@@ -120,7 +122,6 @@ export const AllDriver = () => {
   const updateDriver = () => {
     if (
       updateObj.driver_name != undefined &&
-      updateObj.driver_name != undefined &&
       updateObj.current_address != undefined &&
       updateObj.permanent_address != undefined &&
       updateObj.primary_contact.length == 10 &&
@@ -130,28 +131,22 @@ export const AllDriver = () => {
       updateObj.imei_number != undefined &&
       updateObj.vendor_name != undefined &&
       updateObj.driver_document.dl != undefined &&
-      updateObj.driver_document.bgv != undefined &&
       updateObj.driver_document.pcc != undefined &&
       updateObj.driver_document.resume != undefined &&
       updateObj.driver_document.profile != undefined &&
       updateObj.driver_document.aadharBack != undefined &&
       updateObj.driver_document.aadharfront != undefined &&
-      updateObj.driver_document.fingerprint != undefined &&
       updateObj.driver_document.curr_address != undefined &&
-      updateObj.driver_document.covidVaccination != undefined &&
       updateObj.driver_document.permanent_address != undefined
     ) {
       const document = {
         dl: updateObj.driver_document?.dl,
-        bgv: updateObj.driver_document?.bgv,
         pcc: updateObj.driver_document?.pcc,
         resume: updateObj.driver_document?.resume,
         profile: updateObj.driver_document?.profile,
         aadharBack: updateObj.driver_document?.aadharBack,
         aadharfront: updateObj.driver_document?.aadharfront,
-        fingerprint: updateObj.driver_document?.fingerprint,
         curr_address: updateObj.driver_document?.curr_address,
-        covidVaccination: updateObj.driver_document?.covidVaccination,
         permanent_address: updateObj.driver_document?.permanent_address
       };
 
@@ -167,6 +162,10 @@ export const AllDriver = () => {
         imeiNumber: updateObj.imei_number,
         driverDocument: document,
         vendorId: updateObj.vendor_id,
+        policeVerificationStart: updateObj.police_verification_start_india,
+        policeVerificationEnd: updateObj.police_verification_end_india,
+        drivingLicenseStart: updateObj.driving_license_start_india,
+        drivingLicenseEnd: updateObj.driving_license_end_india,
         activeStatus: Boolean(updateObj.activeStatus)
       };
       console.log(body);
@@ -194,27 +193,27 @@ export const AllDriver = () => {
       updateObj.emergency_contact.length != 10 || undefined ? setSecondNoErr(true) : setSecondNoErr(false);
       updateObj.current_address == undefined ? setCurrAddressErr(true) : setCurrAddressErr(false);
       updateObj.permanent_address == undefined ? setPrmtAddressErr(true) : setPrmtAddressErr(false);
-      updateObj.driver_document.bgv == undefined ? setBGVErr(true) : setBGVErr(false);
       updateObj.driver_document.pcc == undefined ? setPccErr(true) : setPccErr(false);
       updateObj.driver_document.resume == undefined ? setResumeErr(true) : setResumeErr(false);
       updateObj.driver_document.profile == undefined ? setPhotoErr(true) : setPhotoErr(false);
       updateObj.driver_document.aadharfront == undefined ? setAdharFrontErr(true) : setAdharFrontErr(false);
       updateObj.driver_document.aadharBack == undefined ? setAdharBackErr(true) : setAdharBackErr(false);
-      updateObj.driver_document.fingerprint == undefined ? setFingerPrintErr(true) : setFingerPrintErr(false);
       updateObj.driver_document.curr_address == undefined ? setCurrAddressProofErr(true) : setCurrAddressProofErr(false);
-      updateObj.driver_document.covidVaccination == undefined ? setCovidVErr(true) : setCovidVErr(false);
       updateObj.driver_document.permanent_address == undefined ? setPrmtAddressProofErr(true) : setPrmtAddressProofErr(false);
       updateObj.adhaar_number == undefined ? setAdharNoErr(true) : setAdharNoErr(false);
       updateObj.dl_number == undefined ? setDlNoErr(true) : setDlNoErr(false);
       updateObj.imei_number == undefined ? setIMEINoErr(true) : setIMEINoErr(false);
+      updateObj.driving_license_end_india == undefined ? setDlEndErr(true) : setDlEndErr(false);
+      updateObj.driving_license_start_india == undefined ? setDlStartErr(true) : setDlStartErr(false);
+      updateObj.police_verification_end_india == undefined ? setPccEndErr(true) : setPccEndErr(false);
+      updateObj.police_verification_start_india == undefined ? setPccStartErr(true) : setPccStartErr(false);
     }
   };
   // console.log(updateObj);
-  const clearAllField = () => {
-    setDriverNameErr(false);
-  };
+
   // modal open
   const handleOpen = (item) => {
+    // console.log(item);
     setUpdateObj(item);
     setUpdateOpen(true);
   };
@@ -318,7 +317,7 @@ export const AllDriver = () => {
         <div>
           <div>
             <Paper sx={{ width: '100%', overflow: 'hidden' }}>
-              <TableContainer >
+              <TableContainer>
                 <Table stickyHeader aria-label="sticky table">
                   <TableHead className="bg-gray-300">
                     <TableRow>
@@ -331,7 +330,6 @@ export const AllDriver = () => {
                   </TableHead>
                   <TableBody>
                     {displayItems()?.map((item, i) => {
-                      // console.log(item)
                       return (
                         <TableRow key={i} hover>
                           <TableCell align="center">{item.driver_name}</TableCell>
@@ -556,11 +554,12 @@ export const AllDriver = () => {
                         type="date"
                         className="outline-none border-none w-full"
                         id="dlStart"
-                        // value={driverForm.dlStart}
-                        // onChange={(e) => setDriverForm({ ...driverForm, dlStart: e.target.value })}
+                        format="yyyy-mm-dd"
+                        value={updateObj.driving_license_start_india?.slice(0, 10)}
+                        onChange={(e) => setUpdateObj({ ...updateObj, driving_license_start_india: e.target.value })}
                       />
                     </p>
-                    {true && <p className="text-red-500 ml-2">dl start error</p>}
+                    {dlStartErr && <p className="text-red-500 ml-2">dl start error</p>}
                   </div>
                   {/* dl end time */}
                   <div className="w-full">
@@ -572,11 +571,12 @@ export const AllDriver = () => {
                         type="date"
                         className="outline-none border-none w-full"
                         id="dlExpiry"
-                        // value={driverForm.dlExpiry}
-                        // onChange={(e) => setDriverForm({ ...driverForm, dlExpiry: e.target.value })}
+                        format="yyyy-mm-dd"
+                        value={updateObj.driving_license_end_india?.slice(0, 10)}
+                        onChange={(e) => setUpdateObj({ ...updateObj, driving_license_end_india: e.target.value })}
                       />
                     </p>
-                    {true && <p className="text-red-500  ml-2">Dl expiry error</p>}
+                    {dlEndErr && <p className="text-red-500  ml-2">Dl expiry error</p>}
                   </div>
                   <div>
                     <label htmlFor="pccStart" className="text-md w-full block">
@@ -587,11 +587,12 @@ export const AllDriver = () => {
                         type="date"
                         className="outline-none border-none w-full"
                         id="pccStart"
-                        // value={driverForm.pccStart}
-                        // onChange={(e) => setDriverForm({ ...driverForm, pccStart: e.target.value })}
+                        format="yyyy-mm-dd"
+                        value={updateObj.police_verification_start_india?.slice(0, 10)}
+                        onChange={(e) => setUpdateObj({ ...updateObj, police_verification_start_india: e.target.value })}
                       />
                     </p>
-                    {true && <p className="text-red-500  ml-2">PCC end error</p>}
+                    {pccStartErr && <p className="text-red-500  ml-2">PCC start error</p>}
                   </div>
                   <div>
                     <label htmlFor="pccEnd" className="text-md w-full block">
@@ -602,11 +603,12 @@ export const AllDriver = () => {
                         type="date"
                         className="outline-none border-none w-full"
                         id="pccEnd"
-                        // value={driverForm.pccEnd}
-                        // onChange={(e) => setDriverForm({ ...driverForm, pccEnd: e.target.value })}
+                        format="yyyy-mm-dd"
+                        value={updateObj.police_verification_end_india?.slice(0, 10)}
+                        onChange={(e) => setUpdateObj({ ...updateObj, police_verification_end_india: e.target.value })}
                       />
                     </p>
-                    {true && <p className="text-red-500  ml-2">PCC end error</p>}
+                    {pccEndErr && <p className="text-red-500  ml-2">PCC end error</p>}
                   </div>
                 </div>
                 <div className=" grid grid-cols-3 gap-6 mt-4 max-lg:grid-cols-2 max-lg:gap-4  max-md:grid-cols-1">
@@ -704,37 +706,7 @@ export const AllDriver = () => {
                       </div>
                     )}
                   </div>
-                  <div>
-                    <p className="text-md font-semibold">Fingerprint</p>
-                    {updateObj?.driver_document?.fingerprint === undefined ? (
-                      <>
-                        <FormControl fullWidth>
-                          <TextField type="file" variant="outlined" name="fingerprint" onChange={(e) => handleDocumentPhoto(e)} />
-                        </FormControl>
-                        {fingerPrintErr && <p className="text-red-500 ml-2 text-xs">fingerprint Error</p>}
-                      </>
-                    ) : (
-                      <div>
-                        <div className="flex justify-between">
-                          <a href={updateObj?.driver_document?.fingerprint} target="_blank" rel="noreferrer">
-                            <img src={updateObj?.driver_document?.fingerprint} alt="fingerprint" className="w-20 h-20 rounded-xl" />
-                          </a>
-                          <Button
-                            onClick={() =>
-                              setUpdateObj({
-                                ...updateObj,
-                                driver_document: { ...updateObj.driver_document, fingerprint: undefined }
-                              })
-                            }
-                            variant="outlined"
-                            color="error"
-                          >
-                            remove
-                          </Button>
-                        </div>
-                      </div>
-                    )}
-                  </div>
+
                   <div>
                     <p className="text-md font-semibold">Profile</p>
                     {updateObj?.driver_document?.profile === undefined ? (
@@ -763,42 +735,7 @@ export const AllDriver = () => {
                       </div>
                     )}
                   </div>
-                  <div>
-                    {' '}
-                    <p className="txet-md font-semibold">Covid Vaccination</p>
-                    {updateObj?.driver_document?.covidVaccination === undefined ? (
-                      <>
-                        <FormControl fullWidth>
-                          <TextField type="file" variant="outlined" name="covidVaccination" onChange={(e) => handleDocumentPhoto(e)} />
-                        </FormControl>
-                        {covidVErr && <p className="text-red-500 ml-2 text-xs">covidVaccination Error</p>}
-                      </>
-                    ) : (
-                      <div>
-                        <div className="flex justify-between">
-                          <a href={updateObj?.driver_document?.covidVaccination} target="_blank" rel="noreferrer">
-                            <img
-                              src={updateObj?.driver_document?.covidVaccination}
-                              alt="covidVaccination"
-                              className="w-20 h-20 rounded-xl"
-                            />
-                          </a>
-                          <Button
-                            onClick={() =>
-                              setUpdateObj({
-                                ...updateObj,
-                                driver_document: { ...updateObj.driver_document, covidVaccination: undefined }
-                              })
-                            }
-                            variant="outlined"
-                            color="error"
-                          >
-                            remove
-                          </Button>
-                        </div>
-                      </div>
-                    )}
-                  </div>
+
                   <div>
                     {' '}
                     <p className="text-md font-semibold">Current Address</p>
@@ -888,36 +825,6 @@ export const AllDriver = () => {
                           <Button
                             onClick={() =>
                               setUpdateObj({ ...updateObj, driver_document: { ...updateObj.driver_document, pcc: undefined } })
-                            }
-                            variant="outlined"
-                            color="error"
-                          >
-                            remove
-                          </Button>
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                  <div>
-                    {' '}
-                    <p className="text-md font-semibold">BGV</p>
-                    {updateObj?.driver_document?.bgv === undefined ? (
-                      <>
-                        <FormControl fullWidth>
-                          <TextField type="file" variant="outlined" name="bgv" onChange={(e) => handleDocumentPhoto(e)} />
-                        </FormControl>
-                        {BGVErr && <p className="ml-2 text-md">bgv error</p>}
-                      </>
-                    ) : (
-                      <div>
-                        <div className="flex justify-between">
-                          {' '}
-                          <a href={updateObj?.driver_document?.bgv} target="_blank" rel="noreferrer">
-                            <img src={updateObj?.driver_document?.bgv} alt="voterId" className="w-20 h-20 rounded-xl" />
-                          </a>{' '}
-                          <Button
-                            onClick={() =>
-                              setUpdateObj({ ...updateObj, driver_document: { ...updateObj.driver_document, bgv: undefined } })
                             }
                             variant="outlined"
                             color="error"

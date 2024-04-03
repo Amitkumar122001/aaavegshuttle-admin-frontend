@@ -42,7 +42,7 @@ export const ReAssignDriver = () => {
           driverId: driverId
         })
         .then((res) => {
-          toast.success(res.data.result);
+          window.alert(res.data.result);
           console.log(busId, driverId);
           setRefreshPage(true);
           setBusId('');
@@ -111,16 +111,19 @@ export const ReAssignDriver = () => {
             {allUnAssignDriver.length > 0 && (
               <div className="flex flex-col gap-5">
                 <p className="text-center text-xl mb-3 font-semibold underline">All UnAssigned Driver</p>
-                <div className="flex flex-wrap gap-5">
+                <div className="flex flex-wrap gap-5 justify-center">
                   {allUnAssignDriver.map((item, i) => (
                     <button key={i} onClick={() => handleUnAssignedDriver(item.driver_id)}>
-                      <div className={`p-4 w-56 rounded-lg ${driverId == item.driver_id ? 'bg-green-600 text-white' : 'bg-blue-300'}`}>
-                        <p>{item.driver_id}</p>
+                      <div
+                        className={`p-4 max-md:p-2 w-56 max-md:w-48 max-sm:w-36 rounded-lg ${
+                          driverId == item.driver_id ? 'bg-green-600 text-white' : 'bg-blue-300'
+                        }`}
+                      >
                         <p>
-                          Name : <span className="text-lg">{item.driver_name}</span>
+                          Name : <span className="text-lg max-md:text-sm">{item.driver_name}</span>
                         </p>
                         <p>
-                          Ph no. <span className="text-lg">{item.primary_contact}</span>
+                          Ph no. <span className="text-lg max-md:text-sm">{item.primary_contact}</span>
                         </p>
                         <p></p>
                       </div>
@@ -132,9 +135,9 @@ export const ReAssignDriver = () => {
             <p className="border-dotted border-black border-b my-3"></p>
             {/* Assign Driver */}
             {allAssignDriver.length > 0 && (
-              <div className="flex flex-col gap-5 mt-2">
+              <div className="flex flex-col gap-5 mt-2 items-center">
                 <p className="text-center text-xl mb-3 font-semibold underline">All Assigned Driver</p>
-                <div className="flex flex-wrap gap-5">
+                <div className="grid grid-cols-5 max-lg:grid-cols-3 max-md:grid-cols-2 gap-5 max-md:gap-3 justify-center">
                   {allAssignDriver.map((item, i) => (
                     <button
                       key={i}
@@ -142,7 +145,7 @@ export const ReAssignDriver = () => {
                       disabled={assignedData.driver_id == item.driver_id}
                     >
                       <div
-                        className={`p-4 w-56 rounded-lg ${
+                        className={`p-4 max-md:p-2 w-56 max-md:w-48 max-sm:w-36 rounded-lg ${
                           driverId == item.driver_id
                             ? 'bg-green-600 text-white'
                             : assignedData.driver_id == item.driver_id
@@ -150,12 +153,11 @@ export const ReAssignDriver = () => {
                             : 'bg-yellow-500'
                         }`}
                       >
-                        <p>{item.driver_id}</p>
                         <p>
-                          Name : <span className="text-lg">{item.driver_name}</span>
+                          Name : <span className="text-lg max-md:text-sm">{item.driver_name}</span>
                         </p>
                         <p>
-                          Ph no. <span className="text-lg">{item.primary_contact}</span>
+                          Ph no. <span className="text-lg max-md:text-sm">{item.primary_contact}</span>
                         </p>
                         <p></p>
                       </div>

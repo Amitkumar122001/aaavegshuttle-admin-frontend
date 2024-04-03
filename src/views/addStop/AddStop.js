@@ -197,7 +197,7 @@ export const AddStop = () => {
         <div className=" flex flex-col gap-6 bg-white p-4 rounded-xl">
           {/* heading */}
           <div className="relative">
-            <p className="text-3xl text-gray-600 text-center">Add Stop Details</p>
+            <p className="text-3xl max-md:text-2xl text-gray-600 text-center">Add Stop Details</p>
             <p className=" border border-gray-300 mt-5"></p>
             <p className="absolute top-2 right-2 max-md:right-0">
               <button onClick={() => handleOpen()}>
@@ -326,7 +326,7 @@ export const AddStop = () => {
         aria-describedby="modal-modal-description"
         className="overflow-y-scroll"
       >
-        <Box sx={style} className="bg-white p-4 w-96 rounded-xl">
+        <Box sx={style} className="bg-white p-4 w-96 max-md:w-96 rounded-xl">
           {isLoading && (
             <div>
               <Loader />
