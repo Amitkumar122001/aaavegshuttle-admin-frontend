@@ -10,7 +10,6 @@ export const initialState = {
   fontFamily: config.fontFamily,
   borderRadius: config.borderRadius,
   opened: true,
-  id: '',
   accessToken: '',
   role: ''
 };
@@ -40,6 +39,17 @@ const customizationReducer = (state = initialState, action) => {
       return {
         ...state,
         borderRadius: action.borderRadius
+      };
+    case actionTypes.SET_AUTH_STATE: {
+      return {
+        ...state,
+        role: action.payload
+      };
+    }
+    case actionTypes.LOGOUT:
+      return {
+        ...state,
+        role: ''
       };
     default:
       return state;

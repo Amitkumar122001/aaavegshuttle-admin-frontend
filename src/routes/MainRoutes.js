@@ -18,42 +18,42 @@ const UtilsTablerIcons = Loadable(lazy(() => import('views/utilities/TablerIcons
 // const SamplePage = Loadable(lazy(() => import('views/sample-page')));
 
 // bus
-import { AddBus } from 'views/addBus/AddBus';
-import { AllBus } from 'views/allBus/AllBus';
+import { AddBus } from 'views/AdminPanel/Bus/addBus/AddBus';
+import { AllBus } from 'views/AdminPanel/Bus/allBus/AllBus';
 // Route
-import { AddRoute } from 'views/addRoute/AddRoute';
-import { AllRoute } from 'views/allRoute/AllRoute';
+import { AddRoute } from 'views/AdminPanel/Route/addRoute/AddRoute';
+import { AllRoute } from 'views/AdminPanel/Route/allRoute/AllRoute';
 // driver
-import { AddDriver } from 'views/addDriver/AddDriver';
-import { AllDriver } from 'views/allDriver/AllDriver';
+import { AddDriver } from 'views/AdminPanel/Driver/addDriver/AddDriver';
+import { AllDriver } from 'views/AdminPanel/Driver/allDriver/AllDriver';
 
 // conductor
-import { AddConductor } from 'views/addConductor/AddConductor';
-import { AllConductor } from 'views/allConductor/AllConductor';
-
-import { UpdateTrip } from 'views/updateTrip/UpdateTrip';
-import { AddTrip } from 'views/addTrip/AddTrip';
+import { AddConductor } from 'views/AdminPanel/Conductor/addConductor/AddConductor';
+import { AllConductor } from 'views/AdminPanel/Conductor/allConductor/AllConductor';
+// trip
+import { AddTrip } from 'views/AdminPanel/Trip/addTrip/AddTrip';
+import { AllTrip } from 'views/AdminPanel/Trip/allTrip/AllTrip';
 // User
-import { AddUser } from 'views/addUser/AddUser';
-import { AllUser } from 'views/allUser/AllUser';
-import { SearchUser } from 'views/searchUser/SearchUser';
+import { AllUser } from 'views/User/allUser/AllUser';
+import { SearchUser } from 'views/User/searchUser/SearchUser';
 
 import { AllBooking } from 'views/allBooking/AllBooking';
 // Vendor
-import { AllVendor } from 'views/allVendor/AllVendor';
-import { AddVendor } from 'views/addVendor/AddVendor';
-import { SearchVendor } from 'views/searchVendor/SearchVendor';
+import { AllVendor } from 'views/AdminPanel/Vendor/allVendor/AllVendor';
+import { AddVendor } from 'views/AdminPanel/Vendor/addVendor/AddVendor';
+import { SearchVendor } from 'views/AdminPanel/Vendor/searchVendor/SearchVendor';
 // stop
-import { AddStop } from 'views/addStop/AddStop';
-import { AllStop } from 'views/allStop/AllStop';
-import { AllTrip } from 'views/allTrip/AllTrip';
+import { AddStop } from 'views/AdminPanel/Stop/addStop/AddStop';
+import { AllStop } from 'views/AdminPanel/Stop/allStop/AllStop';
 
 // Pair Bus Driver
-import { PairBusDriver } from 'views/pairBusDriver/PairBusDriver';
+import { PairBusDriver } from 'views/AdminPanel/Bus/pairBusDriver/PairBusDriver';
+// maker checker
+import { MakerChecker } from 'views/MakerChecker/MakerChecker';
 
 // trip management
-import { TripManagement } from 'views/tripManagement/TripManagement';
-
+// import  TripManagement from 'views/tripManagement/TripManagement';
+const TripManagement = Loadable(lazy(() => import('views/AdminPanel/Trip/tripManagement/TripManagement')));
 // ==============================|| MAIN ROUTING ||============================== //
 
 const MainRoutes = {
@@ -151,10 +151,6 @@ const MainRoutes = {
       element: <AllConductor />
     },
     {
-      path: 'update_trip',
-      element: <UpdateTrip />
-    },
-    {
       path: 'add_trip',
       element: <AddTrip />
     },
@@ -165,10 +161,6 @@ const MainRoutes = {
     {
       path: 'search_user',
       element: <SearchUser />
-    },
-    {
-      path: 'add_user',
-      element: <AddUser />
     },
     {
       path: 'all_user',
@@ -205,6 +197,10 @@ const MainRoutes = {
     {
       path: 'tripmanagement',
       element: <TripManagement />
+    },
+    {
+      path: 'makerChecker',
+      element: <MakerChecker />
     }
   ]
 };

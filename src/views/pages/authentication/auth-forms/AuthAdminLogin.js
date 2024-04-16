@@ -20,12 +20,11 @@ export const AuthLogin = () => {
   const [errEmail, seterrEmail] = useState(false);
   const [errpassword, seterrPassword] = useState(false);
 
-  const funcSetRole = async (role) => {
-    await dispatch({
+  const funcSetRole = (role) => {
+    dispatch({
       type: SET_AUTH_STATE,
       payload: role
     });
-    localStorage.setItem('role', role);
   };
   const handleLogin = async (e) => {
     e.preventDefault();
@@ -56,6 +55,7 @@ export const AuthLogin = () => {
       <div>
         <Toaster />
       </div>
+      Admin
       <Box className="flex justify-center items-center py-4">
         <form onSubmit={handleLogin} className="w-full">
           <div className="grid grid-cols-1 gap-8">

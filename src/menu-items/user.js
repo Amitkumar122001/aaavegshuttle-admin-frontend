@@ -33,7 +33,7 @@ const icons = {
 const user = {
   id: 'users',
   title: 'User',
-  // caption: 'User Caption',
+  caption: 'User Caption',
   type: 'group',
   children: [
     {
@@ -42,15 +42,6 @@ const user = {
       type: 'collapse',
       icon: icons.IconUser,
       children: [
-        {
-          id: 'add user',
-          title: 'Add User',
-          type: 'item',
-          url: '/add_user',
-          icon: icons.IconPlus,
-          breadcrumbs: false,
-          target: false
-        },
         {
           id: 'search user',
           title: 'Search User',
@@ -64,6 +55,15 @@ const user = {
           title: 'All User',
           type: 'item',
           url: '/all_user',
+          icon: icons.IconUser,
+          breadcrumbs: false,
+          target: false
+        },
+        {
+          id: 'all Booking',
+          title: 'All Booking',
+          type: 'item',
+          url: '/all_booking',
           icon: icons.IconUser,
           breadcrumbs: false,
           target: false

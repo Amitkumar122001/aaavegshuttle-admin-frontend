@@ -39,6 +39,9 @@ import User1 from 'assets/images/users/user-round.svg';
 // assets
 import { IconLogout, IconSearch, IconSettings, IconUser } from '@tabler/icons';
 
+// redux
+import { useDispatch } from 'react-redux';
+import { LOGOUT } from 'store/actions';
 // ==============================|| PROFILE MENU ||============================== //
 
 const ProfileSection = () => {
@@ -51,12 +54,17 @@ const ProfileSection = () => {
   const [notification, setNotification] = useState(false);
   const [selectedIndex, setSelectedIndex] = useState(-1);
   const [open, setOpen] = useState(false);
+  const dispatch = useDispatch();
   /**
    * anchorRef is used on different componets and specifying one type leads to other components throwing an error
    * */
   const anchorRef = useRef(null);
   const handleLogout = async () => {
     console.log('Logout');
+    dispatch({
+      type: LOGOUT
+    });
+    navigate('/');
   };
 
   const handleClose = (event) => {
