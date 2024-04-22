@@ -166,6 +166,7 @@ export const AddStop = () => {
             console.log(res);
             toast.success('Stop Added Successfully');
             setisLoading(false);
+            handleClose();
           })
           .catch((err) => {
             console.log(err);

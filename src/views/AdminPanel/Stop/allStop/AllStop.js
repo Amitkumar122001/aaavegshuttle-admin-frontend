@@ -6,12 +6,12 @@ import axios from 'axios';
 import toast, { Toaster } from 'react-hot-toast';
 import { BackendUrl } from 'utils/config';
 // time picker
-import dayjs from 'dayjs';
-import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
-import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
-import { MobileTimePicker } from '@mui/x-date-pickers/MobileTimePicker';
+// import dayjs from 'dayjs';
+// import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
+// import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
+// import { MobileTimePicker } from '@mui/x-date-pickers/MobileTimePicker';
 
-import { timePickerMUI } from 'utils/TimeDate';
+// import { timePickerMUI } from 'utils/TimeDate';
 const style = {
   position: 'absolute',
   top: '50%',
@@ -37,7 +37,7 @@ export const AllStop = () => {
     stopName: '',
     stopLatitude: '',
     stopLongitude: '',
-    stopETA: '',
+    stopETA: '00:00:00',
     stopDistance: ''
   });
   const [addStopBool, setAddStopBool] = useState(false);
@@ -61,7 +61,7 @@ export const AllStop = () => {
         .catch((err) => console.log('API error ', err));
     }
   }, [searchStopRoute]);
-  // console.log(allStop);
+  // console.log(stopForm.prevStopId);
   const [open, setOpen] = React.useState(false);
   const handleOpen = (value) => {
     // console.log(value);
@@ -69,15 +69,6 @@ export const AllStop = () => {
     setUpdateObj(value);
   };
   const handleClose = () => setOpen(false);
-
-  const handleStopETAInput = (e) => {
-    const inputValue = e.target.value;
-    // Use a regular expression to validate the input
-    const regex = /^([01]\d|2[0-3]):([0-5]\d):([0-5]\d)$/;
-    if (regex.test(inputValue) || inputValue === '') {
-      setUpdateObj({ ...updateObj, stopEta: inputValue });
-    }
-  };
 
   const updateStop = () => {
     if (updateObj.stopname != '' && updateObj.stoplat != '' && updateObj.stoplng != '' && updateObj.stopETA != '') {
@@ -109,8 +100,13 @@ export const AllStop = () => {
     }
   };
 
-  const handleStopETATime = (e) => {
-    setStopForm({ ...stopForm, stopETA: timePickerMUI(e) });
+  const handleStopETAInput = (e) => {
+    const inputValue = e.target.value;
+    // Use a regular expression to validate the input
+    const regex = /^([01]\d|2[0-3]):([0-5]\d):([0-5]\d)$/;
+    if (regex.test(inputValue) || inputValue === '') {
+      setStopForm({ ...stopForm, stopETA: inputValue });
+    }
   };
   const addStopInBTW = () => {
     if (
@@ -135,7 +131,7 @@ export const AllStop = () => {
         .post(`${BackendUrl}/app/v1/stops/addStopsBetweenExistingStops`, body)
         .then((res) => {
           console.log(res.data);
-          toast.success('Add stop in between');
+          window.alert('Add stop in between');
         })
         .catch((err) => console.log(err));
     } else {
@@ -146,9 +142,6 @@ export const AllStop = () => {
   return (
     <>
       <div>
-        <div>
-          <Toaster />
-        </div>
         <div className=" flex flex-col gap-10 bg-white p-4 max-lg:gap-5 rounded-xl">
           <div>
             <p className="text-3xl max-lg:text-2xl text-gray-600 text-center">All Stop Details</p>
@@ -187,6 +180,7 @@ export const AllStop = () => {
               </div>
             )}
           </div>
+          {/* Add Stop In between */}
           {addStopBool ? (
             <div>
               <div>
@@ -201,11 +195,14 @@ export const AllStop = () => {
                       value={stopForm.prevStopId}
                       onChange={(e) => setStopForm({ ...stopForm, prevStopId: e.target.value })}
                     >
-                      {allStop.map((item, i) => (
-                        <MenuItem value={i == 0 ? item.stopId : item.stopsId} key={i} disabled={item.stopsId == -2 ? true : false}>
-                          {item.stopName}
-                        </MenuItem>
-                      ))}
+                      {allStop.map(
+                        (item, i) =>
+                          item.stopsId != -2 && (
+                            <MenuItem value={item.stopsId} key={i}>
+                              {item.stopName}
+                            </MenuItem>
+                          )
+                      )}
                     </Select>
                   </FormControl>
                 </div>
@@ -255,17 +252,20 @@ export const AllStop = () => {
                       />
                     </FormControl>
                   </div>
-                  <div className="flex items-center w-full">
-                    <InputLabel className="w-24">Stop ETA :</InputLabel>
+                  <div className="">
                     <FormControl className="w-full">
-                      <LocalizationProvider dateAdapter={AdapterDayjs}>
-                        <MobileTimePicker
-                          defaultValue={dayjs('2022-04-17T00:00')}
-                          ampm={false}
-                          onChange={(e) => handleStopETATime(e)}
-                          className="w-full "
-                        />
-                      </LocalizationProvider>
+                      <TextField
+                        type="time"
+                        label="Stop ETA"
+                        variant="outlined"
+                        value={stopForm.stopETA}
+                        onChange={(e) => handleStopETAInput(e)}
+                        format="HH:mm:ss"
+                        inputProps={{
+                          step: 1
+                        }}
+                        disabled={stopForm.routeId == '' ? true : false}
+                      />
                     </FormControl>
                   </div>
                   <div>
@@ -369,7 +369,6 @@ export const AllStop = () => {
             <div>
               <div className=" flex flex-col gap-6 bg-white rounded-xl">
                 {/* heading */}
-
                 <div>
                   <div className="grid grid-cols-1 gap-6">
                     <div>

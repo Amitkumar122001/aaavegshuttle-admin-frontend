@@ -18,7 +18,7 @@ import toast, { Toaster } from 'react-hot-toast';
 import { IconX, IconPencil } from '@tabler/icons-react';
 import LoaderCircular from 'ui-component/LoaderCircular';
 import { BackendUrl } from 'utils/config';
-
+import { UploadDocumenttos3Bucket } from 'utils/AwsS3Bucket';
 // email function for validation
 function validateEmail(email) {
   const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -71,36 +71,36 @@ export const SearchVendor = () => {
     const name = event.target.name;
     // console.log(event, field);
     setisLoading(true);
-    const link = await UploadDocumenttos3Bucket(event);
+    const link = await UploadDocumenttos3Bucket(event, 'driverimages');
     setUpdateObj({ ...updateObj, vendorDocument: { ...updateObj.vendorDocument, [name]: link } });
     setisLoading(false);
   };
-  const imageUploadApi = async (value) => {
-    let result = await axios.request(value);
-    console.log(result.data.name);
-    let imageName = result.data.name;
-    return imageName;
-  };
-  // console.log(vendorForm);
-  const UploadDocumenttos3Bucket = async (e) => {
-    console.log(e.target.files[0]);
-    const reader = new FormData();
-    reader.append('file', e.target.files[0]);
-    let config = {
-      method: 'post',
-      maxBodyLength: Infinity,
-      url: `${BackendUrl}/app/v1/aws/upload/driverimages`,
-      headers: {
-        'Content-Type': 'multipart/form-data'
-      },
-      data: reader
-    };
-    let imageName = await imageUploadApi(config);
-    let totalUrl = `${BackendUrl}/app/v1/aws/getImage/driverimages/` + imageName;
-    console.log(totalUrl);
-    setTitleImage(totalUrl);
-    return totalUrl;
-  };
+  // const imageUploadApi = async (value) => {
+  //   let result = await axios.request(value);
+  //   console.log(result.data.name);
+  //   let imageName = result.data.name;
+  //   return imageName;
+  // };
+  // // console.log(vendorForm);
+  // const UploadDocumenttos3Bucket = async (e) => {
+  //   console.log(e.target.files[0]);
+  //   const reader = new FormData();
+  //   reader.append('file', e.target.files[0]);
+  //   let config = {
+  //     method: 'post',
+  //     maxBodyLength: Infinity,
+  //     url: `${BackendUrl}/app/v1/aws/upload/driverimages`,
+  //     headers: {
+  //       'Content-Type': 'multipart/form-data'
+  //     },
+  //     data: reader
+  //   };
+  //   let imageName = await imageUploadApi(config);
+  //   let totalUrl = `${BackendUrl}/app/v1/aws/getImage/driverimages/` + imageName;
+  //   console.log(totalUrl);
+  //   setTitleImage(totalUrl);
+  //   return totalUrl;
+  // };
   //update vendor
   const updateVendor = () => {
     if (

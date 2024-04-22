@@ -18,7 +18,8 @@ import FilterListIcon from '@mui/icons-material/FilterList';
 import { IconX } from '@tabler/icons-react';
 import LoaderCircular from 'ui-component/LoaderCircular';
 import axios from 'axios';
-import { BackendUrl, AwsBucketUrl } from 'utils/config';
+import { BackendUrl } from 'utils/config';
+import { UploadDocumenttos3Bucket } from 'utils/AwsS3Bucket';
 
 const columns = [
   { id: 'conductor_name', label: 'Name', align: 'center', minWidth: 150 },
@@ -102,33 +103,34 @@ export const AllConductor = () => {
     const name = event.target.name;
     // console.log(event, field);
     setisLoading(true);
-    const link = await UploadDocumenttos3Bucket(event);
+    const link = await UploadDocumenttos3Bucket(event, 'driverimages');
     setUpdateObj({ ...updateObj, conductor_document: { ...updateObj.conductor_document, [name]: link } });
     setisLoading(false);
   };
-  const imageUploadApi = async (value) => {
-    let result = await axios.request(value);
-    // console.log(result.data.name);
-    let imageName = result.data.name;
-    return imageName;
-  };
 
-  const UploadDocumenttos3Bucket = async (e) => {
-    const reader = new FormData();
-    reader.append('file', e.target.files[0]);
-    let config = {
-      method: 'post',
-      maxBodyLength: Infinity,
-      url: `${AwsBucketUrl}/app/v1/aws/upload/driverimages`,
-      headers: {
-        'Content-Type': 'multipart/form-data'
-      },
-      data: reader
-    };
-    let imageName = await imageUploadApi(config);
-    let totalUrl = `${AwsBucketUrl}/app/v1/aws/getImage/driverimages/` + imageName;
-    return totalUrl;
-  };
+  // const imageUploadApi = async (value) => {
+  //   let result = await axios.request(value);
+  //   // console.log(result.data.name);
+  //   let imageName = result.data.name;
+  //   return imageName;
+  // };
+
+  // const UploadDocumenttos3Bucket = async (e) => {
+  //   const reader = new FormData();
+  //   reader.append('file', e.target.files[0]);
+  //   let config = {
+  //     method: 'post',
+  //     maxBodyLength: Infinity,
+  //     url: `${AwsBucketUrl}/app/v1/aws/upload/driverimages`,
+  //     headers: {
+  //       'Content-Type': 'multipart/form-data'
+  //     },
+  //     data: reader
+  //   };
+  //   let imageName = await imageUploadApi(config);
+  //   let totalUrl = `${AwsBucketUrl}/app/v1/aws/getImage/driverimages/` + imageName;
+  //   return totalUrl;
+  // };
 
   const updateConductor = () => {
     if (
@@ -367,7 +369,7 @@ export const AllConductor = () => {
                       key={pageNumber}
                       onClick={() => setCurrentPage(pageNumber)}
                       className={`flex justify-center items-center bg-blue-500 px-2 py-1 rounded-full ${
-                        currentPage == pageNumber ? 'text-white' : 'text-black'
+                        currentPage == pageNumber ? 'text-white bg-red-500' : 'text-black'
                       }`}
                     >
                       {pageNumber}

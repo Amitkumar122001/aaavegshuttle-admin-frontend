@@ -3,8 +3,9 @@ import { TextField, Button, FormControl, InputLabel, Select, MenuItem } from '@m
 import axios from 'axios';
 import toast, { Toaster } from 'react-hot-toast';
 import Loader from 'ui-component/Loadable';
-import { BackendUrl, AwsBucketUrl } from 'utils/config';
-//
+import { BackendUrl } from 'utils/config';
+import { UploadDocumenttos3Bucket } from 'utils/AwsS3Bucket';
+
 export const AddDriver = () => {
   const [driverForm, setDriverForm] = useState({
     drName: '',
@@ -29,6 +30,7 @@ export const AddDriver = () => {
     pccEnd: '',
     pccStart: ''
   });
+  //  console.log(driverForm);
   const [vendorData, setVendorData] = useState([]);
   useEffect(() => {
     axios
@@ -56,56 +58,41 @@ export const AddDriver = () => {
   const [drLicenseImgErr, setDrLicenseImgErr] = useState(false);
   const [drLicenseExpiryErr, setDrLicenseExpiryErr] = useState(false);
   const [drLicenseStartErr, setDrLicenseStartErr] = useState(false);
+  //  handle image upload
   const handleDocumentPhoto = async (event) => {
     const name = event.target.name;
     setisLoading(true);
-    const link = await UploadDocumenttos3Bucket(event);
+    const link = await UploadDocumenttos3Bucket(event, 'driverimages');
     setDriverForm({ ...driverForm, [name]: link });
     setisLoading(false);
   };
-  const imageUploadApi = async (value) => {
-    let result = await axios.request(value);
-    // console.log(result.data.name);
-    let imageName = result.data.name;
-    return imageName;
-  };
+  // const imageUploadApi = async (value) => {
+  //   let result = await axios.request(value);
+  //   // console.log(result.data.name);
+  //   let imageName = result.data.name;
+  //   return imageName;
+  // };
 
-  const UploadDocumenttos3Bucket = async (e) => {
-    // console.log(e.target.files[0]);
-    const reader = new FormData();
-    reader.append('file', e.target.files[0]);
-    let config = {
-      method: 'post',
-      maxBodyLength: Infinity,
-      url: `${AwsBucketUrl}/app/v1/aws/upload/driverimages`,
-      headers: {
-        'Content-Type': 'multipart/form-data'
-      },
-      data: reader
-    };
-    let imageName = await imageUploadApi(config);
-    let totalUrl = `${AwsBucketUrl}/app/v1/aws/getImage/driverimages/` + imageName;
-    // console.log(totalUrl);
+  // const UploadDocumenttos3Bucket = async (e) => {
+  //   // console.log(e.target.files[0]);
+  //   const reader = new FormData();
+  //   reader.append('file', e.target.files[0]);
+  //   let config = {
+  //     method: 'post',
+  //     maxBodyLength: Infinity,
+  //     url: `${AwsBucketUrl}/app/v1/aws/upload/driverimages`,
+  //     headers: {
+  //       'Content-Type': 'multipart/form-data'
+  //     },
+  //     data: reader
+  //   };
+  //   let imageName = await imageUploadApi(config);
+  //   let totalUrl = `${AwsBucketUrl}/app/v1/aws/getImage/driverimages/` + imageName;
+  //   // console.log(totalUrl);
 
-    return totalUrl;
-  };
+  //   return totalUrl;
+  // };
   const handleDriver = () => {
-    {
-      /* driverName ||
-      currentAddress ||
-      !data.permanentAddress ||
-      !data.primaryContact ||
-      !data.emergencyContact ||
-      !data.adhaarNumber ||
-      !data.dlNumber ||
-      !data.imeiNumber ||
-      !data.driverDocument ||
-      !data.vendorId ||
-      !data.policeVerificationStart ||
-      !data.policeVerificationEnd ||
-      !drivingLicenseStart ||
-      !drivingLicenseEnd */
-    }
     if (
       driverForm.drName != '' &&
       driverForm.drmobile != '' &&
@@ -163,7 +150,7 @@ export const AddDriver = () => {
       };
       // console.log(body);
       axios
-        .post(`https://3ff8-125-19-80-210.ngrok-free.app/app/v1/driver/createDriver`, body)
+        .post(`${BackendUrl}/app/v1/driver/createDriver`, body)
         .then((res) => {
           toast.success(res.data.result || 'Driver Added SuccessFully');
           console.log(res);
@@ -203,6 +190,7 @@ export const AddDriver = () => {
       driverForm.pccEnd == '' ? setDrPccEndErr(true) : setDrPccEndErr(false);
     }
   };
+  // console.log(driverForm);
   return (
     <div>
       <div>
@@ -308,7 +296,7 @@ export const AddDriver = () => {
                 ) : (
                   <div className="flex justify-between">
                     <img src={driverForm.drPhoto} alt="" className="w-20 h-20 rounded-xl" />
-                    <Button onClick={() => setDriverForm({ ...drPhoto, drPhoto: '' })} variant="outlined" color="error">
+                    <Button onClick={() => setDriverForm({ ...driverForm, drPhoto: '' })} variant="outlined" color="error">
                       remove
                     </Button>
                   </div>

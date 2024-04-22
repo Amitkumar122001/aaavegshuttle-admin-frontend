@@ -11,7 +11,7 @@ export const initialState = {
   borderRadius: config.borderRadius,
   opened: true,
   accessToken: '',
-  role: ''
+  role: 'admin'
 };
 
 // ==============================|| CUSTOMIZATION REDUCER ||============================== //

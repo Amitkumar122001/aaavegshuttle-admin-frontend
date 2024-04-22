@@ -3,7 +3,8 @@ import { TextField, Button, FormControl } from '@mui/material';
 import toast, { Toaster } from 'react-hot-toast';
 import Loader from 'ui-component/LoaderCircular';
 import axios from 'axios';
-import { BackendUrl, AwsBucketUrl } from 'utils/config';
+import { BackendUrl } from 'utils/config';
+import { UploadDocumenttos3Bucket } from 'utils/AwsS3Bucket';
 
 function validateEmail(email) {
   const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -67,35 +68,36 @@ export const AddVendor = () => {
   const handleDocumentPhoto = async (event) => {
     const name = event.target.name;
     setisLoading(true);
-    const link = await UploadDocumenttos3Bucket(event);
+    const link = await UploadDocumenttos3Bucket(event, 'driverimages');
     setVendorForm({ ...vendorForm, [name]: link });
     setisLoading(false);
   };
-  const imageUploadApi = async (value) => {
-    let result = await axios.request(value);
-    console.log(result.data.name);
-    let imageName = result.data.name;
-    return imageName;
-  };
+  // const imageUploadApi = async (value) => {
+  //   let result = await axios.request(value);
+  //   console.log(result.data.name);
+  //   let imageName = result.data.name;
+  //   return imageName;
+  // };
 
-  const UploadDocumenttos3Bucket = async (e) => {
-    // console.log(e.target.files[0]);
-    const reader = new FormData();
-    reader.append('file', e.target.files[0]);
-    let config = {
-      method: 'post',
-      maxBodyLength: Infinity,
-      url: `${AwsBucketUrl}/app/v1/aws/upload/driverimages`,
-      headers: {
-        'Content-Type': 'multipart/form-data'
-      },
-      data: reader
-    };
-    let imageName = await imageUploadApi(config);
-    let totalUrl = `${AwsBucketUrl}/app/v1/aws/getImage/driverimages/` + imageName;
-    // console.log(totalUrl);
-    return totalUrl;
-  };
+  // const UploadDocumenttos3Bucket = async (e) => {
+  //   // console.log(e.target.files[0]);
+  //   const reader = new FormData();
+  //   reader.append('file', e.target.files[0]);
+  //   let config = {
+  //     method: 'post',
+  //     maxBodyLength: Infinity,
+  //     url: `${AwsBucketUrl}/app/v1/aws/upload/driverimages`,
+  //     headers: {
+  //       'Content-Type': 'multipart/form-data'
+  //     },
+  //     data: reader
+  //   };
+  //   let imageName = await imageUploadApi(config);
+  //   let totalUrl = `${AwsBucketUrl}/app/v1/aws/getImage/driverimages/` + imageName;
+  //   // console.log(totalUrl);
+  //   return totalUrl;
+  // };
+
   const handleAddVendor = () => {
     if (
       vendorForm.name != '' &&

@@ -345,7 +345,7 @@ export const AllUser = () => {
                       key={pageNumber}
                       onClick={() => setCurrentPage(pageNumber)}
                       className={`flex justify-center items-center bg-blue-500 px-2 py-1 rounded-full ${
-                        currentPage == pageNumber ? 'text-white' : 'text-black'
+                        currentPage == pageNumber ? 'text-white  bg-red-500' : 'text-black'
                       }`}
                     >
                       {pageNumber}

@@ -1,7 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import FilterListIcon from '@mui/icons-material/FilterList';
-import Box from '@mui/material/Box';
-import Modal from '@mui/material/Modal';
 import { IconX } from '@tabler/icons-react';
 import {
   Paper,
@@ -12,11 +10,13 @@ import {
   TableHead,
   TableRow,
   TextField,
-  Select,
   Button,
   FormControl,
-  InputLabel,
-  MenuItem
+  // Select,
+  // InputLabel,
+  // MenuItem,
+  Modal,
+  Box
 } from '@mui/material';
 import toast, { Toaster } from 'react-hot-toast';
 import { BackendUrl } from 'utils/config';
@@ -63,10 +63,6 @@ const columns = [
   }
 ];
 
-// "runningDays"
-
-// "routenumber"
-// "routname"
 export const AllTrip = () => {
   const [allTrip, setAllTrip] = useState([]);
   const [field, setField] = useState('');
@@ -75,13 +71,15 @@ export const AllTrip = () => {
   const [updateObj, setUpdateObj] = useState({});
 
   const [filterData, setFilterData] = useState([]);
-  const [updateOpen, setUpdateOpen] = useState(false);
+  const [modalOpen, setModalOpen] = useState(false);
 
   const handleOpen = (item) => {
+    // console.log(item);
     setUpdateObj(item);
-    setUpdateOpen(true);
+    setModalOpen(true);
   };
-  const handleClose = () => setUpdateOpen(false);
+
+  const handleClose = () => setModalOpen(false);
   useEffect(() => {
     fetch(`${BackendUrl}/app/v1/trip/getAllMstTrip`)
       .then((res) => res.json())
@@ -93,8 +91,9 @@ export const AllTrip = () => {
   useEffect(() => {
     if (value.length > 0) {
       let res;
-      if (field == 'driver_id' || field == 'conductor_id') {
-        res = allTrip?.filter((item) => item[field] == value);
+      if (field == 'routenumber') {
+        // console.log('hello');
+        res = allTrip?.filter((item) => String(item[field])?.includes(String(value)));
       } else {
         res = allTrip?.filter((item) => item[field]?.includes(value));
       }
@@ -114,16 +113,12 @@ export const AllTrip = () => {
         setField('driver_id');
         break;
       }
-      case 'category': {
-        setField('category');
+      case 'routname': {
+        setField('routname');
         break;
       }
-      case 'tablet_imei': {
-        setField('tablet_imei');
-        break;
-      }
-      case 'conductor_id': {
-        setField('conductor_id');
+      case 'routenumber': {
+        setField('routenumber');
         break;
       }
       default:
@@ -132,39 +127,75 @@ export const AllTrip = () => {
     setSearchBool(false);
   };
 
-  const [errBusNO, setErrBusNo] = useState(false);
-  const [errCategory, setErrCategory] = useState(false);
-  const [errFuelType, setErrFuelType] = useState(false);
-  const [errTabletImei, setErrTabletImei] = useState(false);
-  const [errCapacity, setErrCapacity] = useState(false);
-
   //updateTrip
   const updateTrip = () => {
-    if (updateObj.bus_number != '') {
-      toast.success('update successfully');
-      console.log('right');
-      setErrBusNo(false);
-      setErrCapacity(false);
-      setErrCategory(false);
-      setErrFuelType(false);
-      setErrTabletImei(false);
-    } else {
-      updateObj.bus_number == '' ? setErrBusNo(true) : setErrBusNo(false);
-      updateObj.category == '' ? true : setErrCategory(false);
-      updateObj.tablet_imei == '' ? setErrTabletImei(true) : setErrTabletImei(false);
-      updateObj.fuel_type == '' ? setErrFuelType(true) : setErrFuelType(false);
-      updateObj.capacity == '' ? setErrCapacity(true) : setErrCapacity(false);
-    }
+    console.log(updateObj);
+    toast.success('Eror');
   };
   const style = {
     position: 'absolute',
-    top: '40%',
+    top: '50%',
     left: '50%',
-    transform: 'translate(-50%, -40%)',
+    transform: 'translate(-50%, -50%)',
     p: 4
   };
+  const [dayDis, setDayDis] = useState({
+    sunday: false,
+    monday: false,
+    tuesday: false,
+    wednesday: false,
+    thursday: false,
+    friday: false,
+    saturday: false,
+    fullweek: false,
+    weekday: false,
+    selectDay: false,
+    buttonDisable: true
+  });
+
+  // const [runningErr, setRunningErr] = useState(false);
+  const handleFullWeek = () => {
+    setUpdateObj({ ...updateObj, runningDays: ['0', '1', '2', '3', '4', '5', '6'] });
+    setDayDis({ ...dayDis, fullweek: true, weekday: false });
+  };
+  // console.log(updateObj);
+  const handleWeekDay = () => {
+    setUpdateObj({ ...updateObj, runningDays: ['1', '2', '3', '4', '5'] });
+    setDayDis({ ...dayDis, weekday: true, fullweek: false });
+  };
+  const handleSelectButton = () => {
+    setDayDis({ ...dayDis, buttonDisable: false });
+    setUpdateObj({ ...updateObj, runningDays: [] });
+  };
+  // select day and disable button using object state
+  const handleSelectedDays = (day, value) => {
+    setUpdateObj({ ...updateObj, runningDays: [...updateObj.runningDays, value] });
+    setDayDis({ ...dayDis, [day]: true });
+  };
+  function deleteSelectedDays(day, val) {
+    let idx = updateObj.runningDays?.indexOf(val);
+    updateObj.runningDays?.splice(idx, 1);
+    setDayDis({ ...dayDis, [day]: false });
+  }
+  const clearField = () => {
+    setDayDis({
+      ...dayDis,
+      sunday: false,
+      monday: false,
+      tuesday: false,
+      wednesday: false,
+      thursday: false,
+      friday: false,
+      saturday: false,
+      fullweek: false,
+      weekday: false,
+      selectDay: false,
+      buttonDisable: true
+    });
+    setUpdateObj({ ...updateObj, runningDays: [] });
+  };
   return (
-    <div className="">
+    <>
       <div className="">
         <div className=" flex flex-col gap-10 bg-white p-4 max-lg:gap-5 rounded-xl relative">
           <div>
@@ -178,20 +209,14 @@ export const AllTrip = () => {
             </button>
             {searchBool && (
               <div className="flex flex-col gap-1 bg-gray-100 rounded p-4 absolute top-10 right-0 w-32">
+                <button onClick={() => handleSearchField('routenumber')} className="py-1 text-sm rounded hover:bg-gray-300">
+                  Route Number
+                </button>
                 <button onClick={() => handleSearchField('bus_number')} className="py-1 text-sm rounded hover:bg-gray-300">
                   Bus Number
                 </button>
-                <button onClick={() => handleSearchField('driver_id')} className="py-1 text-sm rounded hover:bg-gray-300">
-                  Driver ID
-                </button>
-                <button onClick={() => handleSearchField('category')} className="py-1 text-sm rounded hover:bg-gray-300">
-                  category
-                </button>
-                <button onClick={() => handleSearchField('tablet_imei')} className="py-1 text-sm rounded hover:bg-gray-300">
-                  tablet IMEI
-                </button>
-                <button onClick={() => handleSearchField('conductor_id')} className="py-1 text-sm rounded hover:bg-gray-300">
-                  conductor Id
+                <button onClick={() => handleSearchField('routname')} className="py-1 text-sm rounded hover:bg-gray-300">
+                  Route Name
                 </button>
               </div>
             )}
@@ -217,11 +242,10 @@ export const AllTrip = () => {
                     </TableHead>
                     <TableBody>
                       {filterData?.map((item, i) => {
-                        const route = String(item.routname).split('to');
                         return (
                           <TableRow key={i} hover>
                             <TableCell align="center">{item.trip_id}</TableCell>
-                            <TableCell align="center">{`  ${route[0] + '-' + route[1]} (${item.routenumber})`}</TableCell>
+                            <TableCell align="center">{` ${item.routname} (${item.routenumber})`}</TableCell>
                             <TableCell align="center">{item.bus_number}</TableCell>
                             <TableCell align="center">{item.driver_name}</TableCell>
                             <TableCell align="center">{`${item.startTime} - ${item.endTime}`}</TableCell>
@@ -244,14 +268,14 @@ export const AllTrip = () => {
         </div>
       </div>
 
-      <Modal open={updateOpen} onClose={handleClose} aria-labelledby="modal-modal-title" aria-describedby="modal-modal-description">
+      <Modal open={modalOpen} onClose={handleClose} aria-labelledby="modal-modal-title" aria-describedby="modal-modal-description">
         <Box sx={style} className=" w-[80%] max-lg:h-screen max-lg:w-screen p-4 ">
           <div>
             <Toaster />
           </div>
-          <div className=" max-lg:w-full flex flex-col gap-1 bg-white my-4 p-4 rounded-xl">
+          <div className=" max-lg:w-full flex flex-col gap-1 bg-white my-4 p-8 rounded-xl">
             <div className="flex justify-between pb-5">
-              <p className="text-xl font-bold">Update Bus</p>
+              <p className="text-xl font-bold">Update Trip</p>
               <button onClick={handleClose} className="">
                 <IconX />
               </button>
@@ -259,114 +283,60 @@ export const AllTrip = () => {
             <>
               <div>
                 <div className="grid grid-cols-3 max-lg:grid-cols-2 max-lg:gap-5 max-sm:grid-cols-1 max-sm:gap-3 gap-10">
-                  {/* bus ID*/}
+                  {/* Route Name*/}
                   <div className="w-full">
                     <FormControl fullWidth>
-                      <TextField id="demo-simple-set" label="bus Id" disabled={true} value={updateObj.bus_id} />
+                      <TextField
+                        id="demo-simple-seect"
+                        label="Route"
+                        disabled={true}
+                        value={`${updateObj.routenumber} ${updateObj.routname}`}
+                      />
                     </FormControl>
                   </div>
-                  {/* vender Id */}
+                  {/* Driver Name */}
                   <div className="w-full">
                     <FormControl fullWidth>
-                      <TextField id="demo-simple-seect" label="vendor Id" disabled={true} />
-                    </FormControl>
-                  </div>
-                  {/* Driver Id*/}
-                  <div className="w-full">
-                    <FormControl fullWidth>
-                      <TextField id="demo-simple-seect" label="driver Id" disabled={true} value={updateObj.driver_id} />
-                    </FormControl>
-                  </div>
-                  {/* Conductor Id */}
-                  <div className="w-full">
-                    <FormControl fullWidth>
-                      <TextField id="demo-simple-seec" label="conductor Id" disabled={true} value={updateObj.conductor_id} />
+                      <TextField id="demo-simple-seec" label="Driver Name" disabled={true} value={updateObj.driver_name} />
                     </FormControl>
                   </div>
                   {/* bus no */}
                   <div className="w-full">
                     <FormControl fullWidth>
+                      <TextField id="demo-simple-seect" label="bus no" value={updateObj.bus_number} disabled={true} />
+                    </FormControl>
+                  </div>
+                  {/* Start Time */}
+                  <div className="w-full">
+                    <FormControl fullWidth>
                       <TextField
-                        id="demo-simple-seect"
-                        label="bus no"
-                        value={updateObj.bus_number}
-                        onChange={(e) => setUpdateObj({ ...updateObj, bus_number: e.target.value })}
+                        type="time"
+                        fullWidth
+                        id="outlined-basi"
+                        label="Start time"
+                        variant="outlined"
+                        value={updateObj.startTime}
+                        format="HH:mm:ss"
+                        inputProps={{
+                          step: 1
+                        }}
                       />
                     </FormControl>
-                    {errBusNO && <p className="text-red-500 ml-2 text-xs">bus no error</p>}
                   </div>
-                  {/* Bus Capacity */}
+                  {/* End Time */}
                   <div className="w-full">
                     <FormControl fullWidth>
                       <TextField
                         fullWidth
                         id="outlined-basi"
-                        label="Capacity"
+                        label="End time"
                         variant="outlined"
-                        type="number"
-                        value={updateObj.capacity}
-                        onChange={(e) => setUpdateObj({ ...updateObj, capacity: e.target.value })}
+                        value={updateObj.endTime}
+                        disabled={true}
                       />
                     </FormControl>
-                    {errCapacity && <p className="text-red-500 ml-2 text-xs">Capacity error</p>}
                   </div>
-
-                  {/* Category */}
-                  <div className="w-full">
-                    <FormControl fullWidth>
-                      <InputLabel id="category">Category</InputLabel>
-                      <Select
-                        labelId="category"
-                        id="demo-simle-select"
-                        label="Category"
-                        value={updateObj.category}
-                        onChange={(e) => setUpdateObj({ ...updateObj, category: e.target.value })}
-                      >
-                        <MenuItem value={'1'}>Small</MenuItem>
-                        <MenuItem value={'2'}>Medium</MenuItem>
-                        <MenuItem value={'3'}>Large</MenuItem>
-                      </Select>
-                      {errCategory && <p className="text-red-500 ml-2 text-xs">category error</p>}
-                    </FormControl>
-                  </div>
-
-                  {/* Fuel Type */}
-                  <div className="w-full">
-                    <FormControl fullWidth>
-                      <InputLabel id="fuel_type">Fuel Type</InputLabel>
-                      <Select
-                        labelId="fuel_type"
-                        id="demo-imple-select"
-                        label="Fuel Type"
-                        value={updateObj.fuel_type}
-                        onChange={(e) => setUpdateObj({ ...updateObj, fuel_type: e.target.value })}
-                      >
-                        <MenuItem value="Petrol">Petrol</MenuItem>
-                        <MenuItem value="Diesel">Diesel</MenuItem>
-                        <MenuItem value="CNG">CNG</MenuItem>
-                      </Select>
-                    </FormControl>
-                    {errFuelType && <p className="text-red-500 ml-2 text-xs">Category Error</p>}
-                  </div>
-
-                  {/* Passenger Type */}
-                  <div className="w-full">
-                    <FormControl fullWidth>
-                      <InputLabel id="female_bus">Female bus</InputLabel>
-                      <Select
-                        labelId="female_bus"
-                        id="demo-sple-select"
-                        label="Female bus"
-                        value={updateObj.female_bus}
-                        onChange={(e) => setUpdateObj({ ...updateObj, female_bus: e.target.value })}
-                      >
-                        <MenuItem value={true}>Yes</MenuItem>
-                        <MenuItem value={false} selected>
-                          No
-                        </MenuItem>
-                      </Select>
-                    </FormControl>
-                  </div>
+                  {/* vendor_name */}
                   <div className="w-full">
                     <FormControl fullWidth>
                       <TextField
@@ -374,19 +344,137 @@ export const AllTrip = () => {
                         id="outlind-basic"
                         label="Tablet IMEI"
                         variant="outlined"
-                        value={updateObj.tablet_imei}
-                        onChange={(e) => setUpdateObj({ ...updateObj, tablet_imei: e.target.value })}
+                        value={updateObj.vendor_name}
+                        disabled={true}
                       />
                     </FormControl>
-                    {errTabletImei && <p className="text-red-500 ml-2 text-xs">tablet imei err</p>}
+                  </div>
+                </div>
+                <div className="mt-4">
+                  <div className=" flex flex-col items-center">
+                    <p className="text-xl text-gray-600 ">Select Running Days</p>
+                    <p className="border w-1/2  border-gray-300 my-2"></p>
+                  </div>
+                  <div className="flex gap-10 justify-center px-10 mt-4">
+                    {(JSON.stringify(updateObj.runningDays) == JSON.stringify(['0', '1', '2', '3', '4', '5', '6']) ||
+                      JSON.stringify(updateObj.runningDays) == JSON.stringify(['1', '2', '3', '4', '5']) ||
+                      updateObj.runningDays?.length == 0) &&
+                    dayDis.buttonDisable ? (
+                      <>
+                        <div>
+                          {JSON.stringify(updateObj.runningDays) == JSON.stringify(['0', '1', '2', '3', '4', '5', '6']) ? (
+                            <Button variant="contained" className={'bg-green-700'} onClick={clearField}>
+                              Full Weeked
+                            </Button>
+                          ) : (
+                            <Button variant="contained" className={'bg-blue-700'} onClick={handleFullWeek}>
+                              Full Weeks
+                            </Button>
+                          )}
+                        </div>
+                        <div>
+                          {JSON.stringify(updateObj.runningDays) == JSON.stringify(['1', '2', '3', '4', '5']) ? (
+                            <Button variant="contained" className={'bg-green-700'} onClick={clearField}>
+                              Week Dayed
+                            </Button>
+                          ) : (
+                            <Button variant="contained" className={'bg-blue-700'} onClick={handleWeekDay}>
+                              Week Days
+                            </Button>
+                          )}
+                        </div>
+                        <div>
+                          <Button variant="contained" className="bg-blue-700" onClick={() => handleSelectButton()}>
+                            Select Days
+                          </Button>
+                        </div>
+                      </>
+                    ) : (
+                      <div className="grid  justify-center items-center w-full gap-3 grid-cols-4 max-sm:grid-cols-2">
+                        {/* sunday */}
+                        {updateObj.runningDays?.includes('0') ? (
+                          <Button variant="contained" className="bg-green-600" onClick={() => deleteSelectedDays('sunday', '0')}>
+                            Sunday
+                          </Button>
+                        ) : (
+                          <Button variant="contained" className="bg-blue-600" onClick={() => handleSelectedDays('sunday', '0')}>
+                            Sunday
+                          </Button>
+                        )}
+                        {/* monday */}
+                        {updateObj.runningDays?.includes('1') ? (
+                          <Button variant="contained" className="bg-green-600" onClick={() => deleteSelectedDays('monday', '1')}>
+                            monday
+                          </Button>
+                        ) : (
+                          <Button variant="contained" className="bg-blue-600" onClick={() => handleSelectedDays('monday', '1')}>
+                            monday
+                          </Button>
+                        )}
+                        {/* tuesday */}
+                        {updateObj.runningDays?.includes('2') ? (
+                          <Button variant="contained" className="bg-green-600" onClick={() => deleteSelectedDays('tuesday', '2')}>
+                            Tuesday
+                          </Button>
+                        ) : (
+                          <Button variant="contained" className="bg-blue-600" onClick={() => handleSelectedDays('tuesday', '2')}>
+                            Tuesday
+                          </Button>
+                        )}
+                        {/* wednesday */}
+                        {updateObj.runningDays?.includes('3') ? (
+                          <Button variant="contained" className="bg-green-600" onClick={() => deleteSelectedDays('wednesday', '3')}>
+                            wednesday
+                          </Button>
+                        ) : (
+                          <Button variant="contained" className="bg-blue-600" onClick={() => handleSelectedDays('wednesday', '3')}>
+                            wednesday
+                          </Button>
+                        )}
+
+                        {/* thursday */}
+                        {updateObj.runningDays?.includes('4') ? (
+                          <Button variant="contained" className="bg-green-600" onClick={() => deleteSelectedDays('thursday', '4')}>
+                            thursday
+                          </Button>
+                        ) : (
+                          <Button variant="contained" className="bg-blue-600" onClick={() => handleSelectedDays('thursday', '4')}>
+                            thursday
+                          </Button>
+                        )}
+                        {/* friday */}
+                        {updateObj.runningDays?.includes('5') ? (
+                          <Button variant="contained" className="bg-green-600" onClick={() => deleteSelectedDays('friday', '5')}>
+                            friday
+                          </Button>
+                        ) : (
+                          <Button variant="contained" className="bg-blue-600" onClick={() => handleSelectedDays('friday', '5')}>
+                            friday
+                          </Button>
+                        )}
+                        {/* saturday */}
+                        {updateObj.runningDays?.includes('6') ? (
+                          <Button variant="contained" className="bg-green-600" onClick={() => deleteSelectedDays('saturday', '6')}>
+                            saturday
+                          </Button>
+                        ) : (
+                          <Button variant="contained" className="bg-blue-600" onClick={() => handleSelectedDays('saturday', '6')}>
+                            saturday
+                          </Button>
+                        )}
+                        <Button variant="outlined" color="error" onClick={() => clearField()}>
+                          Clear
+                        </Button>
+                      </div>
+                    )}
                   </div>
                 </div>
               </div>
 
-              <div>
+              <div className="mt-10">
                 <div className="flex gap-10 justify-between mb-3">
                   <Button variant="contained" className={'bg-blue-700'} onClick={updateTrip}>
-                    Add Bus
+                    Update Trip
                   </Button>
                   <Button variant="outlined" color="error">
                     Cancel
@@ -399,6 +487,6 @@ export const AllTrip = () => {
         </Box>
       </Modal>
       {/* update modal end */}
-    </div>
+    </>
   );
 };

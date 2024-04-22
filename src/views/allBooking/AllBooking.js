@@ -1,5 +1,20 @@
 import React, { useState, useEffect } from 'react';
-import { Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Modal, Box } from '@mui/material';
+import {
+  Paper,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  Modal,
+  Box,
+  Select,
+  InputLabel,
+  FormControl,
+  MenuItem,
+  TextField
+} from '@mui/material';
 import axios from 'axios';
 import { BackendUrl } from 'utils/config';
 import toast, { Toaster } from 'react-hot-toast';
@@ -33,12 +48,15 @@ const columns = [
 export const AllBooking = () => {
   const [allBooking, setAllBooking] = useState([]);
   const [tripDate, setTripDate] = useState(getCurrentDate());
-  const [pageNo] = useState(1);
+  const [pageNo, setPageNo] = useState(1);
+  const [totalBooking, setTotalBooking] = useState(0);
+  const [limitPerPage, setLimitPerPage] = useState(10);
+  const [totalPages, setTotalPage] = useState(0);
   useEffect(() => {
     axios
       .post(`${BackendUrl}/app/v1/booking/getBookingListByDate`, {
         pageNo: pageNo,
-        limitPerPage: 10,
+        limitPerPage: limitPerPage,
         bookingDate: tripDate
       })
       .then((res) => {
@@ -47,35 +65,76 @@ export const AllBooking = () => {
           setAllBooking([]);
           toast.error(res.data.result);
         } else {
+          // console.log(res.data)
           setAllBooking(res.data.result);
+          setTotalBooking(res.data.totalbooking);
+          setTotalPage(res.data.totalPage);
         }
       })
       .catch((err) => {
         toast.error(res.data.result);
         console.log(err);
       });
-  }, [tripDate]);
+  }, [tripDate, limitPerPage, pageNo]);
+
+  // console.log(totalPages);
   const [modalOpen, setModalOpen] = useState(false);
+  const handlePrev = () => {
+    if (pageNo <= 1) {
+      setPageNo(totalPages);
+    } else {
+      setPageNo((page) => page - 1);
+    }
+  };
+  const handleNext = () => {
+    if (pageNo >= totalPages) {
+      setPageNo(1);
+    } else {
+      setPageNo((page) => page + 1);
+    }
+  };
   return (
     <>
       <div>
         <div>
           <Toaster />
         </div>
-        <div className=" flex flex-col gap-5 bg-white p-4 rounded-xl">
+        <div className=" flex flex-col gap-5 bg-white p-2 rounded-xl">
           {/* heading */}
           <div>
             <div>
               <p className="text-3xl text-gray-600 text-center">Booking Details</p>
-              <p className=" border border-gray-300"></p>
+              <p className=" border border-gray-300 mt-2"></p>
             </div>
-            <div className="mt-5 w-56 px-4">
-              <input
-                type="date"
-                value={tripDate}
-                onChange={(e) => setTripDate(e.target.value)}
-                className="border border-gray-300 rounded w-full"
-              />
+
+            <div className="flex max-md:flex-col  items-center gap-4 mt-4">
+              <FormControl fullWidth>
+                <TextField
+                  type="date"
+                  value={tripDate}
+                  onChange={(e) => setTripDate(e.target.value)}
+                  className="border border-gray-300 rounded "
+                />
+              </FormControl>
+              <div className="flex gap-4 w-full items-center justify-between">
+                <FormControl fullWidth>
+                  <InputLabel id="limit">Page Limit</InputLabel>
+                  <Select
+                    labelId="limit"
+                    id="demo-simple-select"
+                    label="Page Limit"
+                    value={limitPerPage}
+                    onChange={(e) => setLimitPerPage(e.target.value)}
+                  >
+                    <MenuItem value={5}>5</MenuItem>
+                    <MenuItem value={10}>10</MenuItem>
+                    <MenuItem value={15}>15</MenuItem>
+                    <MenuItem value={20}>20</MenuItem>
+                    <MenuItem value={30}>30</MenuItem>
+                  </Select>
+                </FormControl>
+                <p className=" text-lg">Total:{totalBooking}</p>
+              </div>
             </div>
           </div>
 
@@ -87,7 +146,7 @@ export const AllBooking = () => {
                     <TableHead>
                       <TableRow>
                         {columns.map((column) => (
-                          <TableCell key={column.id} align={column.align} style={{ minWidth: column.minWidth }} className="bg-gray-300">
+                          <TableCell key={column.id} align={column.align} style={{ minWidth: column.minWidth }} className="bg-gray-300 ">
                             {column.label}
                           </TableCell>
                         ))}
@@ -98,12 +157,14 @@ export const AllBooking = () => {
                         return (
                           <TableRow
                             key={i}
-                            className={`${item.booking_status == 2 && 'bg-red-400 text-white'} ${
+                            className={`${item.booking_status == 2 && 'bg-green-400 '} ${
                               item.booking_status == 1 && 'bg-yellow-200 text-white'
-                            }`}
+                            } ${item.booking_status == 3 && 'bg-red-400 text-white'}`}
                           >
                             <TableCell align="center">{item.reservation_id}</TableCell>
-                            <TableCell align="center">{item.booking_status == 2 ? 'Completed' : 'Pending'}</TableCell>
+                            <TableCell align="center">
+                              {item.booking_status == 2 ? 'Completed' : item.booking_status == 3 ? 'Cancelled' : 'Pending'}
+                            </TableCell>
                             <TableCell align="center">{item.booking_date}</TableCell>
                             <TableCell align="center">{item.pickuptime}</TableCell>
                             <TableCell align="center">{item.droptime}</TableCell>
@@ -122,6 +183,35 @@ export const AllBooking = () => {
                   </Table>
                 </TableContainer>
               </Paper>
+              {totalPages > 1 && (
+                <div className="mt-2">
+                  <div className="flex justify-center gap-4">
+                    {pageNo != 1 && (
+                      <button className="font-bold bg-blue-600 px-3 text-white rounded" onClick={() => handlePrev()}>
+                        {'<<'}
+                      </button>
+                    )}
+
+                    {Array.from({ length: totalPages }, (_, i) => i + 1).map((pageNumber) => (
+                      <button
+                        key={pageNumber}
+                        onClick={() => setPageNo(pageNumber)}
+                        className={`flex justify-center items-center bg-blue-500 px-2 py-1 rounded-full ${
+                          pageNo == pageNumber ? 'text-white bg-red-500' : 'text-black'
+                        }`}
+                      >
+                        {pageNumber}
+                      </button>
+                    ))}
+
+                    {pageNo != totalPages && (
+                      <button className="font-bold bg-blue-600 px-3 text-white rounded" onClick={() => handleNext()}>
+                        {'>>'}
+                      </button>
+                    )}
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         </div>

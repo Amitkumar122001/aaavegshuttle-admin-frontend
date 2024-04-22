@@ -153,7 +153,7 @@ export const AddTrip = () => {
       </div>
       <div className="flex flex-col gap-5 bg-white p-8 max-lg:p-4 max-lg:gap-5 rounded-xl">
         <div>
-          <p className="text-3xl text-gray-600 text-center">Add Trip</p>
+          <p className="text-3xl text-gray-600 text-center">Create Trip</p>
           <p className="border border-gray-300 mt-5"></p>
         </div>
         <div className="flex flex-col gap-6 px-20 py-10 max-lg:px-2 max-lg:py-5 max-lg:gap-5">

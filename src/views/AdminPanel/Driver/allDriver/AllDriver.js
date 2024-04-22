@@ -15,10 +15,10 @@ import {
 } from '@mui/material';
 import { IconX } from '@tabler/icons-react';
 import FilterListIcon from '@mui/icons-material/FilterList';
-import toast, { Toaster } from 'react-hot-toast';
 import LoaderCircular from 'ui-component/LoaderCircular';
 import axios from 'axios';
-import { BackendUrl, AwsBucketUrl } from 'utils/config';
+import { BackendUrl } from 'utils/config';
+import { UploadDocumenttos3Bucket } from 'utils/AwsS3Bucket';
 
 const columns = [
   { id: 'driver_name', label: 'Driver Name', align: 'center', minWidth: 150 },
@@ -69,9 +69,13 @@ export const AllDriver = () => {
     setRefreshPage(false);
     axios
       .get(`${BackendUrl}/app/v1/driver/getAllDriver`)
-      .then((res) => setDriverData(res.data?.result))
+      .then((res) => {
+        console.log(res);
+        setDriverData(res.data?.result);
+      })
       .catch((e) => console.log('Api fail ', e));
   }, [refreshPage]);
+  // console.log(driverData);
   useEffect(() => {
     if (value.length > 0) {
       let res = driverData?.filter((item) => item[field]?.includes(value));
@@ -117,6 +121,7 @@ export const AllDriver = () => {
     }
     setSearchBool(false);
   };
+  // console.log(updateObj);
 
   //update driver
   const updateDriver = () => {
@@ -175,17 +180,16 @@ export const AllDriver = () => {
         .then((res) => {
           console.log(res.data);
           if (res.data.isDriverUpdated) {
-            toast.success(res.data.result);
+            window.alert(res.data.result);
+            handleClose();
           } else {
-            toast.success(res.data.result);
+            window.alert(res.data.result);
           }
-
           setRefreshPage(true);
-          clearAllField();
         })
         .catch((err) => {
           console.log('Api Err ', err);
-          toast.error('Api Error');
+          window.alert('Api Error');
         });
     } else {
       updateObj.driver_name == undefined ? setDriverNameErr(true) : setDriverNameErr(false);
@@ -213,12 +217,14 @@ export const AllDriver = () => {
 
   // modal open
   const handleOpen = (item) => {
-    // console.log(item);
+    console.log(item);
     setUpdateObj(item);
     setUpdateOpen(true);
   };
   // modal close
-  const handleClose = () => setUpdateOpen(false);
+  const handleClose = () => {
+    setUpdateOpen(false);
+  };
 
   const style = {
     position: 'absolute',
@@ -231,12 +237,12 @@ export const AllDriver = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 6;
   // const [itemsPerPage,setItemPerPAge]=useState(5);
-  const totalPages = Math.ceil(filterData.length / itemsPerPage);
+  const totalPages = Math.ceil(filterData?.length / itemsPerPage);
 
   const displayItems = () => {
     const startIndex = (currentPage - 1) * itemsPerPage;
     const endIndex = startIndex + itemsPerPage;
-    return filterData.slice(startIndex, endIndex);
+    return filterData?.slice(startIndex, endIndex);
   };
   const handlePrev = () => {
     if (currentPage <= 1) {
@@ -257,35 +263,35 @@ export const AllDriver = () => {
   const handleDocumentPhoto = async (event) => {
     const name = event.target.name;
     setisLoading(true);
-    const link = await UploadDocumenttos3Bucket(event);
+    const link = await UploadDocumenttos3Bucket(event, 'driverimages');
     setUpdateObj({ ...updateObj, driver_document: { ...updateObj.driver_document, [name]: link } });
     setisLoading(false);
   };
-  const imageUploadApi = async (value) => {
-    let result = await axios.request(value);
-    // console.log(result.data.name);
-    let imageName = result.data.name;
-    return imageName;
-  };
+  // const imageUploadApi = async (value) => {
+  //   let result = await axios.request(value);
+  //   // console.log(result.data.name);
+  //   let imageName = result.data.name;
+  //   return imageName;
+  // };
 
-  const UploadDocumenttos3Bucket = async (e) => {
-    // console.log(e.target.files[0]);
-    const reader = new FormData();
-    reader.append('file', e.target.files[0]);
-    let config = {
-      method: 'post',
-      maxBodyLength: Infinity,
-      url: `${AwsBucketUrl}/app/v1/aws/upload/driverimages`,
-      headers: {
-        'Content-Type': 'multipart/form-data'
-      },
-      data: reader
-    };
-    let imageName = await imageUploadApi(config);
-    let totalUrl = `${AwsBucketUrl}/app/v1/aws/getImage/driverimages/` + imageName;
-    // console.log(totalUrl);
-    return totalUrl;
-  };
+  // const UploadDocumenttos3Bucket = async (e) => {
+  //   // console.log(e.target.files[0]);
+  //   const reader = new FormData();
+  //   reader.append('file', e.target.files[0]);
+  //   let config = {
+  //     method: 'post',
+  //     maxBodyLength: Infinity,
+  //     url: `${AwsBucketUrl}/app/v1/aws/upload/driverimages`,
+  //     headers: {
+  //       'Content-Type': 'multipart/form-data'
+  //     },
+  //     data: reader
+  //   };
+  //   let imageName = await imageUploadApi(config);
+  //   let totalUrl = `${AwsBucketUrl}/app/v1/aws/getImage/driverimages/` + imageName;
+  //   // console.log(totalUrl);
+  //   return totalUrl;
+  // };
   return (
     <div>
       <div className=" flex flex-col gap-10 bg-white p-8 max-lg:p-4 max-lg:gap-5 rounded-xl">
@@ -361,7 +367,7 @@ export const AllDriver = () => {
                       key={pageNumber}
                       onClick={() => setCurrentPage(pageNumber)}
                       className={`flex justify-center items-center bg-blue-500 px-2 py-1 rounded-full ${
-                        currentPage == pageNumber ? 'text-white' : 'text-black'
+                        currentPage == pageNumber ? 'text-white bg-red-500' : 'text-black'
                       }`}
                     >
                       {pageNumber}
@@ -385,9 +391,6 @@ export const AllDriver = () => {
         className="overflow-y-scroll mb-4"
       >
         <Box sx={style} className=" w-full h-screen  p-4 ">
-          <div>
-            <Toaster />
-          </div>
           {isLoading && (
             <div>
               <LoaderCircular />
@@ -554,8 +557,7 @@ export const AllDriver = () => {
                         type="date"
                         className="outline-none border-none w-full"
                         id="dlStart"
-                        format="yyyy-mm-dd"
-                        value={updateObj.driving_license_start_india?.slice(0, 10)}
+                        value={updateObj.driving_license_start_india}
                         onChange={(e) => setUpdateObj({ ...updateObj, driving_license_start_india: e.target.value })}
                       />
                     </p>
@@ -571,8 +573,7 @@ export const AllDriver = () => {
                         type="date"
                         className="outline-none border-none w-full"
                         id="dlExpiry"
-                        format="yyyy-mm-dd"
-                        value={updateObj.driving_license_end_india?.slice(0, 10)}
+                        value={updateObj.driving_license_end_india}
                         onChange={(e) => setUpdateObj({ ...updateObj, driving_license_end_india: e.target.value })}
                       />
                     </p>
@@ -587,8 +588,7 @@ export const AllDriver = () => {
                         type="date"
                         className="outline-none border-none w-full"
                         id="pccStart"
-                        format="yyyy-mm-dd"
-                        value={updateObj.police_verification_start_india?.slice(0, 10)}
+                        value={updateObj.police_verification_start_india}
                         onChange={(e) => setUpdateObj({ ...updateObj, police_verification_start_india: e.target.value })}
                       />
                     </p>
@@ -603,8 +603,7 @@ export const AllDriver = () => {
                         type="date"
                         className="outline-none border-none w-full"
                         id="pccEnd"
-                        format="yyyy-mm-dd"
-                        value={updateObj.police_verification_end_india?.slice(0, 10)}
+                        value={updateObj.police_verification_end_india}
                         onChange={(e) => setUpdateObj({ ...updateObj, police_verification_end_india: e.target.value })}
                       />
                     </p>
@@ -835,19 +834,20 @@ export const AllDriver = () => {
                       </div>
                     )}
                   </div>
-                </div>
-                <div className="mt-2">
-                  <label>
-                    <input
-                      type="checkbox"
-                      checked={Boolean(updateObj.activeStatus)}
-                      onChange={(e) => setUpdateObj({ ...updateObj, activeStatus: e.target.checked })}
-                    />
-                    Active Status
-                  </label>
+
+                  <div className="text-lg flex items-center justify-center">
+                    <label>
+                      <input
+                        type="checkbox"
+                        className=""
+                        checked={Boolean(updateObj.activeStatus)}
+                        onChange={(e) => setUpdateObj({ ...updateObj, activeStatus: e.target.checked })}
+                      />{' '}
+                      {'  '}Active Status
+                    </label>
+                  </div>
                 </div>
               </div>
-
               <div className="mt-2">
                 <div className="flex gap-10 justify-between mb-3">
                   <Button variant="contained" className={'bg-blue-700'} onClick={updateDriver}>

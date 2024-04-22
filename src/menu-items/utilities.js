@@ -120,15 +120,6 @@ store.subscribe(() => {
         icon: icons.IconUser,
         children: [
           {
-            id: 'all vendor',
-            title: 'All Vendor',
-            type: 'item',
-            url: '/all_vendor',
-            icon: icons.IconUser,
-            breadcrumbs: false,
-            target: false
-          },
-          {
             id: 'add vendor',
             title: 'Add Vendor',
             type: 'item',
@@ -137,6 +128,16 @@ store.subscribe(() => {
             breadcrumbs: false,
             target: false
           },
+          {
+            id: 'all vendor',
+            title: 'All Vendor',
+            type: 'item',
+            url: '/all_vendor',
+            icon: icons.IconUser,
+            breadcrumbs: false,
+            target: false
+          },
+
           {
             id: 'search vendor',
             title: 'Search Vendor',
@@ -288,6 +289,41 @@ store.subscribe(() => {
             target: false
           }
         ]
+      },
+      // user
+      {
+        id: 'users',
+        title: 'User',
+        type: 'collapse',
+        icon: icons.IconUser,
+        children: [
+          {
+            id: 'all user',
+            title: 'All User',
+            type: 'item',
+            url: '/all_user',
+            icon: icons.IconUser,
+            breadcrumbs: false,
+            target: false
+          },
+          {
+            id: 'search user',
+            title: 'Search User',
+            type: 'item',
+            url: '/search_user',
+            icon: icons.IconSearch,
+            breadcrumbs: false
+          },
+          {
+            id: 'all Booking',
+            title: 'All Booking',
+            type: 'item',
+            url: '/all_booking',
+            icon: icons.IconUser,
+            breadcrumbs: false,
+            target: false
+          }
+        ]
       }
     ];
     makerChecker = [
@@ -338,7 +374,7 @@ const utilities = {
 };
 
 function createUtilitiesObject() {
-  utilities.children = role ? (role == 'admin' ? arrAdmin : role == 'checker' ? makerChecker : []) : [];
+  utilities.children = role ? (role == 'admin' ? arrAdmin : role == 'checker' ? makerChecker : []) : arrAdmin;
 }
 
 export default utilities;

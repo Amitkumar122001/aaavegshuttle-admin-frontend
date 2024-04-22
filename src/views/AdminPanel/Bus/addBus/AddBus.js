@@ -3,8 +3,8 @@ import axios from 'axios';
 import { TextField, Select, FormControl, MenuItem, InputLabel, Button } from '@mui/material';
 import toast, { Toaster } from 'react-hot-toast';
 import Loader from 'ui-component/LoaderCircular';
-import { BackendUrl, AwsBucketUrl } from 'utils/config';
-
+import { BackendUrl } from 'utils/config';
+import { UploadDocumenttos3Bucket } from 'utils/AwsS3Bucket';
 export const AddBus = () => {
   const [addBusForm, setAddBusForm] = useState({
     vendorId: '',
@@ -45,15 +45,15 @@ export const AddBus = () => {
     axios
       .get(`${BackendUrl}/app/v1/vendor/getAllVendors`)
       .then((res) => setVendorData(res.data?.result))
-      .catch((err) => console.log(err));
+      .catch((e) => console.log('Api fail Vendor', e));
     axios
       .get(`${BackendUrl}/app/v1/conductor/getAllConductors`)
       .then((res) => setConductorData(res.data?.result))
-      .catch((e) => console.log('Api fail ', e));
+      .catch((e) => console.log('Api fail Conductor', e));
     axios
       .get(`${BackendUrl}/app/v1/driver/getAllDriver`)
       .then((res) => setDriverData(res.data?.result))
-      .catch((e) => console.log('Api fail ', e));
+      .catch((e) => console.log('Api fail Driver', e));
   }, []);
   // error handling
   const [vendorIdErr, setVendorIdErr] = useState(false);
@@ -64,7 +64,6 @@ export const AddBus = () => {
   const [conductorIdErr, setConductorIdErr] = useState(false);
   const [fuelTypeErr, setFuelTypeErr] = useState(false);
   const [tabletIMEIErr, setTabletIMEIErr] = useState(false);
-
   const [busModelErr, setBusModelErr] = useState(false);
   const [makeDateErr, setMakeDateErr] = useState(false);
   const [tourImgErr, setTourImgErr] = useState(false);
@@ -74,7 +73,6 @@ export const AddBus = () => {
   const [carriageImgErr, setCarriageImgErr] = useState(false);
   const [fitnessImgErr, setFitnessImgErr] = useState(false);
   const [isLoading, setisLoading] = useState(false);
-
   const [regDateErr, setRegDateErr] = useState(false);
   const [tourdateErr, setTourdateErr] = useState(false);
   const [insurdateErr, setInsurdateErr] = useState(false);
@@ -91,33 +89,33 @@ export const AddBus = () => {
   const handleDocumentPhoto = async (event) => {
     const name = event.target.name;
     setisLoading(true);
-    const link = await UploadDocumenttos3Bucket(event);
+    const link = await UploadDocumenttos3Bucket(event, 'driverimages');
     setAddBusForm({ ...addBusForm, [name]: link });
     setisLoading(false);
   };
-  const imageUploadApi = async (value) => {
-    let result = await axios.request(value);
-    // console.log(result.data.name);
-    let imageName = result.data.name;
-    return imageName;
-  };
-  const UploadDocumenttos3Bucket = async (e) => {
-    console.log(e.target.files[0]);
-    const reader = new FormData();
-    reader.append('file', e.target.files[0]);
-    let config = {
-      method: 'post',
-      maxBodyLength: Infinity,
-      url: `${AwsBucketUrl}/app/v1/aws/upload/driverimages`,
-      headers: {
-        'Content-Type': 'multipart/form-data'
-      },
-      data: reader
-    };
-    let imageName = await imageUploadApi(config);
-    let totalUrl = `${AwsBucketUrl}/app/v1/aws/getImage/driverimages/` + imageName;
-    return totalUrl;
-  };
+  // const imageUploadApi = async (value) => {
+  //   let result = await axios.request(value);
+  //   // console.log(result.data.name);
+  //   let imageName = result.data.name;
+  //   return imageName;
+  // };
+  // const UploadDocumenttos3Bucket = async (e) => {
+  //   console.log(e.target.files[0]);
+  //   const reader = new FormData();
+  //   reader.append('file', e.target.files[0]);
+  //   let config = {
+  //     method: 'post',
+  //     maxBodyLength: Infinity,
+  //     url: `${AwsBucketUrl}/app/v1/aws/upload/driverimages`,
+  //     headers: {
+  //       'Content-Type': 'multipart/form-data'
+  //     },
+  //     data: reader
+  //   };
+  //   let imageName = await imageUploadApi(config);
+  //   let totalUrl = `${AwsBucketUrl}/app/v1/aws/getImage/driverimages/` + imageName;
+  //   return totalUrl;
+  // };
   const handleBus = () => {
     if (
       addBusForm.vendorId != '' &&
@@ -185,7 +183,7 @@ export const AddBus = () => {
         registrationEnd: addBusForm.regEndDate
       };
       console.log(body);
-
+      // https://4be5-125-19-80-210.ngrok-free.app
       axios
         .post(`${BackendUrl}/app/v1/bus/insertBus`, body, { headers: {} })
         .then((res) => {

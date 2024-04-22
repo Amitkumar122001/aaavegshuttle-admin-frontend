@@ -18,7 +18,6 @@ import {
   FormControlLabel
 } from '@mui/material';
 import axios from 'axios';
-import { Toaster } from 'react-hot-toast';
 import { IconX } from '@tabler/icons-react';
 import { BackendUrl } from 'utils/config';
 
@@ -27,7 +26,7 @@ const columns = [
   { id: 'start_point', label: 'Start Point', align: 'center', minWidth: 200 },
   { id: 'start_time', label: 'Start Time', align: 'center', minWidth: 200 },
   { id: 'end_point', label: 'End Point', align: 'center', minWidth: 200 },
-  { id: 'end_time', label: 'End Point', align: 'center', minWidth: 200 },
+  { id: 'end_time', label: 'End Time', align: 'center', minWidth: 200 },
   { id: 'perkmrate', label: 'Rate/Km', align: 'center', minWidth: 100 },
   { id: 'fixed_rate', label: 'Fixed Rate', align: 'center', minWidth: 100 },
   { id: 'maxroutefare', label: 'Max Fare', align: 'center', minWidth: 100 },
@@ -79,6 +78,8 @@ export const AllRoute = () => {
   const handleClose = () => setUpdateOpen(false);
   const updateRoute = () => {
     if (
+      updateObj.routenumber != '' &&
+      updateObj.perkmrate != '' &&
       updateObj.endlat != '' &&
       updateObj.endlng != '' &&
       updateObj.endpointname != '' &&
@@ -90,6 +91,8 @@ export const AllRoute = () => {
       updateObj.startlng != '' &&
       updateObj.startpointname != '' &&
       updateObj.totalroutedistance != '' &&
+      updateObj.routebasepriceadhoc != '' &&
+      updateObj.maxroutefare != '' &&
       updateObj.routeendtime > updateObj.routestarttime
     ) {
       const body = {
@@ -117,11 +120,12 @@ export const AllRoute = () => {
         .patch(`${BackendUrl}/app/v1/route/updateRoute`, body)
         .then((res) => {
           // console.log(res.data);
-          toast.success(res.data.result);
+          window.alert(res.data.result);
+          setRefreshPage(true);
         })
         .catch((err) => {
           console.log('Api error : ', err);
-          toast.error('error');
+          window.alert('error');
         });
       setStartPointNameErr(false);
       setStartlatErr(false);
@@ -244,9 +248,6 @@ export const AllRoute = () => {
         <Box sx={style} className=" w-full h-screen p-4 ">
           {' '}
           <div className=" max-lg:w-full flex flex-col gap-1 bg-white my-4 p-4 rounded-xl relative">
-            <div className="absolute top-5 left-1/2 ">
-              <Toaster />
-            </div>
             <div className="flex justify-between pb-5 px-20 max-lg:px-0">
               <p className="text-xl font-bold">Update Route</p>
               <button onClick={handleClose} className="">
