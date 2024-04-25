@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Paper,
   Table,
@@ -17,11 +17,13 @@ import {
   TextField
 } from '@mui/material';
 import { IconX, IconChevronLeft } from '@tabler/icons-react'; // IconArrowDownSquare
-import { TripCard } from './TripCard';
-
+import { getCurrentDate, findDay, addTwoTime, diffTwoTime, compareTwoTime } from 'utils/TimeDate';
+import { DataPacket } from 'utils/Data';
+import axios from 'axios';
+import { MapTracking } from './MapTracking';
 const columns = [
-  { id: 'route no', label: 'Route No.', align: 'center', minWidth: 80 },
-  { id: 'route name', label: 'Route Name.', align: 'center', minWidth: 150 },
+  { id: 'route no', label: 'Route No.', align: 'center', minWidth: 100 },
+  { id: 'route name', label: 'Route Name.', align: 'center', minWidth: 250 },
   {
     id: 'bus_no',
     label: 'Bus No.',
@@ -37,23 +39,16 @@ const columns = [
     format: (value) => value.toLocaleString('en-US')
   },
   {
-    id: 'triptype',
-    label: 'Trip Type',
-    minWidth: 150,
-    align: 'center',
-    format: (value) => value.toLocaleString('en-US')
-  },
-  {
-    id: ' time',
+    id: 'trip time',
     label: 'Trip Time',
-    minWidth: 150,
+    minWidth: 250,
     align: 'center',
     format: (value) => value.toLocaleString('en-US')
   },
   {
     id: 'vendor',
-    label: 'Vendor Name',
-    minWidth: 80,
+    label: 'Vendor',
+    minWidth: 100,
     align: 'center',
     format: (value) => value.toLocaleString('en-US')
   },
@@ -86,35 +81,6 @@ const columns = [
     format: (value) => value.toLocaleString('en-US')
   }
 ];
-const trips = [
-  {
-    route_no: 1,
-    trip: 'T1',
-    time: '07:15-09:57',
-    bus_no: 'busno1',
-    driver_name: 'xyz',
-    conductor_name: 'abc',
-    No_of_booking: 56
-  },
-  {
-    route_no: 1,
-    trip: 'T2',
-    time: '10:45-13:37',
-    bus_no: 'busno2',
-    driver_name: 'xyz',
-    conductor_name: 'abc',
-    No_of_booking: 57
-  },
-  {
-    route_no: 1,
-    trip: 'T3',
-    time: '14:25-16:47',
-    bus_no: 'busno3',
-    driver_name: 'xyz',
-    conductor_name: 'abc',
-    No_of_booking: 58
-  }
-];
 
 const style = {
   position: 'absolute',
@@ -126,26 +92,108 @@ const style = {
   p: 2
 };
 export const OngoingTrip = () => {
+  const [allTrip, setAllTrips] = useState(DataPacket);
+
+  const [filterTripData, setFilterTripData] = useState(allTrip);
   const [modalopen, setModalOpen] = useState(false);
-  const handleOpen = () => setModalOpen(true);
-  const handleClose = () => setModalOpen(false);
   const [tripStatus, setTripStatus] = useState('');
   const [showModal, setShowModal] = useState({
     allDetail: true,
-    bdBool: false,
-    tsBool: false
+    tsBool: false,
+    sdBool: false,
+    mapTracking: false
   });
   const [routeNoF, setRouteNoF] = useState('');
   const [busNoF, setBusNoF] = useState('');
+  const [startDate, setStartDate] = useState(getCurrentDate());
+  const [endDate, setEndDate] = useState(getCurrentDate());
+  const [updateObj, setUpdateObj] = useState({});
+  // Api call
+  useEffect(() => {
+    if (startDate >= getCurrentDate() && endDate >= startDate) {
+      axios
+        .get(`http://192.168.1.167:3000/app/v1/tripManagement/ongoing/2024-04-23/2024-04-23`)
+        .then((res) => setAllTrips(res.data.result))
+        .catch((err) => {
+          console.log('Api error : ', err);
+        });
+    } else {
+      window.alert('Please Select the correct Date,\n End Date >= Start Date');
+    }
+  }, [startDate, endDate]);
+  // filter
+  useEffect(() => {
+    let res = '';
+    if (routeNoF != '' && busNoF != '') {
+      res = allTrip.filter((item) => {
+        // Check if all fields match the criteria
+        return String(item.basicInfo?.routeNumber).includes(String(routeNoF)) && String(item.basicInfo?.busNumber).includes(busNoF);
+      });
+      // console.log('routeno, busno and trip : ', res);
+      setFilterTripData(res);
+      return;
+    } else if (routeNoF != '') {
+      res = allTrip.filter((item) => {
+        // Check if all fields match the criteria
+        return String(item.basicInfo?.routeNumber).includes(String(routeNoF));
+      });
+      // console.log('routeno, busno and trip : ', res);
+      setFilterTripData(res);
+      return;
+    } else if (busNoF != '') {
+      res = allTrip.filter((item) => {
+        // Check if all fields match the criteria
+        return String(item.basicInfo?.busNumber).includes(busNoF);
+      });
+      // console.log('busno : ', res);
+      setFilterTripData(res);
+      return;
+    } else {
+      setFilterTripData(allTrip);
+    }
+  }, [allTrip, routeNoF, busNoF]);
+
+  // modal
+  const handleOpen = (item) => {
+    // console.log(item);
+    setUpdateObj(item);
+    setModalOpen(true);
+  };
+  const handleClose = () => {
+    setModalOpen(false);
+    setShowModal({ ...showModal, allDetail: true, tsBool: false, sdBool: false, mapTracking: false });
+  };
 
   return (
     <>
-      <div className="flex flex-col gap-10 max-md:gap-5">
+      <div className="flex flex-col gap-10 max-md:gap-5 ">
         {/* filter */}
-        <div className="flex gap-2">
+        <div className="grid grid-cols-4 max-md:grid-cols-2 gap-2">
+          <div className="flex flex-col border p-1 rounded-lg w-full">
+            <label htmlFor="StartDate">Start Date</label>
+            <input
+              type="date"
+              id="StartDate"
+              className="bg-transparent outline-none"
+              value={startDate}
+              onChange={(e) => setStartDate(e.target.value)}
+              min={getCurrentDate()}
+            />
+          </div>
+          <div className="flex flex-col border p-1 rounded-lg w-full">
+            <label htmlFor="endDate">End Date</label>
+            <input
+              type="date"
+              id="endDate"
+              value={endDate}
+              onChange={(e) => setEndDate(e.target.value)}
+              className="bg-transparent outline-none"
+              min={getCurrentDate()}
+            />
+          </div>
           <div>
             <FormControl fullWidth>
-              <TextField label="Route No." value={routeNoF} onChange={(e) => setRouteNoF(e.target.value)} />
+              <TextField label="Route No." type="number" min="0" value={routeNoF} onChange={(e) => setRouteNoF(e.target.value)} />
             </FormControl>
           </div>
           <div>
@@ -154,17 +202,11 @@ export const OngoingTrip = () => {
             </FormControl>
           </div>
         </div>
-        {/* card:-total trip  && total route */}
-        <div className="grid grid-cols-3 max-md:grid-cols-1 gap-10 max-md:gap-5">
-          <TripCard name="Total Trip" value={`Trip : ${10}`} total={50} />
-          <TripCard name="Total Route" value={`Route : ${25}`} total={100} />
-          <TripCard name="Total Rte" value={`Rte : ${3}`} total={5} />
-        </div>
         {/* All trip */}
         <div>
           <div className="my-1">
             <Paper sx={{ width: '100%', overflow: 'hidden' }}>
-              <TableContainer sx={{ maxHeight: 440 }}>
+              <TableContainer>
                 <Table stickyHeader aria-label="sticky table">
                   <TableHead>
                     <TableRow>
@@ -181,18 +223,20 @@ export const OngoingTrip = () => {
                     </TableRow>
                   </TableHead>
                   <TableBody>
-                    {trips.map((item, i) => {
-                      const tripTime = item.time.split('-');
+                    {filterTripData?.map((item, i) => {
                       return (
                         <TableRow hover key={i}>
-                          <TableCell align="center">{item.route_no}</TableCell>
-                          <TableCell align="center">{`${tripTime[0]} - ${tripTime[1]}`}</TableCell>
-                          <TableCell align="center">{item.bus_no}</TableCell>
-                          <TableCell align="center">{item.driver_name}</TableCell>
-                          <TableCell align="center">{item.conductor_name}</TableCell>
-                          <TableCell align="center">{item.No_of_booking}</TableCell>
+                          <TableCell align="center">{item.basicInfo.routeNumber}</TableCell>
+                          <TableCell align="center">{item.basicInfo.routeName}</TableCell>
+                          <TableCell align="center">{item.basicInfo.busNumber}</TableCell>
+                          <TableCell align="center">{item.basicInfo.driverName}</TableCell>
+                          <TableCell align="center">{item.basicInfo.tripTime}</TableCell>
+                          <TableCell align="center">{item.basicInfo.vendorName}</TableCell>
+                          <TableCell align="center">{item.basicInfo.noOfBookings}</TableCell>
+                          <TableCell align="center">{item.basicInfo.noOfBookings}</TableCell>
+                          <TableCell align="center">{item.basicInfo.noOfBookings}</TableCell>
                           <TableCell align="center">
-                            <button className="p-2 text-md text-blue-600" onClick={handleOpen}>
+                            <button className="p-2 text-md text-blue-600" onClick={() => handleOpen(item)}>
                               View
                             </button>
                           </TableCell>
@@ -206,6 +250,7 @@ export const OngoingTrip = () => {
           </div>
         </div>
       </div>
+
       <Modal
         open={modalopen}
         onClose={handleClose}
@@ -215,13 +260,13 @@ export const OngoingTrip = () => {
       >
         <Box
           sx={style}
-          className={`rounded bg-gray-200 max-lg:w-[70%] max-md:w-[80%] ${showModal.allDetail && 'h-[90%] w-[60%]'} 
-          ${showModal.bdBool && 'h-[70%] max-md:h-[50%] w-[30%] rounded-xl'} ${
-            showModal.tsBool && 'h-[40%] max-md:h-[30%] sm:w-[25%] rounded-xl flex items-center justify-center'
-          }
+          className={`rounded  ${showModal.allDetail && 'h-[90%] w-[60%]'} 
+         ${showModal.tsBool && 'h-[40%] max-md:h-[30%] sm:w-[25%] rounded-xl flex items-center justify-center'} ${
+            showModal.sdBool && 'h-[90%] w-[60%] max-lg:w-[70%] max-md:w-[80%]'
+          } ${showModal.mapTracking && 'w-[85%] h-[90%] p-0 '}
           } overflow-hidden`}
         >
-          <div>
+          <div className="h-[100%] w-[100%] ">
             {showModal.allDetail && (
               <>
                 <div className="">
@@ -233,132 +278,80 @@ export const OngoingTrip = () => {
                   </div>
 
                   <div className="overflow-y-scroll w-[100%] h-[420px] max-md:h-[600px] px-1">
-                    <div className="grid grid-cols-3 max-lg:grid-cols-2 max-md:grid-cols-1 gap-4  h-full w-full">
+                    <div className="grid grid-cols-2 max-md:grid-cols-1 gap-4  h-full w-full">
                       {/* bus details */}
                       <div className=" h-56 bg-cyan-900 text-gray-300 rounded p-2  grid grid-cols-1 gap-0 ">
                         <h1 className="text-white text-xl">Bus details</h1>
-                        <p>bus no. : bic3ei938</p>
-                        <p>Reg no. : 04-04-2024</p>
-                        <p>Insurance no. : 04-04-2024</p>
-                        <p>fuel type : petrol</p>
-                        <p>capacity : 35</p>
-                        <p>bus model : unknown</p>
-                        <p>Vendor : unknown</p>
+                        <span className="bg-white w-full block h-[0.2px] mb-1"></span>
+                        <p>bus no. : {updateObj.busDetails?.busNumber}</p>
+                        <p>Reg no. : {updateObj.busDetails?.busRegistrationDate}</p>
+                        <p>isAC. : {updateObj.busDetails?.busIsAc ? `${updateObj.busDetails?.busIsAc ? 'Yes' : 'No'}` : 'not yet'}</p>
+                        <p>fuel type : {updateObj.busDetails?.fuelType}</p>
+                        <p>capacity : {updateObj.busDetails?.busCapacity}</p>
+                        <p>femaleBus : {updateObj.busDetails?.femalBus ? `${updateObj.busDetails?.femalBus ? 'Yes' : 'No'}` : 'not yet'}</p>
                       </div>
                       {/* Driver details */}
                       <div className=" bg-cyan-900 text-gray-300 rounded p-2 h-56 grid grid-cols-1 gap-0  ">
                         <h1 className="text-white text-xl">Driver details</h1>
-                        <p>driver_name. : ram</p>
-                        <p>Primary no. : 04-04-2024</p>
-                        <p>Emergency no. : 04-04-2024</p>
-                        <p>License No.: 364827648533</p>
-                        <p>License Img : view</p>
-                        <p>License Expiry Date : 04-04-2024</p>
+                        <span className="bg-white w-full block h-[0.2px] mb-1"></span>
+                        <p>driver_name. : {updateObj.driverDetails?.driverName}</p>
+                        <p>Primary no. : {updateObj.driverDetails?.driverContact}</p>
+                        <p>Emergency no. : {updateObj.driverDetails?.driverEmergencyContact || 'not yet'}</p>
+                        <p>License Img : view (pending)</p>
+                        <p>Address : {updateObj.driverDetails?.driverAddress}</p>
                       </div>
                       {/* trip details */}
-                      <div className=" bg-cyan-900 text-gray-300 rounded p-2 h-56 grid grid-cols-1 gap-0 ">
+                      <div className=" bg-cyan-900 text-gray-300 rounded p-2 h-56 grid grid-cols-1  ">
                         <h1 className="text-white text-xl">Trip details</h1>
-                        <p>Trip status: pending</p>
-                        <p>Start time : 00:00:00</p>
-                        <p>End time : 00:00:00</p>
-                        <p>Trip day: SMTWTFS</p>
+                        <span className="bg-white w-full block h-[0.2px] "></span>
+                        <p>Trip status: Ongoing</p>
+                        <p>Start time : {String(updateObj.tripDetails?.tripStartTime)}</p>
+                        <p>End time : {updateObj.tripDetails?.tripEndTime}</p>
+                        <p>Trip day: {updateObj.tripDetails?.tripRunningDays.map((item) => findDay(item))} </p>
                       </div>
                       {/* Route details */}
                       <div className=" bg-cyan-900 text-gray-300 rounded p-2 h-56 grid grid-cols-1 gap-0  ">
                         <h1 className="text-white text-xl">Route details</h1>
-                        <p>Route No. : 13</p>
-                        <p>Start point: xyz</p>
-                        <p>End point: abc</p>
-                        <p>Distance : 24.7 km</p>
-                        <p>Fixed rate: 100</p>
-                        <p>Base rate: 100</p>
-                        <p>rate/km: 100</p>
-                      </div>
-                      {/* Booking details */}
-                      <div className=" bg-cyan-900 text-gray-300 rounded p-2 col-span-2 max-md:col-span-1">
-                        <h1 className="text-white text-xl text-center">Booking details</h1>
-                        <div className="grid grid-cols-2 max-md:grid-cols-1">
-                          <div>
-                            <p>booking_id :</p>
-                            <p>reservation_id : </p>
-                            <p>user_picklocation : </p>
-                            <p>user_droplocation : </p>
-                            <p>bus_picklocation :</p>
-                            <p>bus_droplocation :</p>
-                            <p>booking_status : </p>
-                            <p>booking_date : </p>
-                            <p>book_otp : </p>
-                          </div>
-                          <div>
-                            <p>pickuptime : </p>
-                            <p>droptime : </p>
-                            <p>user_to_stop_distance : </p>
-                            <p>busdrop_to_user_distance : </p>
-                            <p>total_seats : </p>
-                            <p>payment_id : </p>
-                            <p>booking_type_id : </p>
-                            <p>booking_created_at : </p>
-                            <p>isAdhoc : </p>
-                          </div>
-                        </div>
+                        <span className="bg-white w-full block h-[0.2px] mb-1"></span>
+                        <p>Route No. : {updateObj.routeDetails?.routeNumber}</p>
+                        <p>Start point: {updateObj.routeDetails?.startingPoint}</p>
+                        <p>End point: {updateObj.routeDetails?.endPoint}</p>
+                        <p>Distance : {updateObj.routeDetails?.totalDistance} km</p>
+                        {Boolean(updateObj.routeDetails?.routeFixedRate) == false ? (
+                          <>
+                            <p>Base rate: {updateObj.routeDetails?.routeBasePrice}</p>
+                            <p>Adhoc PRice: {updateObj.routeDetails?.routeBasePriceAdhoc}</p>
+                            <p>rate/km: {updateObj.routeDetails?.perKmRoutePrice}</p>
+                            <p>max fare: {updateObj.routeDetails?.maxRouteFare}</p>
+                          </>
+                        ) : (
+                          <p>fixed price : {updateObj.routeDetails?.routeFixedRatePrice || 'Backend'}</p>
+                        )}
                       </div>
                     </div>
                   </div>
                   <div className="flex gap-4 justify-between mt-2">
                     <Button
                       variant="contained"
-                      className="bg-blue-500"
-                      onClick={() => setShowModal({ ...showModal, allDetail: false, bdBool: true, tsBool: false })}
-                    >
-                      Change bus and Driver
-                    </Button>
-                    <Button
-                      variant="contained"
                       className="bg-yellow-700 text-sm "
-                      onClick={() => setShowModal({ ...showModal, allDetail: false, bdBool: false, tsBool: true })}
+                      onClick={() => setShowModal({ ...showModal, allDetail: false, tsBool: true, sdBool: false, mapTracking: false })}
                     >
                       trip Status
                     </Button>
-                  </div>
-                </div>
-              </>
-            )}
-
-            {showModal.bdBool && (
-              <>
-                <div className="flex items-center justify-center mt-10">
-                  <div className="flex flex-col gap-5">
-                    <div className="flex justify-between gap-2 text-xl font-semibold">
-                      <button
-                        onClick={() => setShowModal({ ...showModal, allDetail: true, bdBool: false, tsBool: false })}
-                        className="hover:text-blue-400 rounded-full"
-                      >
-                        <IconChevronLeft />
-                      </button>
-                      <p className="">Change Driver and Bus</p>
-                    </div>
-                    <div className="flex flex-col gap-5">
-                      <div>
-                        <FormControl fullWidth>
-                          <TextField label="Trip Id." disabled={true} className="font-semibold text-black" />
-                        </FormControl>
-                      </div>
-                      <div>
-                        <FormControl fullWidth>
-                          <TextField label="Bus No." />
-                        </FormControl>
-                      </div>
-                      <div>
-                        <FormControl fullWidth>
-                          <TextField label="Driver Name." />
-                        </FormControl>
-                      </div>
-                      <div>
-                        <Button variant="contained" fullWidth className="bg-blue-600 p-3 rounded-xl">
-                          Submit
-                        </Button>
-                      </div>
-                    </div>
+                    <Button
+                      variant="contained"
+                      className="bg-blue-700 text-sm "
+                      onClick={() => setShowModal({ ...showModal, allDetail: false, tsBool: false, sdBool: false, mapTracking: true })}
+                    >
+                      Live Track
+                    </Button>
+                    <Button
+                      variant="contained"
+                      className="bg-blue-700 text-sm "
+                      onClick={() => setShowModal({ ...showModal, allDetail: false, tsBool: false, sdBool: true, mapTracking: false })}
+                    >
+                      Stops
+                    </Button>
                   </div>
                 </div>
               </>
@@ -368,9 +361,8 @@ export const OngoingTrip = () => {
                 <div className="flex items-center justify-center ">
                   <div className="flex flex-col gap-5">
                     <div className="flex justify-between gap-1 text-xl font-semibold">
-                      {' '}
                       <button
-                        onClick={() => setShowModal({ ...showModal, allDetail: true, bdBool: false, tsBool: false })}
+                        onClick={() => setShowModal({ ...showModal, allDetail: true, sdBool: false, tsBool: false, mapTracking: false })}
                         className="hover:text-blue-400 rounded-full"
                       >
                         <IconChevronLeft />
@@ -405,6 +397,235 @@ export const OngoingTrip = () => {
                 </div>
               </>
             )}
+            {showModal.sdBool && (
+              <>
+                <div className="">
+                  <div className="flex text-xl my-2 max-md:my-1 font-bold gap-2">
+                    <button
+                      onClick={() => setShowModal({ ...showModal, allDetail: true, tsBool: false, sdBool: false, mapTracking: false })}
+                      className="hover:text-blue-400 rounded-full"
+                    >
+                      <IconChevronLeft />
+                    </button>
+                    <p>All Stop Detail</p>
+                  </div>
+                  <div className="overflow-y-scroll w-[100%] h-[470px] max-md:h-[640px] px-1 ">
+                    <div>
+                      <div className="grid grid-cols-1 gap-4 justify-center">
+                        <>
+                          {updateObj.stopsWithBooking?.map((item, i, arr) => {
+                            if (i == 0) {
+                              let stopreachtime = item.stopStatus == 0 ? item.eta : item.stopReachTime;
+                              let desiredTime = updateObj.tripDetails.tripStartTime;
+                              let timeDiff = diffTwoTime(desiredTime, stopreachtime);
+                              let isGreater = compareTwoTime(desiredTime, stopreachtime);
+                              return (
+                                <div key={i} className={`rounded ${Boolean(item.stopStatus) == false ? 'bg-yellow-300' : 'bg-green-500'}`}>
+                                  <div className="p-2 flex flex-col gap-3">
+                                    <div>
+                                      <p className="text-xl font-bold">{item.stopName}</p>
+                                    </div>
+                                    <div className="flex flex-col gap-2">
+                                      <div className="flex justify-around items-center">
+                                        <p className="font-semibold text-lg">Desired Reach time : {desiredTime}</p>
+                                        <p className="font-semibold text-lg">
+                                          Actual Reach time : {Boolean(item.stopStatus) == false ? item.eta : item.stopReachTime}
+                                        </p>
+                                        <p className="font-semibold text-lg">
+                                          Time Diff:{' '}
+                                          <span className={isGreater ? 'text-green-500' : 'text-red-400'}>
+                                            {isGreater ? '+' : '-'} {timeDiff}
+                                          </span>
+                                        </p>
+                                      </div>
+
+                                      <div className="grid grid-cols-2">
+                                        <div className="text-white bg-green-500 p-2">
+                                          <p className="font-bold text-center">OnBoarded</p>
+                                          <div className="grid justify-center grid-cols-1">
+                                            <p className="grid grid-cols-2">
+                                              <span className="text-center">Name</span>
+                                              <span className="text-center">Seats</span>
+                                            </p>
+                                            {item.onBoardingArr?.map((ele, x) => {
+                                              return (
+                                                <p key={x} className="grid grid-cols-2">
+                                                  <span className="text-center">{ele.userName}</span>
+                                                  <span className="text-center">{ele.totalSeats}</span>
+                                                </p>
+                                              );
+                                            })}
+                                          </div>
+                                        </div>
+                                        <div className="text-white bg-red-500 p-2">
+                                          <p className="font-bold text-center">OffBoarded</p>
+                                          <div>
+                                            <p className="grid grid-cols-2">
+                                              <span className="text-center">Name</span>
+                                              <span className="text-center">Seats</span>
+                                            </p>
+                                            {item.offBoardingArr?.map((ele, x) => {
+                                              return (
+                                                <p key={x} className="grid grid-cols-2">
+                                                  <span className="text-center">{ele.userName}</span>
+                                                  <span className="text-center">{ele.totalSeats}</span>
+                                                </p>
+                                              );
+                                            })}
+                                          </div>
+                                        </div>
+                                      </div>
+                                    </div>
+                                  </div>
+                                </div>
+                              );
+                            } else if (i == arr.length - 1) {
+                              let stopreachtime = item.stopStatus == 0 ? item.eta : item.stopReachTime;
+                              let desiredTime = updateObj.tripDetails.tripEndTime;
+                              let timeDiff = diffTwoTime(desiredTime, stopreachtime);
+                              let isGreater = compareTwoTime(desiredTime, stopreachtime);
+                              // console.log(timeDiff);
+
+                              return (
+                                <div key={i} className={`rounded ${Boolean(item.stopStatus) == false ? 'bg-yellow-300' : 'bg-green-500'}`}>
+                                  <div className="p-2 flex flex-col gap-3">
+                                    <div>
+                                      <p className="text-xl font-bold">{item.stopName}</p>
+                                    </div>
+                                    <div className="flex flex-col gap-2">
+                                      <div className="flex justify-around items-center">
+                                        <p className="font-semibold text-lg">Desired Reach time : {desiredTime}</p>
+                                        <p className="font-semibold text-lg">
+                                          Actual Reach time : {Boolean(item.stopStatus) == false ? item.eta : item.stopReachTime}
+                                        </p>
+                                        <p className="font-semibold text-lg">
+                                          Time Diff:{' '}
+                                          <span className={isGreater ? 'text-green-500' : 'text-red-400'}>
+                                            {isGreater ? '+' : '-'} {timeDiff}
+                                          </span>
+                                        </p>
+                                      </div>
+
+                                      <div className="grid grid-cols-2">
+                                        <div className="text-white bg-green-500 p-2">
+                                          <p className="font-bold text-center">OnBoarded</p>
+                                          <div>
+                                            <p className="grid grid-cols-2">
+                                              <span className="text-center">Name</span>
+                                              <span className="text-center">Seats</span>
+                                            </p>
+                                            {item.onBoardingArr?.map((ele, x) => {
+                                              return (
+                                                <p key={x} className="grid grid-cols-2">
+                                                  <span className="text-center">{ele.userName}</span>
+                                                  <span className="text-center">{ele.totalSeats}</span>
+                                                </p>
+                                              );
+                                            })}
+                                          </div>
+                                        </div>
+                                        <div className="text-white bg-red-500 p-2">
+                                          <p className="font-bold text-center">OffBoarded</p>
+                                          <div>
+                                            <p className="grid grid-cols-2">
+                                              <span>Name</span>
+                                              <span>Seats</span>
+                                            </p>
+                                            {item.offBoardingArr?.map((ele, x) => {
+                                              return (
+                                                <p key={x} className="grid grid-cols-2">
+                                                  <span>{ele.userName}</span>
+                                                  <span>{ele.totalSeats}</span>
+                                                </p>
+                                              );
+                                            })}
+                                          </div>
+                                        </div>
+                                      </div>
+                                    </div>
+                                  </div>
+                                </div>
+                              );
+                            } else {
+                              let stopreachtime = item.stopStatus == 0 ? item.eta : item.stopReachTime;
+                              let desiredTime = addTwoTime(
+                                updateObj.tripDetails.tripStartTime,
+                                updateObj.stopsWithoutBooking[i - 1].stopEta
+                              );
+                              // console.log(desiredTime);
+                              let timeDiff = diffTwoTime(desiredTime, stopreachtime);
+                              let isGreater = compareTwoTime(desiredTime, stopreachtime);
+                              // console.log("ongoing",timeDiff);
+                              return (
+                                <div key={i} className={Boolean(item.stopStatus) == false ? 'bg-yellow-300' : 'bg-green-500'}>
+                                  <div className="p-3 grid grid-cols-1 gap-3">
+                                    <div>
+                                      <p className="font-bold text-xl">{item.stopName}</p>
+                                    </div>
+                                    <div className="flex flex-col gap-3">
+                                      <div className="flex justify-around items-center">
+                                        <p className="font-semibold text-lg">Desired Reach time :{desiredTime}</p>
+                                        <p className="font-semibold text-lg">
+                                          Actual Reach time : {Boolean(item.stopStatus) == false ? item.eta : item.stopReachTime}
+                                        </p>
+                                        <p className="font-semibold text-lg">
+                                          Time Diff:{' '}
+                                          <span className={isGreater ? 'text-green-500' : 'text-red-400'}>
+                                            {isGreater ? '+' : '-'} {timeDiff}
+                                          </span>
+                                        </p>
+                                      </div>
+
+                                      <div className="grid grid-cols-2">
+                                        <div className="text-white bg-green-500 p-2">
+                                          <p className="font-bold text-center">OnBoarded</p>
+                                          <div>
+                                            <p className="grid grid-cols-2">
+                                              <span>Name</span>
+                                              <span>Seats</span>
+                                            </p>
+                                            {item.onBoardingArr?.map((ele, x) => {
+                                              return (
+                                                <p key={x} className="grid grid-cols-2">
+                                                  <span>{ele.userName}</span>
+                                                  <span>{ele.totalSeats}</span>
+                                                </p>
+                                              );
+                                            })}
+                                          </div>
+                                        </div>
+                                        <div className="text-white bg-red-500 p-2">
+                                          <p className="font-bold text-center">OffBoarded</p>
+                                          <div>
+                                            <p className="grid grid-cols-2">
+                                              <span>Name</span>
+                                              <span>Seats</span>
+                                            </p>
+                                            {item.offBoardingArr?.map((ele, x) => {
+                                              return (
+                                                <p key={x} className="grid grid-cols-2">
+                                                  <span>{ele.userName}</span>
+                                                  <span>{ele.totalSeats}</span>
+                                                </p>
+                                              );
+                                            })}
+                                          </div>
+                                        </div>
+                                      </div>
+                                    </div>
+                                  </div>
+                                </div>
+                              );
+                            }
+                          })}
+                        </>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </>
+            )}
+            {showModal.mapTracking && <MapTracking />}
           </div>
         </Box>
       </Modal>

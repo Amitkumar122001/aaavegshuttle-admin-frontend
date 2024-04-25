@@ -19,15 +19,11 @@ import {
   AccordionSummary,
   AccordionDetails
 } from '@mui/material';
-// accordian
-// import Accordion from '@mui/material/Accordion';
-// import AccordionActions from '@mui/material/AccordionActions';
-// import AccordionSummary from '@mui/material/AccordionSummary';
-// import AccordionDetails from '@mui/material/AccordionDetails';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
-
 import { IconX, IconChevronLeft } from '@tabler/icons-react'; // IconArrowDownSquare
-// import { TripCard } from './TripCard';
+import { getCurrentDate, findDay, addTwoTime } from 'utils/TimeDate';
+import axios from 'axios';
+import { BackendUrl } from 'utils/config';
 
 const columns = [
   { id: 'route no', label: 'Route No.', align: 'center', minWidth: 80 },
@@ -47,16 +43,9 @@ const columns = [
     format: (value) => value.toLocaleString('en-US')
   },
   {
-    id: 'triptype',
-    label: 'Trip Type',
-    minWidth: 150,
-    align: 'center',
-    format: (value) => value.toLocaleString('en-US')
-  },
-  {
-    id: ' time',
+    id: 'trip time',
     label: 'Trip Time',
-    minWidth: 150,
+    minWidth: 250,
     align: 'center',
     format: (value) => value.toLocaleString('en-US')
   },
@@ -82,115 +71,7 @@ const columns = [
     format: (value) => value.toLocaleString('en-US')
   }
 ];
-const trips = [
-  {
-    route_no: 1,
-    trip: 'T1',
-    time: '07:15-09:57',
-    bus_no: 'busno1',
-    driver_name: 'xyz',
-    conductor_name: 'abc',
-    No_of_booking: 56
-  },
-  {
-    route_no: 1,
-    trip: 'T2',
-    time: '10:45-13:37',
-    bus_no: 'busno2',
-    driver_name: 'xyz',
-    conductor_name: 'abc',
-    No_of_booking: 57
-  },
-  {
-    route_no: 1,
-    trip: 'T3',
-    time: '14:25-16:47',
-    bus_no: 'busno3',
-    driver_name: 'xyz',
-    conductor_name: 'abc',
-    No_of_booking: 58
-  }
-];
-const allStop = [
-  {
-    stopName: 'Abc Mall',
-    adhoc: 5,
-    drop: 10,
-    pickup: 8
-  },
-  {
-    stopName: 'Abc Mall',
-    adhoc: 5,
-    drop: 10,
-    pickup: 8
-  },
-  {
-    stopName: 'cybercity',
-    adhoc: 4,
-    drop: 9,
-    pickup: 12
-  },
-  {
-    stopName: 'mulsari',
-    adhoc: 10,
-    drop: 2,
-    pickup: 0
-  },
-  {
-    stopName: 'A Dot',
-    adhoc: 6,
-    drop: 35,
-    pickup: 23
-  },
-  {
-    stopName: 'D21',
-    adhoc: 100,
-    drop: 26,
-    pickup: 76
-  },
-  {
-    stopName: 'sector 9',
-    adhoc: 50,
-    drop: 77,
-    pickup: 65
-  },
-  {
-    stopName: 'mulsari',
-    adhoc: 10,
-    drop: 2,
-    pickup: 0
-  },
-  {
-    stopName: 'A Dot',
-    adhoc: 6,
-    drop: 35,
-    pickup: 23
-  },
-  {
-    stopName: 'D21',
-    adhoc: 100,
-    drop: 26,
-    pickup: 76
-  },
-  {
-    stopName: 'mulsari',
-    adhoc: 10,
-    drop: 2,
-    pickup: 0
-  },
-  {
-    stopName: 'A Dot',
-    adhoc: 6,
-    drop: 35,
-    pickup: 23
-  },
-  {
-    stopName: 'D21',
-    adhoc: 100,
-    drop: 26,
-    pickup: 76
-  }
-];
+
 const style = {
   position: 'absolute',
   top: '50%',
@@ -202,11 +83,7 @@ const style = {
 };
 export const PendingTrip = () => {
   const [modalopen, setModalOpen] = useState(false);
-  const handleOpen = () => setModalOpen(true);
-  const handleClose = () => {
-    setModalOpen(false);
-    setShowModal({ ...showModal, allDetail: true, bdBool: false, tsBool: false });
-  };
+
   const [tripStatus, setTripStatus] = useState('');
   const [showModal, setShowModal] = useState({
     allDetail: true,
@@ -215,17 +92,37 @@ export const PendingTrip = () => {
     sdBool: false
   });
   // fetch Data state And filter state
-  const [allTrip] = useState(trips);
+  const [allTrip, setAllTrips] = useState([]);
+  // console.log(allTrip)
   const [filterTripData, setFilterTripData] = useState(allTrip);
   const [routeNoF, setRouteNoF] = useState('');
   const [busNoF, setBusNoF] = useState('');
-
+  const [startDate, setStartDate] = useState(getCurrentDate());
+  const [endDate, setEndDate] = useState(getCurrentDate());
+  const [updateObj, setUpdateObj] = useState({});
+  // Api call
+  useEffect(() => {
+    if (startDate >= getCurrentDate() && endDate >= startDate) {
+      // console.log(startDate, endDate);
+      axios
+        .get(`${BackendUrl}/app/v1/tripManagement/pending/${startDate}/${endDate}`) //'
+        .then((res) => setAllTrips(res.data.result))
+        .catch((err) => {
+          setAllTrips([]);
+          console.log('Api error : ', err);
+        });
+    } else {
+      console.log('else', startDate, endDate);
+      window.alert('Please Select the correct Date,\n End Date >= Start Date');
+    }
+  }, [startDate, endDate]);
+  // filter
   useEffect(() => {
     let res = '';
     if (routeNoF != '' && busNoF != '') {
       res = allTrip.filter((item) => {
         // Check if all fields match the criteria
-        return item.route_no == routeNoF && String(item.bus_no).includes(busNoF);
+        return String(item.basicInfo?.routeNumber).includes(String(routeNoF)) && String(item.basicInfo?.busNumber).includes(busNoF);
       });
       // console.log('routeno, busno and trip : ', res);
       setFilterTripData(res);
@@ -233,7 +130,7 @@ export const PendingTrip = () => {
     } else if (routeNoF != '') {
       res = allTrip.filter((item) => {
         // Check if all fields match the criteria
-        return item.route_no == routeNoF;
+        return String(item.basicInfo?.routeNumber).includes(String(routeNoF));
       });
       // console.log('routeno, busno and trip : ', res);
       setFilterTripData(res);
@@ -241,7 +138,7 @@ export const PendingTrip = () => {
     } else if (busNoF != '') {
       res = allTrip.filter((item) => {
         // Check if all fields match the criteria
-        return String(item.bus_no).includes(busNoF);
+        return String(item.basicInfo?.busNumber).includes(busNoF);
       });
       // console.log('busno : ', res);
       setFilterTripData(res);
@@ -250,11 +147,44 @@ export const PendingTrip = () => {
       setFilterTripData(allTrip);
     }
   }, [allTrip, routeNoF, busNoF]);
+  // modal
+  const handleOpen = (item) => {
+    // console.log(item);
+    setUpdateObj(item);
+    setModalOpen(true);
+  };
+  const handleClose = () => {
+    setModalOpen(false);
+    setShowModal({ ...showModal, allDetail: true, tsBool: false });
+  };
+
   return (
     <>
       <div className="flex flex-col gap-10 max-md:gap-5">
         {/* filter */}
-        <div className="flex gap-2">
+        <div className="grid grid-cols-4 max-md:grid-cols-2 gap-2">
+          <div className="flex flex-col border p-1 rounded-lg w-full">
+            <label htmlFor="StartDate">Start Date</label>
+            <input
+              type="date"
+              id="StartDate"
+              value={startDate}
+              onChange={(e) => setStartDate(e.target.value)}
+              className="bg-transparent outline-none"
+              min={getCurrentDate()}
+            />
+          </div>
+          <div className="flex flex-col border p-1 rounded-lg w-full">
+            <label htmlFor="endDate">End Date</label>
+            <input
+              type="date"
+              id="endDate"
+              value={endDate}
+              onChange={(e) => setEndDate(e.target.value)}
+              className="bg-transparent outline-none"
+              min={getCurrentDate()}
+            />
+          </div>
           <div>
             <FormControl fullWidth>
               <TextField type="number" label="Route No." value={routeNoF} onChange={(e) => setRouteNoF(e.target.value)} />
@@ -266,12 +196,7 @@ export const PendingTrip = () => {
             </FormControl>
           </div>
         </div>
-        {/* card:-total trip  && total route */}
-        {/* <div className="grid grid-cols-3 max-md:grid-cols-1 gap-10 max-md:gap-5">
-          <TripCard name="Total Trip" value={`Trip : ${10}`} total={50} />
-          <TripCard name="Total Route" value={`Route : ${25}`} total={100} />
-          <TripCard name="Total Rte" value={`Rte : ${3}`} total={5} />
-        </div> */}
+
         {/* All trip */}
         <div>
           <div className="my-1">
@@ -294,20 +219,19 @@ export const PendingTrip = () => {
                   </TableHead>
                   <TableBody>
                     {filterTripData.map((item, i) => {
-                      const tripTime = item.time.split('-');
                       return (
                         <TableRow hover key={i}>
-                          <TableCell align="center">{item.route_no}</TableCell>
-                          <TableCell align="center">{item.route_no}</TableCell>
-                          <TableCell align="center">{item.bus_no}</TableCell>
-                          <TableCell align="center">{item.driver_name}</TableCell>
-                          <TableCell align="center">{`${tripTime[0]} - ${tripTime[1]}`}</TableCell>
-                          <TableCell align="center">{item.conductor_name}</TableCell>
-                          <TableCell align="center">{item.No_of_booking}</TableCell>
+                          <TableCell align="center">{item.basicInfo.routeNumber}</TableCell>
+                          <TableCell align="center">{item.basicInfo.routeName}</TableCell>
+                          <TableCell align="center">{item.basicInfo.busNumber}</TableCell>
+                          <TableCell align="center">{item.basicInfo.driverName}</TableCell>
+                          <TableCell align="center">{item.basicInfo.tripTime}</TableCell>
+                          <TableCell align="center">{item.basicInfo.vendorName}</TableCell>
+                          <TableCell align="center">{item.basicInfo.noOfBookings}</TableCell>
                           <TableCell align="center">
-                            <button className="p-2 text-md text-blue-600" onClick={handleOpen}>
+                            <Button className="p-2 text-md text-blue-600" onClick={() => handleOpen(item)}>
                               View
-                            </button>
+                            </Button>
                           </TableCell>
                         </TableRow>
                       );
@@ -351,45 +275,50 @@ export const PendingTrip = () => {
                       <div className=" h-56 bg-cyan-900 text-gray-300 rounded p-3  grid grid-cols-1 gap-0 ">
                         <h1 className="text-white text-xl">Bus details</h1>
                         <span className="bg-white w-full block h-[0.2px] mb-1"></span>
-                        <p>bus no. : bic3ei938</p>
-                        <p>Reg no. : 04-04-2024</p>
-                        <p>Insurance no. : 04-04-2024</p>
-                        <p>fuel type : petrol</p>
-                        <p>capacity : 35</p>
-                        <p>bus model : unknown</p>
-                        <p>Vendor : unknown</p>
+                        <p>bus no. : {updateObj.busDetails?.busNumber}</p>
+                        <p>Reg no. : {updateObj.busDetails?.busRegistrationDate}</p>
+                        <p>isAC. : {updateObj.busDetails?.busIsAc ? `${updateObj.busDetails?.busIsAc ? 'Yes' : 'No'}` : 'not yet'}</p>
+                        <p>fuel type : {updateObj.busDetails?.fuelType}</p>
+                        <p>capacity : {updateObj.busDetails?.busCapacity}</p>
+                        <p>femaleBus : {updateObj.busDetails?.femalBus || 'not yet'}</p>
                       </div>
                       {/* Driver details */}
                       <div className=" bg-cyan-900 text-gray-300 rounded p-2 h-56 grid grid-cols-1 gap-0  ">
                         <h1 className="text-white text-xl">Driver details</h1>
                         <span className="bg-white w-full block h-[0.2px] mb-1"></span>
-                        <p>driver_name. : ram</p>
-                        <p>Primary no. : 04-04-2024</p>
-                        <p>Emergency no. : 04-04-2024</p>
-                        <p>License No.: 364827648533</p>
-                        <p>License Img : view</p>
-                        <p>License Expiry Date : 04-04-2024</p>
+                        <p>driver_name. : {updateObj.driverDetails?.driverName}</p>
+                        <p>Primary no. : {updateObj.driverDetails?.driverContact}</p>
+                        <p>Emergency no. : {updateObj.driverDetails?.driverEmergencyContact || 'not yet'}</p>
+                        <p>License Img : view pending</p>
+                        <p>Address : {updateObj.driverDetails?.driverAddress}</p>
                       </div>
-                      {/* trip details */}
+                      {/* trip details  */}
                       <div className=" bg-cyan-900 text-gray-300 rounded p-2 h-56 grid grid-cols-1 -gap-2 ">
                         <h1 className="text-white text-xl -mb-4">Trip details</h1>
                         <span className="bg-white w-full block h-[0.2px] "></span>
                         <p>Trip status: pending</p>
-                        <p>Start time : 00:00:00</p>
-                        <p>End time : 00:00:00</p>
-                        <p>Trip day: SMTWTFS</p>
+                        <p>Start time : {String(updateObj.tripDetails?.tripStartTime)}</p>
+                        <p>End time : {updateObj.tripDetails?.tripEndTime}</p>
+                        <p>Trip day: {updateObj.tripDetails?.tripRunningDays.map((item) => findDay(item))} </p>
                       </div>
                       {/* Route details */}
                       <div className=" bg-cyan-900 text-gray-300 rounded p-2 h-56 grid grid-cols-1 gap-0  ">
                         <h1 className="text-white text-xl">Route details</h1>
                         <span className="bg-white w-full block h-[0.2px] mb-1"></span>
-                        <p>Route No. : 13</p>
-                        <p>Start point: xyz</p>
-                        <p>End point: abc</p>
-                        <p>Distance : 24.7 km</p>
-                        <p>Fixed rate: 100</p>
-                        <p>Base rate: 100</p>
-                        <p>rate/km: 100</p>
+                        <p>Route No. : {updateObj.routeDetails?.routeNumber}</p>
+                        <p>Start point: {updateObj.routeDetails?.startingPoint}</p>
+                        <p>End point: {updateObj.routeDetails?.endPoint}</p>
+                        <p>Distance : {updateObj.routeDetails?.totalDistance} km</p>
+                        {Boolean(updateObj.routeDetails?.routeFixedRate) == false ? (
+                          <>
+                            <p>Base rate: {updateObj.routeDetails?.routeBasePrice}</p>
+                            <p>Adhoc PRice: {updateObj.routeDetails?.routeBasePriceAdhoc}</p>
+                            <p>rate/km: {updateObj.routeDetails?.perKmRoutePrice}</p>
+                            <p>max fare: {updateObj.routeDetails?.maxRouteFare}</p>
+                          </>
+                        ) : (
+                          <p>fixed price : {updateObj.routeDetails?.routeFixedRatePrice}</p>
+                        )}
                       </div>
                     </div>
                   </div>
@@ -517,27 +446,115 @@ export const PendingTrip = () => {
                   <div className="overflow-y-scroll w-[100%] h-[470px] max-md:h-[640px] px-1 ">
                     <div>
                       <div className="grid grid-cols-1 gap-4 justify-center">
-                        {allStop.map((item, i) => {
-                          return (
-                            <div key={i}>
+                        {updateObj.basicInfo.noOfBookings == 0 ? (
+                          <>
+                            <div>
                               <Accordion>
                                 <AccordionSummary expandIcon={<ExpandMoreIcon />} aria-controls="panel1-content" id="panel1-header">
-                                  <p>{item.stopName}</p>
+                                  <p>{updateObj.routeDetails?.startingPoint}</p>
                                 </AccordionSummary>
                                 <AccordionDetails>
                                   <div className="flex justify-around">
-                                    <p>PickTime : 11:12</p>
-                                    <p>DropTime : 01:25</p>
-                                    <p>Drop : {item.drop}</p>
-                                    <p>Pick : {item.pickup}</p>
-                                    <p>Adhoc : {item.adhoc}</p>
+                                    <p>ETA : {String(updateObj.tripDetails?.tripStartTime)}</p>
+                                    <p>Booking : 0</p>
                                   </div>
                                 </AccordionDetails>
                               </Accordion>
                             </div>
-                          );
-                        })}
-                      </div>{' '}
+                            {updateObj.stopsWithoutBooking?.map((item, i) => {
+                              return (
+                                <div key={i}>
+                                  <Accordion>
+                                    <AccordionSummary expandIcon={<ExpandMoreIcon />} aria-controls="panel1-content" id="panel1-header">
+                                      <p>{item.stopName}</p>
+                                    </AccordionSummary>
+                                    <AccordionDetails>
+                                      <div className="flex justify-around">
+                                        <p>ETA : {addTwoTime(updateObj.tripDetails?.tripStartTime, item.stopEta)}</p>
+                                        <p>Booking : 0</p>
+                                      </div>
+                                    </AccordionDetails>
+                                  </Accordion>
+                                </div>
+                              );
+                            })}
+                            <div>
+                              <Accordion>
+                                <AccordionSummary expandIcon={<ExpandMoreIcon />} aria-controls="panel1-content" id="panel1-header">
+                                  <p>{updateObj.routeDetails?.endPoint}</p>
+                                </AccordionSummary>
+                                <AccordionDetails>
+                                  <div className="flex justify-around">
+                                    <p>ETA : {updateObj.tripDetails?.tripEndTime}</p>
+                                    <p>Booking : 0</p>
+                                    {/* <p><button className='text-blue-500' onClick={()=>setShowHide(i)}>View</button></p> */}
+                                  </div>
+                                </AccordionDetails>
+                              </Accordion>
+                            </div>
+                          </>
+                        ) : (
+                          <>
+                            {updateObj.stopsWithBooking?.map((item, i) => {
+                              return (
+                                <div key={i}>
+                                  <Accordion>
+                                    <AccordionSummary expandIcon={<ExpandMoreIcon />} aria-controls="panel1-content" id="panel1-header">
+                                      <p>{item.stopName}</p>
+                                    </AccordionSummary>
+                                    <AccordionDetails>
+                                      <div className="flex justify-around items-center">
+                                        <p>Reach Time : {item.eta}</p>
+                                        <p>OnBoarding :{item.onBoardingNumber} </p>
+                                        <p>OffBoarding : {item.offBoardingNumber}</p>
+                                      </div>
+
+                                      {(item.onBoardingArr?.length > 0 || item.offBoardingArr?.length > 0) && (
+                                        <div className="grid grid-cols-2">
+                                          <div className="text-white bg-green-500 p-2">
+                                            <p className="font-bold">OnBoarded</p>
+                                            <div>
+                                              <p className="grid grid-cols-2">
+                                                <span>Name</span>
+                                                <span>Seats</span>
+                                              </p>
+                                              {item.onBoardingArr?.map((ele, x) => {
+                                                return (
+                                                  <p key={x} className="grid grid-cols-2">
+                                                    <span>{ele.userName}</span>
+                                                    <span>{ele.totalSeats}</span>
+                                                  </p>
+                                                );
+                                              })}
+                                            </div>
+                                          </div>
+                                          <div className="text-white bg-red-500 p-2">
+                                            <p className="font-bold">OffBoarded</p>
+                                            <div>
+                                              <p className="grid grid-cols-2">
+                                                <span>Name</span>
+                                                <span>Seats</span>
+                                              </p>
+                                              {item.offBoardingArr?.map((ele, x) => {
+                                                return (
+                                                  <p key={x} className="grid grid-cols-2">
+                                                    <span>{ele.userName}</span>
+                                                    <span>{ele.totalSeats}</span>
+                                                  </p>
+                                                );
+                                              })}
+                                            </div>
+                                          </div>
+                                        </div>
+                                      )}
+                                    </AccordionDetails>
+                                  </Accordion>
+                                </div>
+                              );
+                            })}
+                          </>
+                        )}
+                      </div>
                     </div>
                   </div>
                 </div>

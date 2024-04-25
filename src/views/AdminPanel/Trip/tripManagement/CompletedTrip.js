@@ -17,7 +17,6 @@ import {
   //   MenuItem
 } from '@mui/material';
 import { IconX } from '@tabler/icons-react'; // IconArrowDownSquare
-import { TripCard } from './TripCard';
 
 // get current Date
 function getCurrentDate() {
@@ -180,14 +179,8 @@ export const CompletedTrip = () => {
               <FormControl fullWidth>
                 <TextField label="Bus No" value={busNoF} onChange={(e) => setBusNoF(e.target.value)} />{' '}
               </FormControl>
-            </div>{' '}
+            </div>
           </div>
-        </div>{' '}
-        {/* card:-total trip  && total route */}
-        <div className="grid grid-cols-3 max-md:grid-cols-1 gap-10 max-md:gap-5">
-          <TripCard name="Total Trip" value={`Trip : ${10}`} total={50} />
-          <TripCard name="Total Route" value={`Route : ${25}`} total={100} />
-          <TripCard name="Total Rte" value={`Rte : ${3}`} total={5} />
         </div>
         {/* All trip */}
         <div>

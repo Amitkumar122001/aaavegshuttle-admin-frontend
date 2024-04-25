@@ -1,8 +1,8 @@
 import { Link } from 'react-router-dom';
 
 // material-ui
-import { useTheme } from '@mui/material/styles';
-import { Divider, Grid, Stack, Typography, useMediaQuery } from '@mui/material';
+// import { useTheme } from '@mui/material/styles';
+import { Divider, Grid } from '@mui/material';
 
 // project imports
 import AuthWrapper1 from '../AuthWrapper1';
@@ -16,8 +16,8 @@ import AuthFooter from 'ui-component/cards/AuthFooter';
 // ================================|| AUTH3 - LOGIN ||================================ //
 
 const Login = () => {
-  const theme = useTheme();
-  const matchDownSM = useMediaQuery(theme.breakpoints.down('md'));
+  // const theme = useTheme();
+  // const matchDownSM = useMediaQuery(theme.breakpoints.down('md'));
 
   return (
     <AuthWrapper1>
@@ -33,7 +33,7 @@ const Login = () => {
                     </Link>
                   </Grid>
                   <Grid item xs={12}>
-                    <Grid container direction={matchDownSM ? 'column-reverse' : 'row'} alignItems="center" justifyContent="center">
+                    {/* <Grid container direction={matchDownSM ? 'column-reverse' : 'row'} alignItems="center" justifyContent="center">
                       <Grid item>
                         <Stack alignItems="center" justifyContent="center" spacing={1}>
                           <Typography color={theme.palette.secondary.main} gutterBottom variant={matchDownSM ? 'h3' : 'h2'}>
@@ -44,7 +44,7 @@ const Login = () => {
                           </Typography>
                         </Stack>
                       </Grid>
-                    </Grid>
+                    </Grid> */}
                   </Grid>{' '}
                   <Grid item xs={12}>
                     <Divider />

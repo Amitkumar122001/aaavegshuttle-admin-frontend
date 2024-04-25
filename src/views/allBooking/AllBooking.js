@@ -18,15 +18,8 @@ import {
 import axios from 'axios';
 import { BackendUrl } from 'utils/config';
 import toast, { Toaster } from 'react-hot-toast';
+import { getCurrentDate } from 'utils/TimeDate';
 
-function getCurrentDate() {
-  let today = new Date();
-  let day = String(today.getDate()).padStart(2, '0');
-  let month = String(today.getMonth() + 1).padStart(2, '0');
-  let year = today.getFullYear();
-  let currDate = `${year}-${month}-${day}`;
-  return currDate;
-}
 const style = {
   position: 'absolute',
   top: '50%',
@@ -116,7 +109,7 @@ export const AllBooking = () => {
                   className="border border-gray-300 rounded "
                 />
               </FormControl>
-              <div className="flex gap-4 w-full items-center justify-between">
+              <div className="flex gap-4 w-full items-center ">
                 <FormControl fullWidth>
                   <InputLabel id="limit">Page Limit</InputLabel>
                   <Select
@@ -133,7 +126,7 @@ export const AllBooking = () => {
                     <MenuItem value={30}>30</MenuItem>
                   </Select>
                 </FormControl>
-                <p className=" text-lg">Total:{totalBooking}</p>
+                <p className=" text-lg">Total:{totalBooking || 'not yet'} </p>
               </div>
             </div>
           </div>

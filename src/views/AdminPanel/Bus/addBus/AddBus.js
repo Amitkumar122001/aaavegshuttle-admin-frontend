@@ -286,7 +286,6 @@ export const AddBus = () => {
             <div>
               <div className="grid grid-cols-3 max-lg:grid-cols-2 max-lg:gap-5 max-md:grid-cols-1 max-sm:gap-3 gap-6">
                 {/* model */}
-
                 <div className="w-full">
                   <FormControl fullWidth>
                     <TextField
