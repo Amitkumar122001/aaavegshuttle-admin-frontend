@@ -93,13 +93,18 @@ export const PendingTrip = () => {
   });
   // fetch Data state And filter state
   const [allTrip, setAllTrips] = useState([]);
-  // console.log(allTrip)
+  // console.log(allTrip);
   const [filterTripData, setFilterTripData] = useState(allTrip);
   const [routeNoF, setRouteNoF] = useState('');
   const [busNoF, setBusNoF] = useState('');
   const [startDate, setStartDate] = useState(getCurrentDate());
   const [endDate, setEndDate] = useState(getCurrentDate());
   const [updateObj, setUpdateObj] = useState({});
+  // Assign ReAssign Case
+  const [unAssignedBus, setUnAssignedBus] = useState([]);
+  const [UnAssignDriverName, setUnAssignDriverName] = useState('');
+  const [newBusId, setNewBusId] = useState('');
+
   // Api call
   useEffect(() => {
     if (startDate >= getCurrentDate() && endDate >= startDate) {
@@ -147,6 +152,9 @@ export const PendingTrip = () => {
       setFilterTripData(allTrip);
     }
   }, [allTrip, routeNoF, busNoF]);
+
+  // Assign Reassign Bus On A Particular Trip
+
   // modal
   const handleOpen = (item) => {
     // console.log(item);
@@ -157,7 +165,51 @@ export const PendingTrip = () => {
     setModalOpen(false);
     setShowModal({ ...showModal, allDetail: true, tsBool: false });
   };
-
+  // Change The Status Of Particular Trip
+  const ChangeTripStatusOnPending = () => {
+    if (tripStatus != '' && updateObj.tripMapId != '') {
+      console.log('tripStatus And TripMapId', tripStatus, updateObj.tripMapId);
+      axios
+        .post(`${BackendUrl}/app/v1/tripstatus/status${tripStatus}`, { tripMapId: updateObj.tripMapId })
+        .then((res) => {
+          if (res.data.created) {
+            window.alert('Trip Status Changed');
+          }
+          console.log(res.data);
+        })
+        .catch((err) => console.log('Api Error', err));
+    }
+  };
+  // get All UnAssign Bus And Driver
+  const GetAllUnAssignedBus = () => {
+    setShowModal({ ...showModal, allDetail: false, bdBool: true, tsBool: false, sdBool: false });
+    if (updateObj.tripDetails.tripId && updateObj.tripDate) {
+      axios
+        .post(`${BackendUrl}/app/v1/tripManagement/getAvailableBusesForReassign`, {
+          TripId: updateObj.tripDetails.tripId,
+          TripDate: updateObj.tripDate
+        })
+        .then((res) => setUnAssignedBus(res.data.result))
+        .catch((err) => console.log('Api Error : ', err));
+    }
+  };
+  // Change Bus Driver On A particular trip Route
+  const ChangeBusDriverOnParticularTrip = () => {
+    if (newBusId != '' && updateObj.tripDetails.tripId && updateObj.tripDate) {
+      axios
+        .patch(`${BackendUrl}/app/v1/tripManagement/updateBusInPending`, {
+          tripId: updateObj.tripDetails.tripId,
+          tripDate: updateObj.tripDate,
+          newBus: newBusId
+        })
+        .then((res) => {
+          if (res.data.updated) {
+            window.alert('Bus And Driver Changes on Particular Trip Route');
+          }
+        })
+        .catch((err) => console.log('Api Error : ', err));
+    }
+  };
   return (
     <>
       <div className="flex flex-col gap-10 max-md:gap-5">
@@ -253,8 +305,8 @@ export const PendingTrip = () => {
         <Box
           sx={style}
           className={`rounded bg-gray-200 max-lg:w-[70%] max-md:w-[80%] ${showModal.allDetail && 'h-[90%] w-[60%]'} 
-          ${showModal.bdBool && 'h-[70%] max-md:h-[50%] w-[30%] rounded-xl'} ${
-            showModal.tsBool && 'h-[40%] max-md:h-[30%] sm:w-[25%] rounded-xl flex items-center justify-center'
+          ${showModal.bdBool && 'h-[70%] max-md:h-[70%] w-[50%] rounded-xl'} ${
+            showModal.tsBool && 'h-[70%] w-[70%] max-md:h-[70%] sm:w-[50%] rounded-xl flex items-center justify-center'
           } ${showModal.sdBool && 'h-[90%] w-[60%] max-lg:w-[70%] max-md:w-[80%]'}
           } overflow-hidden`}
         >
@@ -323,11 +375,7 @@ export const PendingTrip = () => {
                     </div>
                   </div>
                   <div className="flex gap-4 justify-between mt-2">
-                    <Button
-                      variant="contained"
-                      className="bg-blue-500"
-                      onClick={() => setShowModal({ ...showModal, allDetail: false, bdBool: true, tsBool: false, sdBool: false })}
-                    >
+                    <Button variant="contained" className="bg-blue-500" onClick={GetAllUnAssignedBus}>
                       ReAssign
                     </Button>
                     <Button
@@ -363,23 +411,42 @@ export const PendingTrip = () => {
                     </div>
 
                     <div className="flex flex-col gap-5">
+                      <div className="w-56">
+                        <p className="text-md">
+                          Route Name : <span className="font-semibold">{updateObj.basicInfo.routeName}</span>
+                        </p>
+                      </div>
+                      <div className="w-56">
+                        <p>
+                          Trip Time : <span className="font-semibold">{updateObj.basicInfo.tripTime}</span>
+                        </p>
+                      </div>
                       <div>
                         <FormControl fullWidth>
-                          <TextField label="Trip Id." disabled={true} className="font-semibold text-black" />
+                          <InputLabel id="BusNo">Bus No.</InputLabel>
+                          <Select labelId="BusNo" label="Bus No." value={newBusId} onChange={(e) => setNewBusId(e.target.value)}>
+                            {unAssignedBus?.map((item, i) => {
+                              return (
+                                <MenuItem key={i} value={item.bus_id} onClick={() => setUnAssignDriverName(item.driver_name)}>
+                                  {item.bus_number}
+                                </MenuItem>
+                              );
+                            })}
+                          </Select>
                         </FormControl>
                       </div>
                       <div>
                         <FormControl fullWidth>
-                          <TextField label="Bus No." />
+                          <TextField label="Driver Name." disabled={true} value={UnAssignDriverName} />
                         </FormControl>
                       </div>
                       <div>
-                        <FormControl fullWidth>
-                          <TextField label="Driver Name." />
-                        </FormControl>
-                      </div>
-                      <div>
-                        <Button variant="contained" fullWidth className="bg-blue-600 p-3 rounded-xl">
+                        <Button
+                          variant="contained"
+                          fullWidth
+                          className="bg-blue-600 p-3 rounded-xl"
+                          onClick={ChangeBusDriverOnParticularTrip}
+                        >
                           Submit
                         </Button>
                       </div>
@@ -392,7 +459,7 @@ export const PendingTrip = () => {
               <>
                 <div className="flex items-center justify-center ">
                   <div className="flex flex-col gap-5">
-                    <div className="flex justify-between gap-1 text-xl font-semibold">
+                    <div className="flex  gap-1 text-xl font-semibold">
                       {' '}
                       <button
                         onClick={() => setShowModal({ ...showModal, allDetail: true, bdBool: false, tsBool: false, sdBool: false })}
@@ -403,6 +470,16 @@ export const PendingTrip = () => {
                       <p className="">Change Trip Status </p>
                     </div>
                     <div className="flex flex-col gap-5">
+                      <div className="w-56">
+                        <p className="text-md">
+                          Route Name : <span className="font-semibold">{updateObj.basicInfo.routeName}</span>
+                        </p>
+                      </div>
+                      <div className="w-56">
+                        <p>
+                          Trip Time : <span className="font-semibold">{updateObj.basicInfo.tripTime}</span>
+                        </p>
+                      </div>
                       <div>
                         <FormControl fullWidth>
                           <InputLabel id="tripStatus">Trip Status</InputLabel>
@@ -415,14 +492,16 @@ export const PendingTrip = () => {
                             <MenuItem value={''} disabled>
                               Pending
                             </MenuItem>
-                            <MenuItem value={2}>Ongoing</MenuItem>
-                            <MenuItem value={3}>Completed</MenuItem>
-                            <MenuItem value={4}>BreakDown</MenuItem>
+                            <MenuItem value={'Ongoing'}>Ongoing</MenuItem>
+                            <MenuItem value={'Completed'}>Completed</MenuItem>
+                            <MenuItem value={''} disabled>
+                              BreakDown
+                            </MenuItem>
                           </Select>
                         </FormControl>
                       </div>
                       <div>
-                        <Button variant="contained" fullWidth className="bg-blue-600 p-3 rounded-xl">
+                        <Button variant="contained" fullWidth className="bg-blue-600 p-3 rounded-xl" onClick={ChangeTripStatusOnPending}>
                           Submit
                         </Button>
                       </div>

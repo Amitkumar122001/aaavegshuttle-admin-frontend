@@ -18,9 +18,9 @@ import {
 } from '@mui/material';
 import { IconX, IconChevronLeft } from '@tabler/icons-react'; // IconArrowDownSquare
 import { getCurrentDate, findDay, addTwoTime, diffTwoTime, compareTwoTime } from 'utils/TimeDate';
-import { DataPacket } from 'utils/Data';
 import axios from 'axios';
 import { MapTracking } from './MapTracking';
+import { BackendUrl } from 'utils/config';
 const columns = [
   { id: 'route no', label: 'Route No.', align: 'center', minWidth: 100 },
   { id: 'route name', label: 'Route Name.', align: 'center', minWidth: 250 },
@@ -92,8 +92,7 @@ const style = {
   p: 2
 };
 export const OngoingTrip = () => {
-  const [allTrip, setAllTrips] = useState(DataPacket);
-
+  const [allTrip, setAllTrips] = useState([]);
   const [filterTripData, setFilterTripData] = useState(allTrip);
   const [modalopen, setModalOpen] = useState(false);
   const [tripStatus, setTripStatus] = useState('');
@@ -112,7 +111,7 @@ export const OngoingTrip = () => {
   useEffect(() => {
     if (startDate >= getCurrentDate() && endDate >= startDate) {
       axios
-        .get(`http://192.168.1.167:3000/app/v1/tripManagement/ongoing/2024-04-23/2024-04-23`)
+        .get(`${BackendUrl}/app/v1/tripManagement/ongoing/${startDate}/${endDate}`)
         .then((res) => setAllTrips(res.data.result))
         .catch((err) => {
           console.log('Api error : ', err);
@@ -163,6 +162,24 @@ export const OngoingTrip = () => {
     setModalOpen(false);
     setShowModal({ ...showModal, allDetail: true, tsBool: false, sdBool: false, mapTracking: false });
   };
+  const handleLiveTracking = () => {
+    setShowModal({ ...showModal, allDetail: false, tsBool: false, sdBool: false, mapTracking: true });
+  };
+  // Change The Status Of Particular Trip
+  const ChangeTripStatusOnPending = () => {
+    if (tripStatus != '' && updateObj.tripMapId != '') {
+      console.log('tripStatus And TripMapId', tripStatus, updateObj.tripMapId);
+      axios
+        .post(`${BackendUrl}/app/v/tripstatus/status${tripStatus}`, { tripMapId: updateObj.tripMapId }) // v1
+        .then((res) => {
+          if (res.data.created) {
+            window.alert('Trip Status Changed');
+          }
+          console.log(res.data);
+        })
+        .catch((err) => console.log('Api Error', err));
+    }
+  };
 
   return (
     <>
@@ -193,12 +210,20 @@ export const OngoingTrip = () => {
           </div>
           <div>
             <FormControl fullWidth>
-              <TextField label="Route No." type="number" min="0" value={routeNoF} onChange={(e) => setRouteNoF(e.target.value)} />
+              <TextField
+                label="Route No."
+                type="number"
+                value={routeNoF}
+                onChange={(e) => setRouteNoF(e.target.value)}
+                inputProps={{
+                  min: 0
+                }}
+              />
             </FormControl>
           </div>
           <div>
             <FormControl fullWidth>
-              <TextField label="Bus No" value={busNoF} onChange={(e) => setBusNoF(e.target.value)} />
+              <TextField label="Bus No" type="text" value={busNoF} onChange={(e) => setBusNoF(e.target.value)} />
             </FormControl>
           </div>
         </div>
@@ -261,12 +286,12 @@ export const OngoingTrip = () => {
         <Box
           sx={style}
           className={`rounded  ${showModal.allDetail && 'h-[90%] w-[60%]'} 
-         ${showModal.tsBool && 'h-[40%] max-md:h-[30%] sm:w-[25%] rounded-xl flex items-center justify-center'} ${
+         ${showModal.tsBool && 'h-[60%] max-md:h-[70%] sm:w-[50%] rounded-xl flex items-center justify-center'} ${
             showModal.sdBool && 'h-[90%] w-[60%] max-lg:w-[70%] max-md:w-[80%]'
           } ${showModal.mapTracking && 'w-[85%] h-[90%] p-0 '}
           } overflow-hidden`}
         >
-          <div className="h-[100%] w-[100%] ">
+          <div className="h-[100%] w-[100%]">
             {showModal.allDetail && (
               <>
                 <div className="">
@@ -338,11 +363,7 @@ export const OngoingTrip = () => {
                     >
                       trip Status
                     </Button>
-                    <Button
-                      variant="contained"
-                      className="bg-blue-700 text-sm "
-                      onClick={() => setShowModal({ ...showModal, allDetail: false, tsBool: false, sdBool: false, mapTracking: true })}
-                    >
+                    <Button variant="contained" className="bg-blue-700 text-sm" onClick={() => handleLiveTracking()}>
                       Live Track
                     </Button>
                     <Button
@@ -370,6 +391,16 @@ export const OngoingTrip = () => {
                       <p className="">Change Trip Status </p>
                     </div>
                     <div className="flex flex-col gap-5">
+                      <div className="w-56">
+                        <p className="text-md">
+                          Route Name : <span className="font-semibold">{updateObj.basicInfo.routeName}</span>
+                        </p>
+                      </div>
+                      <div className="w-56">
+                        <p>
+                          Trip Time : <span className="font-semibold">{updateObj.basicInfo.tripTime}</span>
+                        </p>
+                      </div>
                       <div>
                         <FormControl fullWidth>
                           <InputLabel id="tripStatus">Trip Status</InputLabel>
@@ -379,16 +410,15 @@ export const OngoingTrip = () => {
                             value={tripStatus}
                             onChange={(e) => setTripStatus(e.target.value)}
                           >
-                            <MenuItem value={2} disabled>
-                              Ongoing
+                            <MenuItem value={'Completed'}>Completed</MenuItem>
+                            <MenuItem value={''} disabled>
+                              BreakDown
                             </MenuItem>
-                            <MenuItem value={3}>Completed</MenuItem>
-                            <MenuItem value={4}>BreakDown</MenuItem>
                           </Select>
                         </FormControl>
                       </div>
                       <div>
-                        <Button variant="contained" fullWidth className="bg-blue-600 p-3 rounded-xl">
+                        <Button variant="contained" fullWidth className="bg-blue-600 p-3 rounded-xl" onClick={ChangeTripStatusOnPending}>
                           Submit
                         </Button>
                       </div>
@@ -625,7 +655,14 @@ export const OngoingTrip = () => {
                 </div>
               </>
             )}
-            {showModal.mapTracking && <MapTracking />}
+            {showModal.mapTracking && (
+              <MapTracking
+                busId={updateObj.busDetails.busId}
+                tripId={updateObj.tripDetails.tripId}
+                tripDate={updateObj.tripDate}
+                routeId={updateObj.routeDetails.routeId}
+              />
+            )}
           </div>
         </Box>
       </Modal>
