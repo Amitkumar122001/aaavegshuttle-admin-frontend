@@ -184,7 +184,7 @@ const mapOptions = {
       elementType: 'labels.icon',
       stylers: [
         {
-          saturation: -45
+          saturation: -25
         },
         {
           lightness: 10
@@ -308,19 +308,8 @@ const mapOptions = {
   ]
 };
 
-// const center = {
-//   lat: routeCoordinates[0].lat,
-//   lng: routeCoordinates[0].lng
-// };
-// http://localhost:3000/app/v1/tripstatus/userTrack
-// {
-//   "busId":1,
-//   "routeId":2,
-//   "tripId":7,
-//   "tripDate":"2024-04-25"
-// }
-
 // const StopMarker = ({ position, stopName }) => {
+//   console.log(position);
 //   return (
 //     <div
 //       style={{
@@ -339,30 +328,31 @@ const mapOptions = {
 // };
 
 export const MapTracking = ({ busId, tripId, tripDate, routeId }) => {
-  console.log(busId, tripId, tripDate, routeId);
-
   const [routeCoordinates, setRouteCoordinates] = useState([]);
   const [center, setCenter] = useState({});
   const [map, setMap] = useState(null);
   const [vehicleCoordinates, setVehicleCoordinates] = useState({});
   const [directionsService, setDirectionsService] = useState(null);
   const [directionsRenderer, setDirectionsRenderer] = useState(null);
+  const [busInfo, setBusInfo] = useState({});
+  const [StopInfo, setStopInfo] = useState([]);
   const { isLoaded, loadError } = useLoadScript({
-    // googleMapsApiKey: 'AIzaSyAXVR7rD8GXKZ2HBhLn8qOQ2Jj_-mPfWSo',
+    googleMapsApiKey: 'AIzaSyAXVR7rD8GXKZ2HBhLn8qOQ2Jj_-mPfWSo',
     libraries
   });
 
   const fetchCoordinatesFromAPI = async () => {
     try {
       const response = await axios.post(`${BackendUrl}/app/v1/tripstatus/userTrack`, {
-        busId: 1,
-        routeId: 2,
-        tripId: 7,
-        tripDate: '2024-04-29'
+        busId: busId,
+        routeId: routeId,
+        tripId: tripId,
+        tripDate: tripDate
       });
       setCenter({ lat: parseFloat(response.data.stopsData.stops[0].stopLat), lng: parseFloat(response.data.stopsData.stops[0].stopLong) });
-      // console.log('bus tracking');
-      console.log(response.data);
+      // console.log(response.data.stopsData.stops);
+      setStopInfo(response.data.stopsData.stops);
+      setBusInfo(response.data.busTrackingData);
       setVehicleCoordinates({
         lat: parseFloat(response.data.busTrackingData.latitude),
         lng: parseFloat(response.data.busTrackingData.longitude)
@@ -397,6 +387,12 @@ export const MapTracking = ({ busId, tripId, tripDate, routeId }) => {
     return () => clearTimeout(timeout);
   }, [isLoaded]);
 
+  // Api call on every 10s
+  useEffect(() => {
+    setInterval(() => {
+      fetchCoordinatesFromAPI();
+    }, 10000);
+  }, []);
   useEffect(() => {
     if (map && directionsService && directionsRenderer) {
       const waypoints = routeCoordinates.slice(1, -1).map((coord) => ({
@@ -443,9 +439,28 @@ export const MapTracking = ({ busId, tripId, tripDate, routeId }) => {
   }
 
   return (
-    <div className="flex h-full w-full">
+    <div className="flex h-[100%] w-full max-md:flex-col overflow-y-scroll">
       {/* Map */}
-      <div className="w-3/4 ">
+      <div className="w-3/5 h-[100%] relative max-md:w-full max-md:h-96">
+        <div className="absolute top-5 left-1/2 -translate-x-1/2 z-50 flex ">
+          <div className="flex items-center justify-center bg-white p-2 rounded">
+            <p className="flex  items-center  w-32 ">
+              <span className="h-3 w-3 block bg-green-500"></span> Start Point
+            </p>
+            <p className="flex items-center  w-32 ">
+              <span className="h-3 w-3 block bg-red-500"></span> End Point
+            </p>
+            <p className="flex  items-center  w-32 ">
+              <span className="h-3 w-3 block bg-blue-500"></span> Stops point
+            </p>
+            <p className="flex  items-center  w-32 ">
+              <span className="h-3 w-3 block bg-purple-500"></span> Reached
+            </p>
+            <p className="flex  items-center  w-32 ">
+              <span className="h-3 w-3 block bg-yellow-500"></span> Unreached
+            </p>
+          </div>
+        </div>
         {directionsService && directionsRenderer ? (
           <GoogleMap
             mapContainerStyle={mapContainerStyle}
@@ -461,22 +476,30 @@ export const MapTracking = ({ busId, tripId, tripDate, routeId }) => {
           >
             {/* Render markers for each coordinate */}
             {routeCoordinates.map((coord, index, arr) => (
-              <>
-                <Marker
-                  key={index}
-                  position={coord}
-                  icon={{
-                    url:
-                      index === 0
-                        ? 'http://maps.google.com/mapfiles/ms/icons/green-dot.png'
-                        : index === arr.length - 1
-                        ? 'http://maps.google.com/mapfiles/ms/icons/red-dot.png'
-                        : 'http://maps.google.com/mapfiles/ms/micons/blue-dot.png'
-                  }}
-                  title={index === 0 ? 'Start Point' : index === arr.length - 1 ? 'End Point' : `Stop ${coord.stopName}`}
-                />
+              <React.Fragment key={index}>
+                <div className="w-fit h-20 bg-red-800">
+                  <Marker
+                    key={index}
+                    position={coord}
+                    icon={{
+                      url:
+                        index === 0
+                          ? 'http://maps.google.com/mapfiles/ms/icons/green-dot.png'
+                          : index === arr.length - 1
+                          ? 'http://maps.google.com/mapfiles/ms/icons/red-dot.png'
+                          : StopInfo[index].stopReachTime == 1
+                          ? 'http://maps.google.com/mapfiles/ms/micons/purple-dot.png'
+                          : StopInfo[index].stopReachTime == 0
+                          ? 'http://maps.google.com/mapfiles/ms/micons/yellow-dot.png'
+                          : 'http://maps.google.com/mapfiles/ms/micons/purple-dot.png'
+                    }}
+                    title={index === 0 ? 'Start Point' : index === arr.length - 1 ? 'End Point' : `Stop ${coord.stopName}`}
+                  />
+                  <div className="w-2 h-2 bg-red-400">sdfwsfxfcdsvfdgvsadasgvf</div>
+                </div>
+
                 {/* <StopMarker position={map.getProjection().fromLatLngToPoint(coord)} stopName={coord.stopName} /> */}
-              </>
+              </React.Fragment>
             ))}
 
             {/* Render vehicle marker - The vehicle lat lng will be dynamic and will come by a continuous api call  */}
@@ -488,7 +511,34 @@ export const MapTracking = ({ busId, tripId, tripDate, routeId }) => {
         )}
       </div>
       {/* Details */}
-      <div className="w-1/4 h-full bg-green-500">evkusgc</div>
+      <div className="w-2/5 h-full max-md:w-[100%] max-md:h-full flex flex-col p-2  gap-2">
+        <div>
+          <h1 className="text-xl font-semibold">Bus Details</h1>
+          <div>
+            <p>
+              Bus Name : <span className="font-semibold text-md">{busInfo.name || 'Not Yet'}</span>
+            </p>
+            <p>
+              Speed : <span className="font-semibold text-md">{Math.floor(busInfo.speed).toFixed(2) || 'Not Yet'} Km/hr</span>
+            </p>
+            <p>
+              BatteryLevel : <span className="font-semibold text-md">{busInfo.batteryLevel || 'Not Yet'} %</span>
+            </p>
+          </div>
+        </div>
+        {/* Stop Details */}
+        <div className="overflow-y-scroll grid grid-cols-1 gap-2">
+          <h1 className="text-xl font-semibold">Stops Detail</h1>
+          {StopInfo.map((item, i) => {
+            return (
+              <p key={i} className={`${item.stopStatus == 1 ? 'bg-green-500' : 'bg-yellow-500'} p-2`}>
+                {item.stopName} {item.stopStatus == 0 ? <span>ETA : {item.eta}</span> : <span>ReachTime : {item.stopReachTime}</span>}
+              </p>
+            );
+          })}
+        </div>
+      </div>
     </div>
   );
 };
+//

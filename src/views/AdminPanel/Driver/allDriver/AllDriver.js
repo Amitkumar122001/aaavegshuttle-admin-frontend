@@ -11,7 +11,8 @@ import {
   Box,
   TextField,
   FormControl,
-  Button
+  Button,
+  Pagination,Stack
 } from '@mui/material';
 import { IconX } from '@tabler/icons-react';
 import FilterListIcon from '@mui/icons-material/FilterList';
@@ -235,7 +236,7 @@ export const AllDriver = () => {
   };
   // for pagination
   const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 6;
+  const itemsPerPage = 10;
   // const [itemsPerPage,setItemPerPAge]=useState(5);
   const totalPages = Math.ceil(filterData?.length / itemsPerPage);
 
@@ -244,20 +245,23 @@ export const AllDriver = () => {
     const endIndex = startIndex + itemsPerPage;
     return filterData?.slice(startIndex, endIndex);
   };
-  const handlePrev = () => {
-    if (currentPage <= 1) {
-      setCurrentPage(totalPages);
-    } else {
-      setCurrentPage((page) => page - 1);
-    }
+  const handleChange = (event, value) => {
+    setCurrentPage(value);
   };
-  const handleNext = () => {
-    if (currentPage >= totalPages) {
-      setCurrentPage(1);
-    } else {
-      setCurrentPage((page) => page + 1);
-    }
-  };
+  // const handlePrev = () => {
+  //   if (currentPage <= 1) {
+  //     setCurrentPage(totalPages);
+  //   } else {
+  //     setCurrentPage((page) => page - 1);
+  //   }
+  // };
+  // const handleNext = () => {
+  //   if (currentPage >= totalPages) {
+  //     setCurrentPage(1);
+  //   } else {
+  //     setCurrentPage((page) => page + 1);
+  //   }
+  // };
 
   // S3BUCKET
   const handleDocumentPhoto = async (event) => {
@@ -355,31 +359,13 @@ export const AllDriver = () => {
                 </Table>
               </TableContainer>
             </Paper>
-            {totalPages > 0 && (
-              <div className="mt-2">
-                <div className="flex justify-center gap-4">
-                  <button className="font-bold bg-blue-600 px-3 text-white rounded" onClick={() => handlePrev()}>
-                    {'<<'}
-                  </button>
+            <div className='flex justify-center'>
+              <Stack spacing={2}>
+                <Pagination count={totalPages} page={currentPage} onChange={handleChange} />
+              </Stack>{' '}
+            </div>
+           
 
-                  {Array.from({ length: totalPages }, (_, i) => i + 1).map((pageNumber) => (
-                    <button
-                      key={pageNumber}
-                      onClick={() => setCurrentPage(pageNumber)}
-                      className={`flex justify-center items-center bg-blue-500 px-2 py-1 rounded-full ${
-                        currentPage == pageNumber ? 'text-white bg-red-500' : 'text-black'
-                      }`}
-                    >
-                      {pageNumber}
-                    </button>
-                  ))}
-
-                  <button className="font-bold bg-blue-600 px-3 text-white rounded" onClick={() => handleNext()}>
-                    {'>>'}
-                  </button>
-                </div>
-              </div>
-            )}
           </div>
         </div>
       </div>

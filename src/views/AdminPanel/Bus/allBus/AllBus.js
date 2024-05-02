@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import FilterListIcon from '@mui/icons-material/FilterList';
-import Box from '@mui/material/Box';
-import Modal from '@mui/material/Modal';
+import { Box, Pagination, Stack, Modal } from '@mui/material';
 import { IconX } from '@tabler/icons-react';
 import LoaderCircular from 'ui-component/LoaderCircular';
 import { BackendUrl } from 'utils/config';
@@ -97,7 +96,6 @@ export const AllBus = () => {
   const [value, setValue] = useState('');
   const [searchBool, setSearchBool] = useState(false);
   const [updateObj, setUpdateObj] = useState({});
-
   const [filterData, setFilterData] = useState([]);
   const [updateOpen, setUpdateOpen] = useState(false);
   // for refresh the page
@@ -338,19 +336,8 @@ export const AllBus = () => {
     const endIndex = startIndex + itemsPerPage;
     return filterData.slice(startIndex, endIndex);
   };
-  const handlePrev = () => {
-    if (currentPage <= 1) {
-      setCurrentPage(totalPages);
-    } else {
-      setCurrentPage((page) => page - 1);
-    }
-  };
-  const handleNext = () => {
-    if (currentPage >= totalPages) {
-      setCurrentPage(1);
-    } else {
-      setCurrentPage((page) => page + 1);
-    }
+  const handleChange = (event, value) => {
+    setCurrentPage(value);
   };
   const style = {
     position: 'absolute',
@@ -451,31 +438,11 @@ export const AllBus = () => {
                   </Table>
                 </TableContainer>
               </Paper>
-              {totalPages > 0 && (
-                <div className="mt-2">
-                  <div className="flex justify-center gap-4">
-                    <button className="font-bold bg-blue-600 px-3 text-white rounded" onClick={() => handlePrev()}>
-                      {'<<'}
-                    </button>
-
-                    {Array.from({ length: totalPages }, (_, i) => i + 1).map((pageNumber) => (
-                      <button
-                        key={pageNumber}
-                        onClick={() => setCurrentPage(pageNumber)}
-                        className={`flex justify-center items-center bg-blue-500 px-2 py-1 rounded-full ${
-                          currentPage == pageNumber ? 'text-white bg-red-500' : 'text-black'
-                        }`}
-                      >
-                        {pageNumber}
-                      </button>
-                    ))}
-
-                    <button className="font-bold bg-blue-600 px-3 text-white rounded" onClick={() => handleNext()}>
-                      {'>>'}
-                    </button>
-                  </div>
-                </div>
-              )}
+              <div className="flex  justify-center">
+                <Stack spacing={2}>
+                  <Pagination count={totalPages} page={currentPage} onChange={handleChange} />
+                </Stack>{' '}
+              </div>
             </div>
           </div>
         </div>

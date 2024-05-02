@@ -10,16 +10,16 @@ import {
   Modal,
   Box,
   TextField,
-  //   Select,
-  //   Button,
-  FormControl
-  //   InputLabel,
-  //   MenuItem
+  FormControl,
+  Pagination,
+  Stack
 } from '@mui/material';
-import { IconX } from '@tabler/icons-react'; // IconArrowDownSquare
-// import axios from 'axios';
-import { DataPacket } from 'utils/Data';
+
+import { IconX } from '@tabler/icons-react';
+import axios from 'axios';
 import { findDay } from 'utils/TimeDate';
+import { DataPacket } from 'utils/Data';
+
 // get current Date
 function getCurrentDate() {
   let today = new Date();
@@ -31,7 +31,7 @@ function getCurrentDate() {
 }
 
 const columns = [
-  { id: 'route no', label: 'Route No.', align: 'center', minWidth: 80 },
+  { id: 'route no', label: 'Route No.', align: 'center', minWidth: 120 },
   { id: 'route name', label: 'Route Name.', align: 'center', minWidth: 300 },
   {
     id: 'bus',
@@ -93,7 +93,7 @@ const style = {
   boxShadow: 24,
   p: 2
 };
-export const CompletedTrip = () => {
+export const CompletedTrip = ({ itemsPerPage }) => {
   // fetch Data state And filter state
   const [allTrip, setAllTrips] = useState([...DataPacket]);
   const [filterTripData, setFilterTripData] = useState([]);
@@ -109,20 +109,23 @@ export const CompletedTrip = () => {
     setModalOpen(true);
   };
   const handleClose = () => setModalOpen(false);
+
+  // Api call
   useEffect(() => {
     if (endDate <= getCurrentDate() && startDate <= endDate) {
-      // axios
-      //   .get(`http://192.168.1.167:3000/app/v1/tripManagement/completed/${startDate}/${endDate}`)
-      //   .then((res) => setAllTrips(res.data.result))
-      //   .catch((err) => {
-      //     console.log('Api error : ', err);
-      //   });
-      setAllTrips(DataPacket);
+      axios
+        .get(`http://192.168.1.167:3000/app/v1/tripManagement/completed/${startDate}/${endDate}`)
+        .then((res) => setAllTrips(res.data.result))
+        .catch((err) => {
+          console.log('Api error : ', err);
+        });
+      // setAllTrips(DataPacket);
     } else {
       window.alert('Please Select the correct Date,\n End Date >= Start Date');
     }
   }, [startDate, endDate]);
 
+  // filter
   useEffect(() => {
     let res = '';
     if (routeNoF != '' && busNoF != '') {
@@ -153,6 +156,21 @@ export const CompletedTrip = () => {
       setFilterTripData(allTrip);
     }
   }, [allTrip, routeNoF, busNoF]);
+  // pagination
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPages = itemsPerPage;
+  const totalPages = Math.ceil(filterTripData.length / itemsPerPages);
+
+  const displayItems = () => {
+    const startIndex = (currentPage - 1) * itemsPerPage;
+    const endIndex = startIndex + itemsPerPage;
+    return filterTripData.slice(startIndex, endIndex);
+  };
+
+  const handleChange = (event, value) => {
+    setCurrentPage(value);
+  };
+
   return (
     <>
       <div className="flex flex-col gap-10 max-md:gap-5">
@@ -227,7 +245,7 @@ export const CompletedTrip = () => {
                     "onTimeBoolean": false
                 }, */}
                   <TableBody>
-                    {filterTripData?.map((item, i) => {
+                    {displayItems()?.map((item, i) => {
                       return (
                         <TableRow hover key={i}>
                           <TableCell align="center">{item.basicInfo.routeNumber}</TableCell>
@@ -249,6 +267,11 @@ export const CompletedTrip = () => {
                 </Table>
               </TableContainer>
             </Paper>
+            <div className="flex justify-center">
+              <Stack spacing={2}>
+                <Pagination count={totalPages} page={currentPage} onChange={handleChange} />
+              </Stack>
+            </div>
           </div>
         </div>
       </div>

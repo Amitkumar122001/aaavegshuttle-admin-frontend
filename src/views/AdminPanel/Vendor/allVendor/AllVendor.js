@@ -11,7 +11,9 @@ import {
   FormControl,
   Button,
   Modal,
-  Box
+  Box,
+  Pagination,
+  Stack
 } from '@mui/material';
 import axios from 'axios';
 import FilterListIcon from '@mui/icons-material/FilterList';
@@ -300,7 +302,7 @@ export const AllVendor = () => {
   const handleClose = () => setUpdateOpen(false);
   // for pagination
   const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 6;
+  const itemsPerPage = 10;
   const totalPages = Math.ceil(filterData.length / itemsPerPage);
 
   const displayItems = () => {
@@ -308,19 +310,8 @@ export const AllVendor = () => {
     const endIndex = startIndex + itemsPerPage;
     return filterData.slice(startIndex, endIndex);
   };
-  const handlePrev = () => {
-    if (currentPage <= 1) {
-      setCurrentPage(totalPages);
-    } else {
-      setCurrentPage((page) => page - 1);
-    }
-  };
-  const handleNext = () => {
-    if (currentPage >= totalPages) {
-      setCurrentPage(1);
-    } else {
-      setCurrentPage((page) => page + 1);
-    }
+  const handleChange = (event, value) => {
+    setCurrentPage(value);
   };
   return (
     <div>
@@ -390,28 +381,10 @@ export const AllVendor = () => {
               </TableContainer>
             </Paper>
             {totalPages > 0 && (
-              <div className="mt-2">
-                <div className="flex justify-center gap-4">
-                  <button className="font-bold bg-blue-600 px-3 text-white rounded" onClick={() => handlePrev()}>
-                    {'<<'}
-                  </button>
-
-                  {Array.from({ length: totalPages }, (_, i) => i + 1).map((pageNumber) => (
-                    <button
-                      key={pageNumber}
-                      onClick={() => setCurrentPage(pageNumber)}
-                      className={`flex justify-center items-center bg-blue-500 px-2 py-1 rounded-full ${
-                        currentPage == pageNumber ? 'text-white bg-red-500' : 'text-black'
-                      }`}
-                    >
-                      {pageNumber}
-                    </button>
-                  ))}
-
-                  <button className="font-bold bg-blue-600 px-3 text-white rounded" onClick={() => handleNext()}>
-                    {'>>'}
-                  </button>
-                </div>
+              <div className="flex  justify-center">
+                <Stack spacing={2}>
+                  <Pagination count={totalPages} page={currentPage} onChange={handleChange} />
+                </Stack>
               </div>
             )}
           </div>

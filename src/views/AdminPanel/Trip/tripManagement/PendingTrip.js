@@ -17,7 +17,9 @@ import {
   MenuItem,
   Accordion,
   AccordionSummary,
-  AccordionDetails
+  AccordionDetails,
+  Pagination,
+  Stack
 } from '@mui/material';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import { IconX, IconChevronLeft } from '@tabler/icons-react'; // IconArrowDownSquare
@@ -81,7 +83,7 @@ const style = {
   boxShadow: 24,
   p: 1
 };
-export const PendingTrip = () => {
+export const PendingTrip = ({ itemsPerPage }) => {
   const [modalopen, setModalOpen] = useState(false);
 
   const [tripStatus, setTripStatus] = useState('');
@@ -118,6 +120,8 @@ export const PendingTrip = () => {
         });
     } else {
       console.log('else', startDate, endDate);
+      setStartDate(getCurrentDate());
+      setEndDate(getCurrentDate());
       window.alert('Please Select the correct Date,\n End Date >= Start Date');
     }
   }, [startDate, endDate]);
@@ -169,15 +173,20 @@ export const PendingTrip = () => {
   const ChangeTripStatusOnPending = () => {
     if (tripStatus != '' && updateObj.tripMapId != '') {
       console.log('tripStatus And TripMapId', tripStatus, updateObj.tripMapId);
-      axios
-        .post(`${BackendUrl}/app/v1/tripstatus/status${tripStatus}`, { tripMapId: updateObj.tripMapId })
-        .then((res) => {
-          if (res.data.created) {
-            window.alert('Trip Status Changed');
-          }
-          console.log(res.data);
-        })
-        .catch((err) => console.log('Api Error', err));
+      let warningBool = window.confirm('Do You want to change the trip Status?');
+      if (warningBool) {
+        axios
+          .post(`${BackendUrl}/app/v1/tripstatus/status${tripStatus}`, { tripMapId: updateObj.tripMapId })
+          .then((res) => {
+            if (res.data.created) {
+              window.alert('Trip Status Changed');
+            }
+            console.log(res.data);
+          })
+          .catch((err) => console.log('Api Error', err));
+      } else {
+        console.log('thanks for Your Confirmation');
+      }
     }
   };
   // get All UnAssign Bus And Driver
@@ -210,6 +219,21 @@ export const PendingTrip = () => {
         .catch((err) => console.log('Api Error : ', err));
     }
   };
+  // pagination
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPages = itemsPerPage;
+  const totalPages = Math.ceil(filterTripData.length / itemsPerPages);
+
+  const displayItems = () => {
+    const startIndex = (currentPage - 1) * itemsPerPage;
+    const endIndex = startIndex + itemsPerPage;
+    return filterTripData.slice(startIndex, endIndex);
+  };
+
+  const handleChange = (event, value) => {
+    setCurrentPage(value);
+  };
+
   return (
     <>
       <div className="flex flex-col gap-10 max-md:gap-5">
@@ -253,7 +277,7 @@ export const PendingTrip = () => {
         <div>
           <div className="my-1">
             <Paper sx={{ width: '100%', overflow: 'hidden' }}>
-              <TableContainer sx={{ maxHeight: 440 }}>
+              <TableContainer>
                 <Table stickyHeader aria-label="sticky table">
                   <TableHead>
                     <TableRow>
@@ -270,7 +294,7 @@ export const PendingTrip = () => {
                     </TableRow>
                   </TableHead>
                   <TableBody>
-                    {filterTripData.map((item, i) => {
+                    {displayItems().map((item, i) => {
                       return (
                         <TableRow hover key={i}>
                           <TableCell align="center">{item.basicInfo.routeNumber}</TableCell>
@@ -292,6 +316,11 @@ export const PendingTrip = () => {
                 </Table>
               </TableContainer>
             </Paper>
+            <div className="flex  justify-center">
+              <Stack spacing={2}>
+                <Pagination count={totalPages} page={currentPage} onChange={handleChange} />
+              </Stack>
+            </div>
           </div>
         </div>
       </div>

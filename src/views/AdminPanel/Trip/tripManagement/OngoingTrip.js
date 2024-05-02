@@ -14,7 +14,9 @@ import {
   MenuItem,
   InputLabel,
   FormControl,
-  TextField
+  TextField,
+  Pagination,
+  Stack
 } from '@mui/material';
 import { IconX, IconChevronLeft } from '@tabler/icons-react'; // IconArrowDownSquare
 import { getCurrentDate, findDay, addTwoTime, diffTwoTime, compareTwoTime } from 'utils/TimeDate';
@@ -91,16 +93,19 @@ const style = {
   boxShadow: 24,
   p: 2
 };
-export const OngoingTrip = () => {
+export const OngoingTrip = ({ itemsPerPage }) => {
   const [allTrip, setAllTrips] = useState([]);
   const [filterTripData, setFilterTripData] = useState(allTrip);
   const [modalopen, setModalOpen] = useState(false);
   const [tripStatus, setTripStatus] = useState('');
+  const [phoneNo, setPhoneNo] = useState('');
+  const [userOTP, setUserOTP] = useState('');
   const [showModal, setShowModal] = useState({
     allDetail: true,
     tsBool: false,
     sdBool: false,
-    mapTracking: false
+    mapTracking: false,
+    verifyOtp: false
   });
   const [routeNoF, setRouteNoF] = useState('');
   const [busNoF, setBusNoF] = useState('');
@@ -160,10 +165,10 @@ export const OngoingTrip = () => {
   };
   const handleClose = () => {
     setModalOpen(false);
-    setShowModal({ ...showModal, allDetail: true, tsBool: false, sdBool: false, mapTracking: false });
+    setShowModal({ ...showModal, allDetail: true, tsBool: false, sdBool: false, mapTracking: false, verifyOtp: false });
   };
   const handleLiveTracking = () => {
-    setShowModal({ ...showModal, allDetail: false, tsBool: false, sdBool: false, mapTracking: true });
+    setShowModal({ ...showModal, allDetail: false, tsBool: false, sdBool: false, mapTracking: true, verifyOtp: false });
   };
   // Change The Status Of Particular Trip
   const ChangeTripStatusOnPending = () => {
@@ -178,6 +183,45 @@ export const OngoingTrip = () => {
           console.log(res.data);
         })
         .catch((err) => console.log('Api Error', err));
+    }
+  };
+  // pagination
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPages = itemsPerPage;
+  const totalPages = Math.ceil(filterTripData.length / itemsPerPages);
+
+  const displayItems = () => {
+    const startIndex = (currentPage - 1) * itemsPerPage;
+    const endIndex = startIndex + itemsPerPage;
+    return filterTripData.slice(startIndex, endIndex);
+  };
+
+  const handleChange = (event, value) => {
+    setCurrentPage(value);
+  };
+
+  // User Otp verify
+  const handleUserOtpVerify = () => {
+    if (userOTP != '' && phoneNo != '') {
+      axios
+        .post('http://192.168.1.197:3000/app/v1/tripManagement/checkUserOtp', {
+          userTripId: updateObj.tripDetails.tripId,
+          userOtp: userOTP,
+          mobileNumber: phoneNo,
+          userTripDate: updateObj.tripDate
+        })
+        .then((res) => {
+          console.log(res.data);
+          if (res.data.onBoarded && res.data.alreadyOnBoard) {
+            window.alert('Already boarded');
+          } else if (res.data.onBoarded && !res.data.alreadyOnBoard) {
+            window.alert('onBoarded');
+          }
+          if (res.data.incorrectOtp) {
+            window.alert('Incorrect OTP');
+          }
+        })
+        .catch((err) => console.log('Api error', err));
     }
   };
 
@@ -248,7 +292,7 @@ export const OngoingTrip = () => {
                     </TableRow>
                   </TableHead>
                   <TableBody>
-                    {filterTripData?.map((item, i) => {
+                    {displayItems()?.map((item, i) => {
                       return (
                         <TableRow hover key={i}>
                           <TableCell align="center">{item.basicInfo.routeNumber}</TableCell>
@@ -272,6 +316,11 @@ export const OngoingTrip = () => {
                 </Table>
               </TableContainer>
             </Paper>
+            <div className="flex justify-center">
+              <Stack spacing={2}>
+                <Pagination count={totalPages} page={currentPage} onChange={handleChange} />
+              </Stack>{' '}
+            </div>
           </div>
         </div>
       </div>
@@ -285,10 +334,12 @@ export const OngoingTrip = () => {
       >
         <Box
           sx={style}
-          className={`rounded  ${showModal.allDetail && 'h-[90%] w-[60%]'} 
-         ${showModal.tsBool && 'h-[60%] max-md:h-[70%] sm:w-[50%] rounded-xl flex items-center justify-center'} ${
+          className={`rounded  ${showModal.allDetail && 'h-[93%] w-[90%]'} 
+         ${showModal.tsBool && 'h-[50%] max-md:h-[40%]  rounded-xl flex items-center justify-center'} ${
             showModal.sdBool && 'h-[90%] w-[60%] max-lg:w-[70%] max-md:w-[80%]'
-          } ${showModal.mapTracking && 'w-[85%] h-[90%] p-0 '}
+          } ${showModal.mapTracking && 'w-[85%] h-[90%] p-0 '}  ${
+            showModal.verifyOtp && 'w-[30%] max-md:w-[70%] h-[70%] max-md:h-[55%] p-10 flex items-center justify-center'
+          }
           } overflow-hidden`}
         >
           <div className="h-[100%] w-[100%]">
@@ -359,7 +410,9 @@ export const OngoingTrip = () => {
                     <Button
                       variant="contained"
                       className="bg-yellow-700 text-sm "
-                      onClick={() => setShowModal({ ...showModal, allDetail: false, tsBool: true, sdBool: false, mapTracking: false })}
+                      onClick={() =>
+                        setShowModal({ ...showModal, allDetail: false, tsBool: true, sdBool: false, mapTracking: false, verifyOtp: false })
+                      }
                     >
                       trip Status
                     </Button>
@@ -369,7 +422,18 @@ export const OngoingTrip = () => {
                     <Button
                       variant="contained"
                       className="bg-blue-700 text-sm "
-                      onClick={() => setShowModal({ ...showModal, allDetail: false, tsBool: false, sdBool: true, mapTracking: false })}
+                      onClick={() =>
+                        setShowModal({ ...showModal, allDetail: false, tsBool: false, sdBool: false, mapTracking: false, verifyOtp: true })
+                      }
+                    >
+                      Verify Otp
+                    </Button>
+                    <Button
+                      variant="contained"
+                      className="bg-blue-700 text-sm "
+                      onClick={() =>
+                        setShowModal({ ...showModal, allDetail: false, tsBool: false, sdBool: true, mapTracking: false, verifyOtp: false })
+                      }
                     >
                       Stops
                     </Button>
@@ -383,7 +447,16 @@ export const OngoingTrip = () => {
                   <div className="flex flex-col gap-5">
                     <div className="flex justify-between gap-1 text-xl font-semibold">
                       <button
-                        onClick={() => setShowModal({ ...showModal, allDetail: true, sdBool: false, tsBool: false, mapTracking: false })}
+                        onClick={() =>
+                          setShowModal({
+                            ...showModal,
+                            allDetail: true,
+                            sdBool: false,
+                            tsBool: false,
+                            mapTracking: false,
+                            verifyOtp: false
+                          })
+                        }
                         className="hover:text-blue-400 rounded-full"
                       >
                         <IconChevronLeft />
@@ -432,7 +505,9 @@ export const OngoingTrip = () => {
                 <div className="">
                   <div className="flex text-xl my-2 max-md:my-1 font-bold gap-2">
                     <button
-                      onClick={() => setShowModal({ ...showModal, allDetail: true, tsBool: false, sdBool: false, mapTracking: false })}
+                      onClick={() =>
+                        setShowModal({ ...showModal, allDetail: true, tsBool: false, sdBool: false, mapTracking: false, verifyOtp: false })
+                      }
                       className="hover:text-blue-400 rounded-full"
                     >
                       <IconChevronLeft />
@@ -662,6 +737,59 @@ export const OngoingTrip = () => {
                 tripDate={updateObj.tripDate}
                 routeId={updateObj.routeDetails.routeId}
               />
+            )}
+            {showModal.verifyOtp && (
+              <>
+                <div className="flex items-center justify-center ">
+                  <div className="flex flex-col gap-5">
+                    <div className="flex  gap-2 text-xl font-semibold">
+                      <button
+                        onClick={() =>
+                          setShowModal({ ...showModal, allDetail: true, bdBool: false, tsBool: false, sdBool: false, verifyOtp: false })
+                        }
+                        className="hover:text-blue-400 rounded-full"
+                      >
+                        <IconChevronLeft />
+                      </button>
+                      <p className="">Verify OTP</p>
+                    </div>
+
+                    <div className="flex flex-col gap-5">
+                      <div className="w-56">
+                        <p className="text-md">
+                          Route Name : <span className="font-semibold">{updateObj.basicInfo.routeName}</span>
+                        </p>
+                      </div>
+                      <div className="w-56">
+                        <p>
+                          Trip Time : <span className="font-semibold">{updateObj.basicInfo.tripTime}</span>
+                        </p>
+                      </div>
+                      <div>
+                        <FormControl fullWidth>
+                          <TextField
+                            label="Phone Number"
+                            type="number"
+                            inputProps={{ maxLength: 10, minLength: 10 }}
+                            value={phoneNo}
+                            onChange={(e) => setPhoneNo(e.target.value)}
+                          />
+                        </FormControl>
+                      </div>
+                      <div>
+                        <FormControl fullWidth>
+                          <TextField label="OTP" type="number" value={userOTP} onChange={(e) => setUserOTP(e.target.value)} />
+                        </FormControl>
+                      </div>
+                      <div>
+                        <Button variant="contained" fullWidth className="bg-blue-600 p-3 rounded-xl" onClick={handleUserOtpVerify}>
+                          Submit
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </>
             )}
           </div>
         </Box>
